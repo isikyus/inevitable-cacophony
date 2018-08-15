@@ -4,7 +4,9 @@ An attempt to automatically generate music in Dwarf Fortress' generated musical 
 
 ## Usage
 
-	ruby cacophony.rb && aplay sound.wav
+To play a specific rhythm (in the notation used by the game):
+
+	ruby cacophony.rb '|x X x ! |' && aplay sound.wav
 
 ## References
 

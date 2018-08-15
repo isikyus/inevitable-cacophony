@@ -63,10 +63,10 @@ class Rhythm
 		'x' => 4,
 
 		# Accented beat
-		'X' => 5,
+		'X' => 6,
 
 		# Primary accent
-		'!' => 8
+		'!' => 9
 	}
 
 	BAR_LINE = '|'
@@ -96,12 +96,11 @@ end
 
 caco = Cacophony.new
 
-# From http://www.bay12games.com/dwarves/early_musical_forms.html
-agek = Rhythm.new('| - x x - X - - - | x - - x x ! x - | X x x - x - - - | - X x - x - x - |')
+# Default to a basic 4-bar beat.
+beats = Rhythm.new(ARGV.first || '| x x x X |')
 
 3.times do
-	agek.each_beat do |amplitude|
-		p amplitude
+	beats.each_beat do |amplitude|
 		caco.add_note(440, amplitude, 0.5)
 	end
 end
