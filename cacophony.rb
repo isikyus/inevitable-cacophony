@@ -12,21 +12,28 @@ class Cacophony
 	# Create a buffer containing a tone of the given frequency and duration.
 	#
 	# @param frequency [Numeric] Note frequency in Hertz.
+	# @param amplitude [Float] Note amplitude as a fraction of maximum volume (0 to 1)
 	# @param duration [Numeric] Length of the note in seconds.
-	def note_buffer(frequency, duration)
+	def note_buffer(frequency, amplitude, duration)
 		samples_per_wave = SAMPLE_RATE / frequency
 		note_length = duration * SAMPLE_RATE
 
 		samples = note_length.to_i.times.map do |index|
 			wave_fraction = index / samples_per_wave.to_f
-			Math.sin(wave_fraction * TAU)
+			amplitude * Math.sin(wave_fraction * TAU)
 		end
 
 		WaveFile::Buffer.new(samples, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))
 	end
 
-	def add_note(frequency, duration)
-		@notes << note_buffer(frequency, duration)
+	def add_legato_note(frequency, amplitude, duration)
+		@notes << note_buffer(frequency, amplitude, duration)
+	end
+
+	# As above, but adds a brief period of silence after the note.
+	def add_note(frequency, amplitude, duration)
+		add_legato_note(frequency, amplitude, duration * 0.9)
+		add_legato_note(1, 0, duration * 0.1)
 	end
 
 	def write(filename)
@@ -43,7 +50,10 @@ class Cacophony
 end
 
 
-# Write a single note
 caco = Cacophony.new
-caco.add_note(440, 3)
+
+3.times do
+	caco.add_note(440, 1, 0.5)
+	caco.add_note(440, 0.5, 0.5)
+end
 caco.write("sound.wav")
