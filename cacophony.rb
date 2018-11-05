@@ -38,8 +38,8 @@ class Cacophony
 		add_legato_note(1, 0, duration * 0.1)
 	end
 
-	def write(filename)
-		WaveFile::Writer.new(filename, WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)) do |writer|
+	def write(io)
+		WaveFile::Writer.new(io, WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)) do |writer|
 			@notes.each do |note|
 				writer.write(note)
 			end
@@ -61,4 +61,8 @@ beats = Rhythm.new(ARGV.first || '| x x x X |')
 		caco.add_note(440, beat.amplitude, 0.5)
 	end
 end
-caco.write("sound.wav")
+
+# Have to buffer output so wavefile can seek back to the beginning to write format info
+output_buffer = StringIO.new
+caco.write(output_buffer)
+$stdout.write(output_buffer.string)
