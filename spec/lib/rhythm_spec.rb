@@ -17,7 +17,7 @@ RSpec.describe Rhythm do
 		}
 	
 		SCORES_TO_BEATS.each do |score, beats|
-			context 'parsing #{score}' do
+			context "parsing #{score}" do
 				let(:score) { score }
 
 				specify 'produces the correct pitches' do
