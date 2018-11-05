@@ -57,8 +57,8 @@ caco = Cacophony.new
 beats = Rhythm.new(ARGV.first || '| x x x X |')
 
 3.times do
-	beats.each_beat do |amplitude|
-		caco.add_note(440, amplitude, 0.5)
+	beats.each_beat do |beat|
+		caco.add_note(440, beat.amplitude, 0.5)
 	end
 end
 caco.write("sound.wav")

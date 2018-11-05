@@ -1,6 +1,9 @@
 # Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
 class Rhythm
 
+	class Beat < Struct.new(:amplitude)
+	end
+
 	# Amplitude values for each Dwarf Fortress beat symbol.
 	# These are in no particular scale; the maximum volume will be whatever's loudest in any particular string.
 	BEAT_VALUES = {
@@ -21,11 +24,13 @@ class Rhythm
 	BAR_LINE = '|'
 
 	def initialize(rhythm_string)
-		@amplitudes = parse(rhythm_string)
+		@beats = parse(rhythm_string)
 	end
 
+	attr_reader :beats
+
 	def each_beat(&block)
-		@amplitudes.each(&block)
+		@beats.each(&block)
 	end
 
 	private
@@ -39,7 +44,11 @@ class Rhythm
 
 		# Ensure all our amplitudes are between 0.0 and 1.0
 		highest_volume = raw_amplitudes.max
-		raw_amplitudes.map { |amplitude| amplitude.to_f / highest_volume }
+		raw_amplitudes.map do |amplitude|
+			scaled = amplitude.to_f / highest_volume
+
+			Beat.new(scaled)
+		end
 	end
 end
 
