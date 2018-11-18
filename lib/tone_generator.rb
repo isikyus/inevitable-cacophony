@@ -1,6 +1,7 @@
+# Converts note information into raw WAV file data
 # Based on examples in {http://wavefilegem.com/examples}
 
-class Cacophony
+class ToneGenerator
 
         SAMPLE_RATE = 44100 # Hertz
 
