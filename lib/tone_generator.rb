@@ -2,6 +2,7 @@
 # Based on examples in {http://wavefilegem.com/examples}
 
 require 'wavefile'
+require 'note'
 
 class ToneGenerator
 
@@ -26,7 +27,7 @@ class ToneGenerator
         end
 
         def add_legato_note(frequency, amplitude, duration)
-                @notes << note_buffer(frequency, amplitude, duration)
+		@notes << note_buffer(Note.new(frequency, amplitude, duration))
         end
 
         # As above, but adds a brief period of silence after the note.

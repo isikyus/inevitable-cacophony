@@ -1,6 +1,5 @@
 require 'spec_helper.rb'
 
-require 'note'
 require 'tone_generator'
 
 RSpec.describe ToneGenerator do
