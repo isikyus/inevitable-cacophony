@@ -35,8 +35,8 @@ RSpec.describe ToneGenerator do
 			let(:note) { Note.new(frequency, amplitude, duration) }
 
 			specify 'maxes out at the correct amplitude' do
-				expect(samples.max).to eq amplitude
-				expect(samples.min).to eq -amplitude
+				expect(samples.max).to be_within(0.001).of(amplitude)
+				expect(samples.min).to be_within(0.001).of(-amplitude)
 			end
 
 			xspecify 'cycles at the correct frequency' do
