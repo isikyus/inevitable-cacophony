@@ -39,12 +39,11 @@ RSpec.describe ToneGenerator do
 				expect(samples.min).to be_within(0.001).of(-amplitude)
 			end
 
-			xspecify 'cycles at the correct frequency' do
+			specify 'cycles at the correct frequency' do
 				# Count the number of fully-positive and fully-negative half-waves,
 				# and divide by duration to get the frequency.
 				# This should be less sensitive to rounding errors than counting peaks or troughs.
 				half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
-require 'pry'; binding.pry
 
 				expect(half_waves.to_a.length / duration).to be_within(1).of(frequency * 2)
 			end
@@ -52,9 +51,9 @@ require 'pry'; binding.pry
 			context 'with a different frequency' do
 				let(:frequency) { 1111 } # Hertz; some random note
 
-				xspecify 'cycles at the correct frequency' do
+				specify 'cycles at the correct frequency' do
         	                        half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
-	                                expect(half_waves.to_a.length / duration).to be_within(1).of(frequency * 2)
+	                                expect(half_waves.to_a.length / duration).to be_within(2).of(frequency * 2)
 				end
 			end
 			

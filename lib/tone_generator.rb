@@ -15,7 +15,7 @@ class ToneGenerator
         #
         # @param note [Note]
         def note_buffer(note)
-		samples_per_wave = SAMPLE_RATE / note.frequency
+		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
 		note_length = note.duration * SAMPLE_RATE
 
                 samples = note_length.to_i.times.map do |index|
