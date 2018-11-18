@@ -1,6 +1,8 @@
 # Converts note information into raw WAV file data
 # Based on examples in {http://wavefilegem.com/examples}
 
+require 'wavefile'
+
 class ToneGenerator
 
         SAMPLE_RATE = 44100 # Hertz
@@ -8,18 +10,16 @@ class ToneGenerator
         # One full revolution of a circle (or one full cycle of a sine wave)
         TAU = Math::PI * 2
 
-        # Create a buffer containing a tone of the given frequency and duration.
+        # Create a buffer representing a given note as an audio sample
         #
-        # @param frequency [Numeric] Note frequency in Hertz.
-        # @param amplitude [Float] Note amplitude as a fraction of maximum volume (0 to 1)
-        # @param duration [Numeric] Length of the note in seconds.
-        def note_buffer(frequency, amplitude, duration)
-                samples_per_wave = SAMPLE_RATE / frequency
-                note_length = duration * SAMPLE_RATE
+        # @param note [Note]
+        def note_buffer(note)
+		samples_per_wave = SAMPLE_RATE / note.frequency
+		note_length = note.duration * SAMPLE_RATE
 
                 samples = note_length.to_i.times.map do |index|
                         wave_fraction = index / samples_per_wave.to_f
-                        amplitude * Math.sin(wave_fraction * TAU)
+			note.amplitude * Math.sin(wave_fraction * TAU)
                 end
 
                 WaveFile::Buffer.new(samples, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))

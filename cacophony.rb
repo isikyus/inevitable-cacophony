@@ -1,5 +1,3 @@
-require 'wavefile'
-
 require 'rhythm'
 require 'tone_generator'
 
