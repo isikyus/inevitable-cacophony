@@ -97,7 +97,7 @@ end
 caco = Cacophony.new
 
 # Default to a basic 4-bar beat.
-beats = Rhythm.new(ARGV.first || '| x x x X |')
+beats = Rhythm.new(ARGV.first || '| ! x X x |')
 
 3.times do
 	beats.each_beat do |amplitude|
