@@ -30,34 +30,47 @@ RSpec.describe ToneGenerator do
 		end
 	
 		context 'adding a note' do
-			let(:frequency) { 440 } # Middle A
 			let(:amplitude) { 0.8 } # Out of 1
 			let(:note) { Note.new(frequency, amplitude, duration) }
 
-			specify 'maxes out at the correct amplitude' do
-				expect(samples.max).to be_within(0.001).of(amplitude)
-				expect(samples.min).to be_within(0.001).of(-amplitude)
+			shared_examples_for 'frequency' do
+
+				specify 'is correctly converted to cycle time' do
+					# Count the number of fully-positive and fully-negative half-waves,
+					# and divide by duration to get the frequency.
+					# This should be less sensitive to rounding errors than counting peaks or troughs.
+					half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
+
+					# Take the middle 50% of the array to exclude outliers (e.g. silence before
+					# and after the note)
+					half_wave_times = half_waves.map(&:length)
+					quarter = half_wave_times.length / 4
+					typical_times = half_wave_times[quarter..-quarter]
+
+					average_time = typical_times.sum / typical_times.length.to_f
+
+					expect(ToneGenerator::SAMPLE_RATE / average_time).to be_within(1).of(frequency * 2)
+				end
 			end
 
-			specify 'cycles at the correct frequency' do
-				# Count the number of fully-positive and fully-negative half-waves,
-				# and divide by duration to get the frequency.
-				# This should be less sensitive to rounding errors than counting peaks or troughs.
-				half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
+			context 'with a standard frequency (middle A)' do
+				let(:frequency) { 440 } # Middle A
 
-				expect(half_waves.to_a.length / duration).to be_within(1).of(frequency * 2)
+				specify 'maxes out at the correct amplitude' do
+					expect(samples.max).to be_within(0.001).of(amplitude)
+					expect(samples.min).to be_within(0.001).of(-amplitude)
+				end
+
+				it_should_behave_like 'frequency'
+
+				it_should_behave_like 'adding any sound'
 			end
 
 			context 'with a different frequency' do
 				let(:frequency) { 1111 } # Hertz; some random note
 
-				specify 'cycles at the correct frequency' do
-        	                        half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
-	                                expect(half_waves.to_a.length / duration).to be_within(2).of(frequency * 2)
-				end
+				it_should_behave_like 'frequency'
 			end
-			
-			it_should_behave_like 'adding any sound'
 		end
 	end
 end
