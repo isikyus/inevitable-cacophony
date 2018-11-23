@@ -8,7 +8,7 @@ beats = Rhythm.new(ARGV.first || '| ! x X x |')
 
 3.times do
 	beats.each_beat do |beat|
-		tone.add_note(440, beat.amplitude, 0.5)
+		tone.add_note(440, beat, 0.5)
 	end
 end
 

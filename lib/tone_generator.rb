@@ -28,6 +28,12 @@ class ToneGenerator
 		timeslot = note.duration * SAMPLE_RATE
 		start_delay = timeslot * START_DELAY
 		after_delay = timeslot * AFTER_DELAY
+
+		# Adjust delays to account for early/late beats
+		delay_adjustment = start_delay * note.beat.timing
+		start_delay += delay_adjustment
+		after_delay -= delay_adjustment
+
 		note_length = timeslot - start_delay - after_delay
 
                 samples = []
@@ -35,7 +41,7 @@ class ToneGenerator
 		samples << ([0.0] * start_delay)
 		samples << note_length.to_i.times.map do |index|
                         wave_fraction = index / samples_per_wave.to_f
-			note.amplitude * Math.sin(wave_fraction * TAU)
+			note.beat.amplitude * Math.sin(wave_fraction * TAU)
                 end
 		samples << ([0.0] * after_delay)
 

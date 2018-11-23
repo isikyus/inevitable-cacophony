@@ -31,7 +31,9 @@ RSpec.describe ToneGenerator do
 	
 		context 'adding a note' do
 			let(:amplitude) { 0.8 } # Out of 1
-			let(:note) { Note.new(frequency, amplitude, duration) }
+			let(:timing) { 0.0 }
+			let(:beat) { Rhythm::Beat.new(amplitude, timing) }
+			let(:note) { Note.new(frequency, beat, duration) }
 
 			shared_examples_for 'frequency' do
 
@@ -62,24 +64,45 @@ RSpec.describe ToneGenerator do
 				end
 
 				describe 'note timing' do
+					let(:leading_silent_samples) do
+						samples.slice_before { |s| !s.zero? }.first.length
+					end
+					let(:trailing_silent_samples) do
+						samples.slice_after { |s| !s.zero? }.to_a.last.length
+					end
+
+					let(:normal_leading_silence) { ToneGenerator::START_DELAY * ToneGenerator::SAMPLE_RATE * duration }
 
 					specify 'includes silence before the note' do
-						expected_leading_silence = ToneGenerator::START_DELAY * ToneGenerator::SAMPLE_RATE * duration
-						leading_silent_samples = samples.slice_before { |s| !s.zero? }.first.length
-
-						expect(leading_silent_samples).to be_within(10).of(expected_leading_silence)
+						expect(leading_silent_samples).to be_within(10).of(normal_leading_silence)
 					end
 
 					specify 'includes silence after the note' do
 						expected_trailing_silence = ToneGenerator::AFTER_DELAY * ToneGenerator::SAMPLE_RATE * duration
-						trailing_silent_samples = samples.slice_after { |s| !s.zero? }.to_a.last.length
-
 						expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
 					end
 
-					pending 'reduces lead-in for early beats'
+					context 'with an early beat' do
+						let(:timing) { -1.0 }
 
-					pending 'increases lead-in for late beats'
+						specify 'reduces lead-in' do
+							expect(leading_silent_samples).to be_within(10).of(0)	
+						end
+					
+						# TODO: should probably rename this to mention duration.	
+						it_should_behave_like 'adding any sound'	
+					end
+
+					context 'with a late beat' do
+						let(:timing) { 1.0 }
+
+						specify 'increases lead-in' do
+							expect(leading_silent_samples).to be_within(10).of(normal_leading_silence * 2)	
+						end
+					
+						it_should_behave_like 'adding any sound'	
+					end
+
 				end
 
 				it_should_behave_like 'frequency'
