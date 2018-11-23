@@ -61,6 +61,27 @@ RSpec.describe ToneGenerator do
 					expect(samples.min).to be_within(0.001).of(-amplitude)
 				end
 
+				describe 'note timing' do
+
+					specify 'includes silence before the note' do
+						expected_leading_silence = ToneGenerator::START_DELAY * ToneGenerator::SAMPLE_RATE * duration
+						leading_silent_samples = samples.slice_before { |s| !s.zero? }.first.length
+
+						expect(leading_silent_samples).to be_within(10).of(expected_leading_silence)
+					end
+
+					specify 'includes silence after the note' do
+						expected_trailing_silence = ToneGenerator::AFTER_DELAY * ToneGenerator::SAMPLE_RATE * duration
+						trailing_silent_samples = samples.slice_after { |s| !s.zero? }.to_a.last.length
+
+						expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
+					end
+
+					pending 'reduces lead-in for early beats'
+
+					pending 'increases lead-in for late beats'
+				end
+
 				it_should_behave_like 'frequency'
 
 				it_should_behave_like 'adding any sound'

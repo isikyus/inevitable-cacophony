@@ -8,6 +8,12 @@ class ToneGenerator
 
         SAMPLE_RATE = 44100 # Hertz
 
+	# Amount of silence before a note, as a fraction of the note's duration
+	START_DELAY = 0.3
+
+	# Amount of silence after notes, as a fraction  of duration.
+	AFTER_DELAY = 0.3
+
         # One full revolution of a circle (or one full cycle of a sine wave)
         TAU = Math::PI * 2
 
@@ -16,24 +22,28 @@ class ToneGenerator
         # @param note [Note]
         def note_buffer(note)
 		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
-		note_length = note.duration * SAMPLE_RATE
+		
+		# Decide how much space to allow before and after the note.
+		# TODO: should depend on note duration and maybe staccato/legato-ness
+		timeslot = note.duration * SAMPLE_RATE
+		start_delay = timeslot * START_DELAY
+		after_delay = timeslot * AFTER_DELAY
+		note_length = timeslot - start_delay - after_delay
 
-                samples = note_length.to_i.times.map do |index|
+                samples = []
+		
+		samples << ([0.0] * start_delay)
+		samples << note_length.to_i.times.map do |index|
                         wave_fraction = index / samples_per_wave.to_f
 			note.amplitude * Math.sin(wave_fraction * TAU)
                 end
+		samples << ([0.0] * after_delay)
 
-                WaveFile::Buffer.new(samples, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))
+                WaveFile::Buffer.new(samples.flatten, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))
         end
 
-        def add_legato_note(frequency, amplitude, duration)
+	def add_note(frequency, amplitude, duration)
 		@notes << note_buffer(Note.new(frequency, amplitude, duration))
-        end
-
-        # As above, but adds a brief period of silence after the note.
-        def add_note(frequency, amplitude, duration)
-                add_legato_note(frequency, amplitude, duration * 0.9)
-                add_legato_note(1, 0, duration * 0.1)
         end
 
         def write(io)
