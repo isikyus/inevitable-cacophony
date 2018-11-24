@@ -8,14 +8,12 @@ class OctaveStructure
 	# or the notes of a scale.
         class NoteSequence
 
-		# @param name [String] The name of the chord.
                 # @param note_scalings [Array<Float>] The notes in the scale, as multiples of the tonic.
-                def initialize(name, note_scalings)
-                        @name = name
+                def initialize(note_scalings)
 			@note_scalings = note_scalings
                 end
 
-                attr_accessor :name, :note_scalings
+                attr_accessor :note_scalings
         end
 
 	class Chord < NoteSequence
@@ -39,7 +37,7 @@ class OctaveStructure
 		@octave_divisions = parse_octave_structure(octave_description)
 
 		@chords = parse_chords(description)
-		@scales = {}
+		@scales = parse_scales(description, chords)
 	end
 
 	attr_reader :octave_divisions, :chords, :scales
@@ -68,16 +66,17 @@ class OctaveStructure
 
 		{}.tap do |chords|
 			chord_paragraphs = description.find_all_paragraphs(chord_paragraph_regex)
+
 			chord_paragraphs.each do |paragraph|
-				chord = parse_chord(paragraph.find(chord_paragraph_regex))
-				chords[chord.name.to_sym] = chord
+				degrees_sentence = paragraph.find(chord_paragraph_regex)
+				name, degrees = degrees_sentence.match(/The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/).captures
+				chords[name.to_sym] = parse_chord(degrees)
 			end
 		end
 	end
 
-	# @param degrees_sentence [String] The sentence saying what degrees of the octave are used to build the chord.
-	def parse_chord(degrees_sentence)
-		name, degrees = degrees_sentence.match(/The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/).captures
+	# @param degrees[String] The list of degrees used by this particular scale
+	def parse_chord(degrees)
 		ordinals = degrees.split(/(?:,| and) the/)
 
 		chord_notes = ordinals.map do |degree_ordinal|
@@ -94,7 +93,35 @@ class OctaveStructure
 			end
 		end
 
-		Chord.new(name, chord_notes)
+		Chord.new(chord_notes)
+	end
+
+	# @param description [Parser::SectionedText]
+	# @param chords [Hash{Symbol,Chord}]
+	def parse_scales(description, chords)
+		scale_topic_regex = /The [^ ]+ [^ ]+ scale is/
+
+		{}.tap do |scales|
+			description.find_all_paragraphs(scale_topic_regex).each do |scale_paragraph|
+				scale_sentence = scale_paragraph.find(scale_topic_regex)
+				name, scale_type = scale_sentence.match(/The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/).captures
+
+				case scale_type
+				when /thought of as [a-z]+ disjoint chords/
+					scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph, chords)
+				else
+					raise "Unknown scale type #{scale_type} in #{scale_sentence}"
+				end
+			end
+		end
+	end
+
+	def parse_disjoint_chords_scale(scale_paragraph, chords)
+		chords_sentence = scale_paragraph.find(/These chords are/)
+		chord_list = chords_sentence.match(/These chords are named ([^.]+)\.?/).captures.first
+		chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
+
+		Scale.new(chords.values_at(*chord_names))
 	end
 
 	# Convert a number word to text -- rough approximation for now.

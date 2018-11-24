@@ -64,7 +64,7 @@ RSpec.describe OctaveStructure do
 				Every note is named.
 				The names are shato (spoken sha), almef (al), oñod (oñ), umo (um), rostfen (ro), hiñer (hi), ohe (oh), nazweng (na), tod (to), and zomuth (zo).
 
-				The ani pentatonic scale is thought of as two disjoint chorts spanning a perfect fifth and a major third. These chords are named ilpi and dik.
+				The ani pentatonic scale is thought of as two disjoint chords spanning a perfect fifth and a major third. These chords are named ilpi and dik.
 
 				The ilpi trichord is the 1st, the 3rd, and the 8th degrees of the semitone octave scale.
 
@@ -110,7 +110,7 @@ RSpec.describe OctaveStructure do
 			context 'and generating a scale' do
 				let(:ani_scale) { subject.scales[:ani] }
 
-				xspecify 'uses the correct notes' do
+				specify 'uses the correct notes' do
 					expect(ani_scale.note_scalings).to eq([
 						1,
 						2 ** (2/12.0),
