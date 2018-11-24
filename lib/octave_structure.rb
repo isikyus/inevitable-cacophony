@@ -1,5 +1,7 @@
 # Represents and parses Dwarf Fortress scale descriptions
 
+require 'parser/sectioned_text'
+
 class OctaveStructure
 
 	# Represent a sequence of notes from an octave -- either a chord,
@@ -29,57 +31,10 @@ class OctaveStructure
 		end
 	end
 
-	# Used to break up Dwarf Fortress's text descriptions and find the text we want.
-	class Description
-
-		PARAGRAPH_DELIMITER = "\n\n"
-		SENTENCE_DELIMITER = /\.\s+/
-
-		# @param description [String] The description to parse
-		# @param delimiter [String,Regex] The delimiter between string sections. Defaults to splitting by paragraphs.
-		def initialize(description, delimiter=PARAGRAPH_DELIMITER)
-			@sections = description.split(delimiter).map(&:strip)
-		end
-
-		# Find a section (paragraph, sentence, etc.) of the description
-		# matching a given regular expression.
-		# @param key [Regex]
-		# @return [String]
-		def find(key)
-			find_all(key).first
-		end
-
-		# Find all sections matching a given key
-		# @param key [Regex]
-		# @return [Array<String>]
-		def find_all(key)
-			@sections.select { |s| key.match?(s) } || raise("No match for #{key.inspect} in #{@sections.inspect}")
-		end
-
-		# Find a paragraph within the description, and break it up into sentences.
-		# @param key [Regex]
-		# @return [Description] The paragraph, split into sentences.
-		def find_paragraph(key)
-			find_all_paragraphs(key).first
-		end
-
-		# As above but finds all matching paragraphs.
-		# @param key [Regex]
-		# @return [Array<Description>]
-		def find_all_paragraphs(key)
-			find_all(key).map do |string|
-				Description.new(string, SENTENCE_DELIMITER)
-			end
-		end
-
-		def to_s
-			"<Description: #{@sections.inspect}>"
-		end
-	end
 
 	# @param scale_text [String] Dwarf Fortress musical form description including scale information.
 	def initialize(scale_text)
-		description = Description.new(scale_text)
+		description = Parser::SectionedText.new(scale_text)
 		octave_description = description.find_paragraph(/^Scales are constructed/)
 		@octave_divisions = parse_octave_structure(octave_description)
 
@@ -105,7 +60,7 @@ class OctaveStructure
 		end
 	end
 
-	# @param description [Description] The description text from which to extract chord data.
+	# @param description [Parser::SectionedText] The description text from which to extract chord data.
 	def parse_chords(description)
 
 		# TODO: extract to constant
