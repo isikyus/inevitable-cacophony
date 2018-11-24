@@ -9,24 +9,40 @@ RSpec.describe 'Inevitable Cacophony' do
 		data
 	end
 
-	context 'generating known files from given beats' do
+	describe 'generating known files' do
 		let(:known_data) { File.open(fixture_file).read }
-		let(:generated_data) do
-			generate_with_args('beat', score)
-		end
 
-		context 'in 4/4 time' do
-			let(:score) { '| x X x !' }
-			let(:fixture_file) { 'spec/fixtures/4-4.wav' }
+		context 'from given beats' do
+			let(:generated_data) do
+				generate_with_args('beat', score)
+			end
 
-			specify 'works' do
-				expect(generated_data).to eq known_data
+			context 'in 4/4 time' do
+				let(:score) { '| x X x !' }
+				let(:fixture_file) { 'spec/fixtures/4-4.wav' }
+
+				specify 'works' do
+					expect(generated_data).to eq known_data
+				end
+			end
+
+			context 'using early and late beats' do
+				let(:score) { "| x x'x`x |" }
+				let(:fixture_file) { 'spec/fixtures/1-and-3.wav' }
+
+				specify 'works' do
+					expect(generated_data).to eq known_data
+				end
 			end
 		end
 
-		context 'using early and late beats' do
-			let(:score) { "| x x'x`x |" }
-			let(:fixture_file) { 'spec/fixtures/1-and-3.wav' }
+		context 'from a given scale' do
+			let(:fixture_file) { 'spec/fixtures/bride-of-trumpets-scale.wav' }
+			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
+			let(:generated_data) do
+				scale_description = File.open(description_file) { |f| f.read }
+                                generate_with_args('scale', scale_description)
+                        end
 
 			specify 'works' do
 				expect(generated_data).to eq known_data

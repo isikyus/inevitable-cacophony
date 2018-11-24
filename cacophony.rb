@@ -18,6 +18,17 @@ when 'beat'
 		end
 	end
 
+when 'scale'
+
+	scale = Scale.new(ARGV.first || $stdin.read)
+
+	rising_and_falling = scale.octave_divisions + [2] + scale.octave_divisions.reverse
+	tonic = 440 # Hz; Middle A
+
+	rising_and_falling.each do |factor|
+		tone.add_note(factor * tonic, Rhythm::Beat.new(1, 0), 0.5)
+	end
+
 else
 	# TODO: usage etc.
 	raise "Unrecognised command #{command}"
