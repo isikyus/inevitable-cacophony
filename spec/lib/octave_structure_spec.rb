@@ -1,9 +1,9 @@
 require 'spec_helper.rb'
-require 'scale'
+require 'octave_structure'
 
-RSpec.describe Scale do
+RSpec.describe OctaveStructure do
 
-	subject { Scale.new(scale_text) }
+	subject { OctaveStructure.new(scale_text) }
 
 	describe 'parsing octave structures' do
 

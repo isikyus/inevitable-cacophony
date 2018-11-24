@@ -1,5 +1,5 @@
 require 'rhythm'
-require 'scale'
+require 'octave_structure'
 require 'tone_generator'
 
 tone = ToneGenerator.new
@@ -20,9 +20,9 @@ when 'beat'
 
 when 'chromatic-scale'
 
-	scale = Scale.new(ARGV.first || $stdin.read)
+	octave = OctaveStructure.new(ARGV.first || $stdin.read)
 
-	rising_and_falling = scale.octave_divisions + [2] + scale.octave_divisions.reverse
+	rising_and_falling = octave.octave_divisions + [2] + octave.octave_divisions.reverse
 	tonic = 440 # Hz; Middle A
 
 	rising_and_falling.each do |factor|

@@ -1,6 +1,6 @@
 # Represents and parses Dwarf Fortress scale descriptions
 
-class Scale
+class OctaveStructure
 
 	# Used to break up Dwarf Fortress's text descriptions and find the text we want.
 	class Description
