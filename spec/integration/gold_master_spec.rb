@@ -4,7 +4,8 @@ require 'open3'
 RSpec.describe 'Inevitable Cacophony' do
 
 	def generate_with_args(*args)
-		data, status = Open3.capture2('ruby', '-Ilib', 'cacophony.rb', *args)
+		data, error, status = Open3.capture3('ruby', '-Ilib', 'cacophony.rb', *args)
+		expect(error).to be_empty
 		expect(status).to eq 0
 		data
 	end
