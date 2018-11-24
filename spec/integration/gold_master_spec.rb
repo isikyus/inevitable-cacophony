@@ -41,7 +41,7 @@ RSpec.describe 'Inevitable Cacophony' do
 			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
 			let(:generated_data) do
 				scale_description = File.open(description_file) { |f| f.read }
-                                generate_with_args('scale', scale_description)
+                                generate_with_args('chromatic-scale', scale_description)
                         end
 
 			specify 'works' do

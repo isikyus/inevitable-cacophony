@@ -18,7 +18,7 @@ when 'beat'
 		end
 	end
 
-when 'scale'
+when 'chromatic-scale'
 
 	scale = Scale.new(ARGV.first || $stdin.read)
 
