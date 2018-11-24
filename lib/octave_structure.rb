@@ -2,6 +2,33 @@
 
 class OctaveStructure
 
+	# Represent a sequence of notes from an octave -- either a chord,
+	# or the notes of a scale.
+        class NoteSequence
+
+		# @param name [String] The name of the chord.
+                # @param note_scalings [Array<Float>] The notes in the scale, as multiples of the tonic.
+                def initialize(name, note_scalings)
+                        @name = name
+			@note_scalings = note_scalings
+                end
+
+                attr_accessor :name, :note_scalings
+        end
+
+	class Chord < NoteSequence
+	end
+
+	# As above, but also tracks the chords that make up the scale.
+	class Scale < NoteSequence
+
+		# @param chords [Array<Chord>] The chords that make up the scale, in order.
+		def initialize(chords)
+			@chords = chords
+			super(chords.map(&:note_scalings).flatten)
+		end
+	end
+
 	# Used to break up Dwarf Fortress's text descriptions and find the text we want.
 	class Description
 
@@ -19,14 +46,30 @@ class OctaveStructure
 		# @param key [Regex]
 		# @return [String]
 		def find(key)
-			@sections.detect { |s| key.match?(s) } || raise("No match for #{key.inspect} in #{@sections.inspect}")
+			find_all(key).first
+		end
+
+		# Find all sections matching a given key
+		# @param key [Regex]
+		# @return [Array<String>]
+		def find_all(key)
+			@sections.select { |s| key.match?(s) } || raise("No match for #{key.inspect} in #{@sections.inspect}")
 		end
 
 		# Find a paragraph within the description, and break it up into sentences.
 		# @param key [Regex]
 		# @return [Description] The paragraph, split into sentences.
 		def find_paragraph(key)
-			Description.new(find(key), SENTENCE_DELIMITER)
+			find_all_paragraphs(key).first
+		end
+
+		# As above but finds all matching paragraphs.
+		# @param key [Regex]
+		# @return [Array<Description>]
+		def find_all_paragraphs(key)
+			find_all(key).map do |string|
+				Description.new(string, SENTENCE_DELIMITER)
+			end
 		end
 
 		def to_s
@@ -39,9 +82,12 @@ class OctaveStructure
 		description = Description.new(scale_text)
 		octave_description = description.find_paragraph(/^Scales are constructed/)
 		@octave_divisions = parse_octave_structure(octave_description)
+
+		@chords = parse_chords(description)
+		@scales = {}
 	end
 
-	attr_reader :octave_divisions
+	attr_reader :octave_divisions, :chords, :scales
 
 	private
 
@@ -57,6 +103,43 @@ class OctaveStructure
 		else
 			 raise("Cannot parse octave description:\n#{octave_paragraph}")
 		end
+	end
+
+	# @param description [Description] The description text from which to extract chord data.
+	def parse_chords(description)
+
+		# TODO: extract to constant
+		chord_paragraph_regex = /The ([^ ]+) [a-z]*chord is/
+
+		{}.tap do |chords|
+			chord_paragraphs = description.find_all_paragraphs(chord_paragraph_regex)
+			chord_paragraphs.each do |paragraph|
+				chord = parse_chord(paragraph.find(chord_paragraph_regex))
+				chords[chord.name.to_sym] = chord
+			end
+		end
+	end
+
+	# @param degrees_sentence [String] The sentence saying what degrees of the octave are used to build the chord.
+	def parse_chord(degrees_sentence)
+		name, degrees = degrees_sentence.match(/The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/).captures
+		ordinals = degrees.split(/(?:,| and) the/)
+
+		chord_notes = ordinals.map do |degree_ordinal|
+			# degree_ordinal is like "4th",
+			# or may be like "13th (completing the octave)"
+			# in which case it's not in our list of notes, but always has a factor of 2
+			# (the tonic, an octave higher)
+
+			if degree_ordinal.include?('(completing the octave)')
+				2
+			else
+				index = degree_ordinal.strip.to_i
+				@octave_divisions[index - 1]
+			end
+		end
+
+		Chord.new(name, chord_notes)
 	end
 
 	# Convert a number word to text -- rough approximation for now.

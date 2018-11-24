@@ -63,6 +63,12 @@ RSpec.describe OctaveStructure do
 				The tonic note is a fixed note passed from teacher to student.
 				Every note is named.
 				The names are shato (spoken sha), almef (al), oñod (oñ), umo (um), rostfen (ro), hiñer (hi), ohe (oh), nazweng (na), tod (to), and zomuth (zo).
+
+				The ani pentatonic scale is thought of as two disjoint chorts spanning a perfect fifth and a major third. These chords are named ilpi and dik.
+
+				The ilpi trichord is the 1st, the 3rd, and the 8th degrees of the semitone octave scale.
+
+				The dik trichord is the 9th, the 10th, and the 13th (completing the octave) degrees of the semitone octave scale.
 				SCALE
 			end
 
@@ -78,6 +84,42 @@ RSpec.describe OctaveStructure do
 
 			specify 'ends one semitone before the octave' do
 				expect(subject.octave_divisions.last * (2 ** (1/12.0))).to be_within(0.0001).of(2)
+			end
+
+			context 'and generating chords' do
+				let(:ilpi_chord) { subject.chords[:ilpi] }
+				let(:dik_chord) { subject.chords[:dik] }
+
+                                specify 'uses the correct notes' do
+                                        expect(ilpi_chord.note_scalings).to eq([
+                                                1,
+
+						# Note 0-based indexing; first note is the tonic (tonic * 2**0)
+                                                2 ** (2/12.0),
+                                                2 ** (7/12.0)
+					])
+
+					expect(dik_chord.note_scalings).to eq([
+                                                2 ** (8/12.0),
+                                                2 ** (9/12.0),
+                                                2
+                                        ])
+                                end
+			end
+
+			context 'and generating a scale' do
+				let(:ani_scale) { subject.scales[:ani] }
+
+				xspecify 'uses the correct notes' do
+					expect(ani_scale.note_scalings).to eq([
+						1,
+						2 ** (2/12.0),
+						2 ** (7/12.0),
+						2 ** (8/12.0),
+						2 ** (9/12.0),
+						2
+					])
+				end
 			end
 		end
 	end
