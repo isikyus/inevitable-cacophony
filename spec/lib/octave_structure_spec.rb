@@ -120,6 +120,10 @@ RSpec.describe OctaveStructure do
 						2
 					])
 				end
+
+				specify 'excludes the octave when requested' do
+					expect(ani_scale.open.note_scalings.last).to eq(2 ** (9/12.0))
+				end
 			end
 		end
 	end

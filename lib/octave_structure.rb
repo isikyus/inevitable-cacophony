@@ -4,6 +4,9 @@ require 'parser/sectioned_text'
 
 class OctaveStructure
 
+	# Frequency scaling for a difference of one whole octave
+	OCTAVE = 2
+
 	# Represent a sequence of notes from an octave -- either a chord,
 	# or the notes of a scale.
         class NoteSequence
@@ -23,17 +26,37 @@ class OctaveStructure
 	class Scale < NoteSequence
 
 		# @param chords [Array<Chord>] The chords that make up the scale, in order.
-		def initialize(chords)
+		# @param note_scalings [Array<Fixnum>] Specific note scalings to use; for internal use.
+		def initialize(chords, note_scalings=nil)
 			@chords = chords
-			super(chords.map(&:note_scalings).flatten)
+			super(note_scalings || chords.map(&:note_scalings).flatten)
+		end
+
+		# Convert this scale to an "open" one -- i.e. one not including
+		# the last note of the octave.
+		#
+		# This form is more convenient when concatenating scales together.
+		#
+		# @return [Scale]
+		def open
+			if note_scalings.last == OCTAVE
+
+				# -1 is the last note; we want to end on the one before that, so -2
+				Scale.new(@chords, note_scalings[0..-2])
+			else
+				# This scale is already open.
+				self
+			end
 		end
 	end
 
+	# Regular expressions used in parsing
+	OCTAVE_STRUCTURE_SENTENCE = /Scales are constructed/
 
 	# @param scale_text [String] Dwarf Fortress musical form description including scale information.
 	def initialize(scale_text)
 		description = Parser::SectionedText.new(scale_text)
-		octave_description = description.find_paragraph(/^Scales are constructed/)
+		octave_description = description.find_paragraph(OCTAVE_STRUCTURE_SENTENCE)
 		@octave_divisions = parse_octave_structure(octave_description)
 
 		@chords = parse_chords(description)
@@ -45,7 +68,7 @@ class OctaveStructure
 	private
 
 	def parse_octave_structure(octave_paragraph)
-		octave_sentence = octave_paragraph.find(/^Scales are constructed.*/)
+		octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
 		note_count_word = octave_sentence.match(/Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/).captures.first
 
 		if note_count_word
