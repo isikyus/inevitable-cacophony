@@ -7,7 +7,24 @@ require 'tone_generator'
 tone = ToneGenerator.new
 
 command = -> {
-	raise 'Cannot generate full pieces yet. Please specify a partial-generation option'
+	# Spike'd quick-and-dirty attempt at playing chords in rhythm.
+	rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
+	rhythm = Rhythm.new(rhythm_score)
+
+	octave = OctaveStructure.new(input)
+
+	tonic = 440 # Middle A
+
+	3.times do
+		chord_notes = []
+		rhythm.each_beat do |beat|
+			if chord_notes.empty?
+				chord_notes = octave.chords.values.sample.note_scalings.dup
+			end
+
+			tone.add_note(tonic * chord_notes.shift, beat, 0.5)
+		end
+	end		
 }
 
 def input
