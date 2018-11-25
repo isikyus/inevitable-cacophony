@@ -15,7 +15,7 @@ RSpec.describe 'Inevitable Cacophony' do
 
 		context 'from given beats' do
 			let(:generated_data) do
-				generate_with_args('beat', score)
+				generate_with_args('-b', '-e', score)
 			end
 
 			context 'in 4/4 time' do
@@ -42,7 +42,7 @@ RSpec.describe 'Inevitable Cacophony' do
 			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
 			let(:generated_data) do
 				scale_description = File.open(description_file) { |f| f.read }
-                                generate_with_args('chromatic-scale', scale_description)
+                                generate_with_args('-s', '--chromatic', '-e', scale_description)
                         end
 
 			specify 'works' do
