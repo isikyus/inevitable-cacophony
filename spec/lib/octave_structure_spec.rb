@@ -72,18 +72,20 @@ RSpec.describe OctaveStructure do
 				SCALE
 			end
 
+			let(:chromatic_scale) { subject.chromatic_scale }
+
 			specify 'starts at the tonic' do
-				expect(subject.octave_divisions.first).to eq 1
+				expect(chromatic_scale.note_scalings.first).to eq 1
 			end
 
 			specify 'increases in semitone increments through the scale' do
-				subject.octave_divisions.each_cons(2) do |last, current|
+				chromatic_scale.note_scalings.each_cons(2) do |last, current|
 					expect(current/last).to be_within(0.0001).of(2 ** (1/12.0))
 				end
 			end
 
-			specify 'ends one semitone before the octave' do
-				expect(subject.octave_divisions.last * (2 ** (1/12.0))).to be_within(0.0001).of(2)
+			specify 'ends with the octave' do
+				expect(chromatic_scale.note_scalings.last).to be_within(0.0001).of(2)
 			end
 
 			context 'and generating chords' do

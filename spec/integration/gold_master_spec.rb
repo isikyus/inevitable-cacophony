@@ -37,22 +37,35 @@ RSpec.describe 'Inevitable Cacophony' do
 			end
 		end
 
-		context 'from a given scale' do
-			let(:fixture_file) { 'spec/fixtures/bride-of-trumpets-scale.wav' }
+		context 'from a given octave structure' do
 			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
 			let(:form_description) { File.open(description_file) { |f| f.read } }
 			let(:generated_data) do
-                                generate_with_args('-s', '--chromatic', '-e', form_description)
+                                generate_with_args('-s', *extra_options, '-e', form_description)
                         end
 
-			specify 'works' do
-				expect(generated_data).to eq known_data
+			context 'in a chromatic scale' do
+				let(:extra_options) { %w[ --chromatic ] }
+				let(:fixture_file) { 'spec/fixtures/bride-of-trumpets_chromatic-scale.wav' }
+
+				specify 'works' do
+					expect(generated_data).to eq known_data
+				end
+
+				context 'when reading from stdin' do
+					let(:generated_data) do
+						generate_with_args('-s', '--chromatic', stdin_data: form_description)
+					end
+
+					specify 'works' do
+						expect(generated_data).to eq known_data
+					end
+				end
 			end
 
-			context 'when reading from stdin' do
-				let(:generated_data) do
-					generate_with_args('-s', '--chromatic', stdin_data: form_description)
-				end
+			context 'in a normal scale for the form' do
+				let(:extra_options) { [] }
+				let(:fixture_file) { 'spec/fixtures/bride-of-trumpets_ani-scale.wav' }
 
 				specify 'works' do
 					expect(generated_data).to eq known_data

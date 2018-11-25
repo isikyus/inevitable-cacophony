@@ -36,12 +36,12 @@ OptionParser.new do |opts|
 			octave = OctaveStructure.new(input)
 
 			scale = if options[:chromatic]
-					octave.octave_divisions
+					octave.chromatic_scale
 				else
-					raise 'Not yet implemented'
+					octave.scales.values.first
 				end
 
-			rising_and_falling = scale + [2] + scale.reverse
+			rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
 		        tonic = 440 # Hz; Middle A
 
 		        rising_and_falling.each do |factor|

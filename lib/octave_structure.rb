@@ -63,7 +63,13 @@ class OctaveStructure
 		@scales = parse_scales(description, chords)
 	end
 
-	attr_reader :octave_divisions, :chords, :scales
+	attr_reader :chords, :scales
+
+	# @return [Scale] A scale including all available notes in the octave.
+	# 		  (As the chromatic scale does for well-tempered Western instruments)
+	def chromatic_scale
+		Scale.new([], @octave_divisions + [2])
+	end
 
 	private
 
