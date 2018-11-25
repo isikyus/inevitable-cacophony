@@ -10,8 +10,11 @@ command = -> {
 	raise 'Cannot generate full pieces yet. Please specify a partial-generation option'
 }
 
+def input
+	@input ||= $stdin.read
+end
+
 options = {}
-input = nil
 OptionParser.new do |opts|
 
 	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
@@ -48,7 +51,7 @@ OptionParser.new do |opts|
 	end
 
 	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description stdin') do |form|
-		input = form
+		@input = form
 	end
 
 	opts.on('--chromatic', 'Use "chromatic" scales (all notes in the form) rather than the named scales typical of the form') do

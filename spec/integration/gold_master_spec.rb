@@ -40,13 +40,23 @@ RSpec.describe 'Inevitable Cacophony' do
 		context 'from a given scale' do
 			let(:fixture_file) { 'spec/fixtures/bride-of-trumpets-scale.wav' }
 			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
+			let(:form_description) { File.open(description_file) { |f| f.read } }
 			let(:generated_data) do
-				scale_description = File.open(description_file) { |f| f.read }
-                                generate_with_args('-s', '--chromatic', '-e', scale_description)
+                                generate_with_args('-s', '--chromatic', '-e', form_description)
                         end
 
 			specify 'works' do
 				expect(generated_data).to eq known_data
+			end
+
+			context 'when reading from stdin' do
+				let(:generated_data) do
+					generate_with_args('-s', '--chromatic', stdin_data: form_description)
+				end
+
+				specify 'works' do
+					expect(generated_data).to eq known_data
+				end
 			end
 		end
 	end
