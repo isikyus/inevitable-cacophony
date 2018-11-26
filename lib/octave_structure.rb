@@ -136,7 +136,7 @@ class OctaveStructure
 				name, scale_type = scale_sentence.match(/The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/).captures
 
 				case scale_type
-				when /thought of as [a-z]+ disjoint chords/
+				when /thought of as ([a-z]+ )?(disjoint|joined) chords/
 					scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph, chords)
 				else
 					raise "Unknown scale type #{scale_type} in #{scale_sentence}"
