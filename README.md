@@ -1,5 +1,7 @@
 # Inevitable Cacophony
 
+[![Build Status](https://travis-ci.com/isikyus/inevitable-cacophony.svg?branch=master)](https://travis-ci.com/isikyus/inevitable-cacophony) 
+
 An attempt to automatically generate music in Dwarf Fortress' generated musical styles.
 
 ## Usage
