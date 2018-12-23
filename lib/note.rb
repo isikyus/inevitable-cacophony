@@ -3,20 +3,19 @@
 # TODO: only for Beat class
 require 'rhythm'
 
-class Note < Struct.new(:frequency, :beat, :duration)
+class Note < Struct.new(:frequency, :beat)
 
 	# @param frequency [Numeric] Note frequency in Hertz.
         # @param amplitude [Rhythm::Beat] A Beat object defining amplitude and timing
-        # @param duration [Numeric] Length of the note in seconds.
-	def initialize(frequency, beat, duration)
-		super(frequency, beat, duration)
+	def initialize(frequency, beat)
+		super(frequency, beat)
 	end
 
-	# Create a rest with the given duration.
-	# @param duration [Numeric]`
-	def self.rest(duration)
+	# Create a rest for the duration of the given beat.
+	# @param beat [Beat]
+	def self.rest(beat)
 
 		# Can't set frequency to 0 as it causes divide-by-zero errors
-		new(1, Rhythm::Beat.new(0, 0), duration)
+		new(1, Rhythm::Beat.new(0, beat.duration, beat.timing))
 	end
 end

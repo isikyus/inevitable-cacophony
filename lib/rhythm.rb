@@ -1,7 +1,10 @@
 # Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
 class Rhythm
 
-	class Beat < Struct.new(:amplitude, :timing)
+	# Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
+	# Duration -- how long it is, in arbitrary beat units (think metronome ticks)
+	# Timing -- how early or late the beat is, relative to the same metaphorical metronome.
+	class Beat < Struct.new(:amplitude, :duration, :timing)
 	end
 
 	# Amplitude values for each Dwarf Fortress beat symbol.
@@ -63,7 +66,7 @@ class Rhythm
 			accent_symbol = beat.delete(timing_symbol)
 			amplitude = BEAT_VALUES[accent_symbol] || raise("Unknown beat symbol #{accent_symbol}")
 
-			Beat.new(amplitude, timing)
+			Beat.new(amplitude, 1, timing)
 		end
 
 		# Ensure all our amplitudes are between 0.0 and 1.0
@@ -72,7 +75,7 @@ class Rhythm
 		raw_beats.map do |beat|
 			scaled = beat.amplitude.to_f / highest_volume
 
-			Beat.new(scaled, beat.timing)
+			Beat.new(scaled, 1, beat.timing)
 		end
 	end
 end

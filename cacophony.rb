@@ -3,6 +3,7 @@ require 'optparse'
 require 'rhythm'
 require 'octave_structure'
 require 'tone_generator'
+require 'phrase'
 
 tone = ToneGenerator.new
 
@@ -22,7 +23,8 @@ command = -> {
 				chord_notes = octave.chords.values.sample.note_scalings.dup
 			end
 
-			tone.add_note(tonic * chord_notes.shift, beat, 0.5)
+			note = Note.new(tonic * chord_notes.shift, beat)
+			tone.add_phrase(Phrase.new(note, tempo: options[:tempo]))
 		end
 	end		
 }
@@ -31,7 +33,12 @@ def input
 	@input ||= $stdin.read
 end
 
-options = {}
+def options
+	@options ||= {
+		tempo: 120 # beats per minute
+	}
+end
+
 OptionParser.new do |opts|
 
 	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
@@ -40,11 +47,13 @@ OptionParser.new do |opts|
 		command = -> {
 			beats = Rhythm.new(input)
 
-			3.times do
-				beats.each_beat do |beat|
-					tone.add_note(440, beat, 0.5)
+			notes = 3.times.map do
+				beats.each_beat.map do |beat|
+					Note.new(440, beat)
 				end
-			end
+			end.flatten
+
+			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
 		}
 	end
 
@@ -61,9 +70,11 @@ OptionParser.new do |opts|
 			rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
 		        tonic = 440 # Hz; Middle A
 
-		        rising_and_falling.each do |factor|
-		                tone.add_note(factor * tonic, Rhythm::Beat.new(1, 0), 0.5)
+		        notes = rising_and_falling.map do |factor|
+				Note.new(factor * tonic, Rhythm::Beat.new(1, 1, 0))
 		        end
+
+			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
 		}
 	end
 
