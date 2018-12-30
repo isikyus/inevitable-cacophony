@@ -1,4 +1,5 @@
 # Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
+
 class Rhythm
 
 	# Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
@@ -44,8 +45,21 @@ class Rhythm
 
 	BAR_LINE = '|'
 
-	def initialize(rhythm_string)
-		@beats = parse(rhythm_string)
+	def self.from_string(rhythm_string)
+		new(parse(rhythm_string))
+	end
+
+	# Creates a new polyrhythm by combining two simpler component rhythms.
+	#
+	# @param primary [Rhythm] The rhythm that will be considered the primary.
+	#                         Defines the timing of the combined rhythm.
+	# @param secondaries [Array<Rhythm>] The other component rhythms.
+	def self.poly(primary, *secondaries)
+		Polyrhythm.new(primary, *secondaries)
+	end
+
+	def initialize(beats)
+		@beats = beats
 	end
 
 	attr_reader :beats
@@ -54,9 +68,26 @@ class Rhythm
 		@beats.each(&block)
 	end
 
+	# @return [Numeric] Total duration of all beats in this rhythm.
+	def duration
+		each_beat.sum(&:duration)
+	end
+
+	# @param new_duration [Numeric] The new number of time steps to take (in total, not per bar).
+	# @return [Rhythm] This rhythm, but re-scaled to take up the given amount of time steps.
+	def stretch(new_duration)
+		scale_factor = new_duration / duration.to_f
+
+		Rhythm.new(beats.map do |beat|
+			Beat.new(beat.amplitude, beat.duration * scale_factor, beat.timing)
+		end)
+	end
+
 	private
 
-	def parse(rhythm_string)
+	# @param rhythm_string [String] In the notation Dwarf Fortress produces, like | X x ! x |
+	# @return [Array<Beat>]
+	def self.parse(rhythm_string)
 
 		# TODO: should I be ignoring bar lines? Is there anything I can do with them?
 		raw_beats = rhythm_string.split(/ |(?=`)|(?<=')/).reject { |beat| beat == BAR_LINE }.map do |beat|
@@ -80,3 +111,6 @@ class Rhythm
 	end
 end
 
+# Require subclasses only once parent class has been defined.
+# TODO: probably not the ideal way to do this.
+require 'polyrhythm'

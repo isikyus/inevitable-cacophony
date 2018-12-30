@@ -10,7 +10,7 @@ tone = ToneGenerator.new
 command = -> {
 	# Spike'd quick-and-dirty attempt at playing chords in rhythm.
 	rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
-	rhythm = Rhythm.new(rhythm_score)
+	rhythm = Rhythm.from_string(rhythm_score)
 
 	octave = OctaveStructure.new(input)
 
@@ -45,7 +45,7 @@ OptionParser.new do |opts|
 
 	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
 		command = -> {
-			beats = Rhythm.new(input)
+			beats = Rhythm.from_string(input)
 
 			notes = 3.times.map do
 				beats.each_beat.map do |beat|
