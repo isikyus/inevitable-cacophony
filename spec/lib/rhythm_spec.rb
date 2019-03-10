@@ -1,9 +1,19 @@
 require 'spec_helper.rb'
+require 'support/eq_array_with_delta'
+
 require 'rhythm'
 
 RSpec.describe Rhythm do
 
 	subject { Rhythm.from_string(score) }
+	let(:canonical_durations) { subject.canonical.beats.map(&:duration) }
+
+	INTER_NOTE_DELAY = ToneGenerator::START_DELAY + ToneGenerator::AFTER_DELAY
+	NOTE_LENGTH = 1 - INTER_NOTE_DELAY
+
+	# Allowable delay in note durations.
+	# Set by trial and error to get tests to pass
+	LENGTH_DELTA = 2 ** -50
 
 	describe 'pitch-accented beats' do
 		SCORES_TO_BEATS = {
@@ -23,6 +33,35 @@ RSpec.describe Rhythm do
 				specify 'produces the correct pitches' do
 					expect(subject.beats.map(&:amplitude)).to eq beats
 				end
+
+				# TODO: not testing this for scores with 0's because it's trickier
+				if !beats.include?(0)
+					specify 'preserves pitches when canonicalized' do
+						expect(subject.canonical.beats.map(&:amplitude).reject(&:zero?)).to eq beats
+					end
+				end
+
+				specify 'Inserts spacing between notes appropriately' do
+					odd_beats, even_beats = subject.canonical.beats.
+						each_with_index.
+						group_by { |_beat, index| index.odd? }.
+						values_at(true, false).
+
+						# Remove the indexes again.
+						map { |values| values.map(&:first) }
+
+					odd_durations = odd_beats.map(&:duration)
+					even_durations = even_beats.map(&:duration)
+
+					# Remove first and last off-duty beats as they'll be half-gaps to center the note.
+					expect(even_durations.shift).to eq ToneGenerator::START_DELAY
+					expect(even_durations.pop).to eq ToneGenerator::AFTER_DELAY
+
+					expect(odd_durations).to eq_array_with_delta(LENGTH_DELTA,
+										     [NOTE_LENGTH] * beats.length)
+					expect(even_durations).to eq_array_with_delta(LENGTH_DELTA,
+									      [INTER_NOTE_DELAY] * (beats.length - 1))
+				end
 			end
 		end
 	end
@@ -36,6 +75,16 @@ RSpec.describe Rhythm do
 			specify 'is normal' do
 				expect(timings).to eq([0.0, 0.0, 0.0, 0.0])
 			end
+
+			specify 'spaces before and after delays equally' do
+				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
+					ToneGenerator::START_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY,
+					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+				])
+			end
 		end
 
 		context 'with marked early beats' do
@@ -44,6 +93,15 @@ RSpec.describe Rhythm do
 			specify 'makes just those beats early' do
 				expect(timings).to eq([0.0, -1.0, 0.0])
 			end
+
+			specify 'adjusts spacing around those beats in canonical form' do
+				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
+					ToneGenerator::START_DELAY,
+					NOTE_LENGTH, ToneGenerator::AFTER_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY + ToneGenerator::START_DELAY,
+					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+				])
+			end
 		end
 
 		context 'with marked late beats' do
@@ -51,6 +109,15 @@ RSpec.describe Rhythm do
 
 			specify 'makes just those beats late' do
 				expect(timings).to eq([0.0, 1.0, 0.0])
+			end
+
+			specify 'adjusts spacing around those beats in canonical form' do
+				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
+					ToneGenerator::START_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY + ToneGenerator::AFTER_DELAY,
+					NOTE_LENGTH, ToneGenerator::START_DELAY,
+					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+				])
 			end
 		end
 	end
@@ -85,6 +152,18 @@ RSpec.describe Rhythm do
 
 				durations = subject.beats.map(&:duration)
 				expect(durations).to eq([1, 1/3.0, 2/3.0, 2/3.0, 1/3.0, 1])
+			end
+
+			specify 'builds canonical durations to suit the combined beats' do
+				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
+					ToneGenerator::START_DELAY,
+					NOTE_LENGTH, 		ToneGenerator::AFTER_DELAY + ToneGenerator::START_DELAY/3.0,
+					NOTE_LENGTH/3.0, 	ToneGenerator::AFTER_DELAY/3.0 + (ToneGenerator::START_DELAY * 2/3.0),
+					(NOTE_LENGTH * 02/3.0), (ToneGenerator::AFTER_DELAY * 2/3.0) + (ToneGenerator::START_DELAY * 2/3.0),
+					(NOTE_LENGTH * 02/3.0), (ToneGenerator::AFTER_DELAY * 2/3.0) + (ToneGenerator::START_DELAY/3.0),
+					NOTE_LENGTH/3.0, 	(ToneGenerator::AFTER_DELAY/3.0) + ToneGenerator::START_DELAY,
+					NOTE_LENGTH, 		ToneGenerator::AFTER_DELAY,
+				])
 			end
 		end
 

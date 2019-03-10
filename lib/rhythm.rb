@@ -1,5 +1,8 @@
 # Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
 
+# TODO: remove once we've moved the constants we need across
+require 'tone_generator'
+
 class Rhythm
 
 	# Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
@@ -81,6 +84,42 @@ class Rhythm
 		Rhythm.new(beats.map do |beat|
 			Beat.new(beat.amplitude, beat.duration * scale_factor, beat.timing)
 		end)
+	end
+
+	# @return [Rhythm] A "canonical" form of this rhythm, with all beats lasting 100% of their time slice,
+	#                  and silent periods due to incomplete beats or timing always represented as beats.
+	def canonical
+		new_beats = []
+		spacing = 0
+
+		each_beat do |beat|
+
+			# Positive values from 0 to 1.
+			# Higher numbers mean move more of this offset to the other side of the note
+			# (e.g. start earlier for start offset).
+			start_offset = -[beat.timing, 0].min
+			end_offset = [beat.timing, 0].max
+
+			start_delay = ((1 - start_offset) * ToneGenerator::START_DELAY) +
+				(end_offset * ToneGenerator::AFTER_DELAY)
+
+			after_delay = (start_offset * ToneGenerator::START_DELAY) +
+				((1 - end_offset) * ToneGenerator::AFTER_DELAY)
+
+			spacing += start_delay * beat.duration
+			new_beats << Beat.new(0, spacing, 0)
+
+			duty_cycle = 1 - start_delay - after_delay
+			new_beats << Beat.new(beat.amplitude, beat.duration * duty_cycle)
+
+			# Save after spacing so we can combine it with the start delay of the next note.
+			spacing = after_delay * beat.duration
+		end
+
+		# Add the extra time at the end of the rhythm.
+		new_beats << Beat.new(0, spacing, 0)
+
+		Rhythm.new(new_beats)
 	end
 
 	private
