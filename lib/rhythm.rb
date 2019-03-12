@@ -110,7 +110,7 @@ class Rhythm
 			new_beats << Beat.new(0, spacing, 0)
 
 			duty_cycle = 1 - start_delay - after_delay
-			new_beats << Beat.new(beat.amplitude, beat.duration * duty_cycle)
+			new_beats << Beat.new(beat.amplitude, beat.duration * duty_cycle, 0)
 
 			# Save after spacing so we can combine it with the start delay of the next note.
 			spacing = after_delay * beat.duration
