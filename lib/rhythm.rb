@@ -11,6 +11,16 @@ class Rhythm
 	class Beat < Struct.new(:amplitude, :duration, :timing)
 	end
 
+	# The "canonical" version of a rhythm, with space between notes spelled out
+	# explicitly rather than implied by timing values.
+	class Canonical < Rhythm
+
+		# @return [Rhythm::Canonical] This same rhythm; already canonical.
+		def canonical
+			self
+		end
+	end
+
 	# Amplitude values for each Dwarf Fortress beat symbol.
 	# These are in no particular scale; the maximum volume will be whatever's loudest in any particular string.
 	BEAT_VALUES = {
@@ -86,7 +96,7 @@ class Rhythm
 		end)
 	end
 
-	# @return [Rhythm] A "canonical" form of this rhythm, with all beats lasting 100% of their time slice,
+	# @return [Rhythm::Canonical] A "canonical" form of this rhythm, with all beats lasting 100% of their time slice,
 	#                  and silent periods due to incomplete beats or timing always represented as beats.
 	def canonical
 		new_beats = []
@@ -119,7 +129,7 @@ class Rhythm
 		# Add the extra time at the end of the rhythm.
 		new_beats << Beat.new(0, spacing, 0)
 
-		Rhythm.new(new_beats)
+		Rhythm::Canonical.new(new_beats)
 	end
 
 	private

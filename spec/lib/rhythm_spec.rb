@@ -62,6 +62,10 @@ RSpec.describe Rhythm do
 					expect(even_durations).to eq_array_with_delta(LENGTH_DELTA,
 									      [INTER_NOTE_DELAY] * (beats.length - 1))
 				end
+
+				specify 'canonicalisation is idempotent' do
+					expect(subject.canonical.beats).to eq subject.canonical.canonical.beats
+				end
 			end
 		end
 	end
