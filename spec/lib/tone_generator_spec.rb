@@ -92,14 +92,14 @@ RSpec.describe ToneGenerator do
 						samples.slice_after { |s| !s.zero? }.to_a.last.length
 					end
 
-					let(:normal_leading_silence) { ToneGenerator::START_DELAY * expected_samples }
+					let(:normal_leading_silence) { Rhythm::START_DELAY * expected_samples }
 
 					specify 'includes silence before the note' do
 						expect(leading_silent_samples).to be_within(10).of(normal_leading_silence)
 					end
 
 					specify 'includes silence after the note' do
-						expected_trailing_silence = ToneGenerator::AFTER_DELAY * expected_samples
+						expected_trailing_silence = Rhythm::AFTER_DELAY * expected_samples
 						expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
 					end
 

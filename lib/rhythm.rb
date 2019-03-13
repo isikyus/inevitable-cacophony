@@ -1,14 +1,58 @@
 # Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
 
-# TODO: remove once we've moved the constants we need across
-require 'tone_generator'
-
 class Rhythm
+
+        # Amount of silence before a note, as a fraction of the note's duration
+        START_DELAY = 0.3
+
+        # Amount of silence after notes, as a fraction  of duration.
+        AFTER_DELAY = 0.3
 
 	# Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
 	# Duration -- how long it is, in arbitrary beat units (think metronome ticks)
 	# Timing -- how early or late the beat is, relative to the same metaphorical metronome.
 	class Beat < Struct.new(:amplitude, :duration, :timing)
+
+		# How much silence there is before this note starts,
+		# after the previous note has finished its time (like padding in CSS).
+		#
+		# @return [Float]
+		def start_delay
+			start_and_after_delays.first * duration
+		end
+
+		# How much silence there is after this note ends,
+		# before the next note's timeslot.
+		#
+		# @return [Float]
+		def after_delay
+			start_and_after_delays.last * duration
+		end
+
+		private
+
+		# Calculate the before-note and after-note delays together,
+		# to ensure they add up correctly.
+		def start_and_after_delays
+			@start_and_after_delays ||= begin
+
+				# Positive values from 0 to 1.
+				# Higher numbers mean move more of this offset to the other side of the note
+				# (e.g. start earlier for start offset).
+				start_offset = -[timing, 0].min
+				end_offset = [timing, 0].max
+
+				# This is basically matrix multiplication; multiply [START_DELAY, END_DELAY]
+				# by [
+				#	(1 - start_offset)	end_offset
+				#	start_offset		(1 - end_offset)
+				# ]
+				[
+					((1 - start_offset) * START_DELAY) + (end_offset * AFTER_DELAY),
+					(start_offset * START_DELAY) +       ((1 - end_offset) * AFTER_DELAY)
+				]
+			end
+		end
 	end
 
 	# The "canonical" version of a rhythm, with space between notes spelled out
@@ -104,26 +148,14 @@ class Rhythm
 
 		each_beat do |beat|
 
-			# Positive values from 0 to 1.
-			# Higher numbers mean move more of this offset to the other side of the note
-			# (e.g. start earlier for start offset).
-			start_offset = -[beat.timing, 0].min
-			end_offset = [beat.timing, 0].max
-
-			start_delay = ((1 - start_offset) * ToneGenerator::START_DELAY) +
-				(end_offset * ToneGenerator::AFTER_DELAY)
-
-			after_delay = (start_offset * ToneGenerator::START_DELAY) +
-				((1 - end_offset) * ToneGenerator::AFTER_DELAY)
-
-			spacing += start_delay * beat.duration
+			spacing += beat.start_delay
 			new_beats << Beat.new(0, spacing, 0)
 
-			duty_cycle = 1 - start_delay - after_delay
-			new_beats << Beat.new(beat.amplitude, beat.duration * duty_cycle, 0)
+			active_duration = beat.duration - beat.start_delay - beat.after_delay
+			new_beats << Beat.new(beat.amplitude, active_duration, 0)
 
 			# Save after spacing so we can combine it with the start delay of the next note.
-			spacing = after_delay * beat.duration
+			spacing = beat.after_delay
 		end
 
 		# Add the extra time at the end of the rhythm.

@@ -8,7 +8,7 @@ RSpec.describe Rhythm do
 	subject { Rhythm.from_string(score) }
 	let(:canonical_durations) { subject.canonical.beats.map(&:duration) }
 
-	INTER_NOTE_DELAY = ToneGenerator::START_DELAY + ToneGenerator::AFTER_DELAY
+	INTER_NOTE_DELAY = Rhythm::START_DELAY + Rhythm::AFTER_DELAY
 	NOTE_LENGTH = 1 - INTER_NOTE_DELAY
 
 	# Allowable delay in note durations.
@@ -54,8 +54,8 @@ RSpec.describe Rhythm do
 					even_durations = even_beats.map(&:duration)
 
 					# Remove first and last off-duty beats as they'll be half-gaps to center the note.
-					expect(even_durations.shift).to eq ToneGenerator::START_DELAY
-					expect(even_durations.pop).to eq ToneGenerator::AFTER_DELAY
+					expect(even_durations.shift).to eq Rhythm::START_DELAY
+					expect(even_durations.pop).to eq Rhythm::AFTER_DELAY
 
 					expect(odd_durations).to eq_array_with_delta(LENGTH_DELTA,
 										     [NOTE_LENGTH] * beats.length)
@@ -82,11 +82,11 @@ RSpec.describe Rhythm do
 
 			specify 'spaces before and after delays equally' do
 				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					ToneGenerator::START_DELAY,
+					Rhythm::START_DELAY,
 					NOTE_LENGTH, INTER_NOTE_DELAY,
 					NOTE_LENGTH, INTER_NOTE_DELAY,
 					NOTE_LENGTH, INTER_NOTE_DELAY,
-					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+					NOTE_LENGTH, Rhythm::AFTER_DELAY
 				])
 			end
 		end
@@ -100,10 +100,10 @@ RSpec.describe Rhythm do
 
 			specify 'adjusts spacing around those beats in canonical form' do
 				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					ToneGenerator::START_DELAY,
-					NOTE_LENGTH, ToneGenerator::AFTER_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY + ToneGenerator::START_DELAY,
-					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+					Rhythm::START_DELAY,
+					NOTE_LENGTH, Rhythm::AFTER_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY + Rhythm::START_DELAY,
+					NOTE_LENGTH, Rhythm::AFTER_DELAY
 				])
 			end
 		end
@@ -117,10 +117,10 @@ RSpec.describe Rhythm do
 
 			specify 'adjusts spacing around those beats in canonical form' do
 				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					ToneGenerator::START_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY + ToneGenerator::AFTER_DELAY,
-					NOTE_LENGTH, ToneGenerator::START_DELAY,
-					NOTE_LENGTH, ToneGenerator::AFTER_DELAY
+					Rhythm::START_DELAY,
+					NOTE_LENGTH, INTER_NOTE_DELAY + Rhythm::AFTER_DELAY,
+					NOTE_LENGTH, Rhythm::START_DELAY,
+					NOTE_LENGTH, Rhythm::AFTER_DELAY
 				])
 			end
 		end
@@ -160,13 +160,13 @@ RSpec.describe Rhythm do
 
 			specify 'builds canonical durations to suit the combined beats' do
 				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					ToneGenerator::START_DELAY,
-					NOTE_LENGTH, 		ToneGenerator::AFTER_DELAY + ToneGenerator::START_DELAY/3.0,
-					NOTE_LENGTH/3.0, 	ToneGenerator::AFTER_DELAY/3.0 + (ToneGenerator::START_DELAY * 2/3.0),
-					(NOTE_LENGTH * 02/3.0), (ToneGenerator::AFTER_DELAY * 2/3.0) + (ToneGenerator::START_DELAY * 2/3.0),
-					(NOTE_LENGTH * 02/3.0), (ToneGenerator::AFTER_DELAY * 2/3.0) + (ToneGenerator::START_DELAY/3.0),
-					NOTE_LENGTH/3.0, 	(ToneGenerator::AFTER_DELAY/3.0) + ToneGenerator::START_DELAY,
-					NOTE_LENGTH, 		ToneGenerator::AFTER_DELAY,
+					Rhythm::START_DELAY,
+					NOTE_LENGTH, 		Rhythm::AFTER_DELAY + Rhythm::START_DELAY/3.0,
+					NOTE_LENGTH/3.0, 	Rhythm::AFTER_DELAY/3.0 + (Rhythm::START_DELAY * 2/3.0),
+					(NOTE_LENGTH * 02/3.0), (Rhythm::AFTER_DELAY * 2/3.0) + (Rhythm::START_DELAY * 2/3.0),
+					(NOTE_LENGTH * 02/3.0), (Rhythm::AFTER_DELAY * 2/3.0) + (Rhythm::START_DELAY/3.0),
+					NOTE_LENGTH/3.0, 	(Rhythm::AFTER_DELAY/3.0) + Rhythm::START_DELAY,
+					NOTE_LENGTH, 		Rhythm::AFTER_DELAY,
 				])
 			end
 		end

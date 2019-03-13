@@ -8,12 +8,6 @@ class ToneGenerator
 
         SAMPLE_RATE = 44100 # Hertz
 
-	# Amount of silence before a note, as a fraction of the note's duration
-	START_DELAY = 0.3
-
-	# Amount of silence after notes, as a fraction  of duration.
-	AFTER_DELAY = 0.3
-
         # One full revolution of a circle (or one full cycle of a sine wave)
         TAU = Math::PI * 2
 
@@ -50,28 +44,17 @@ class ToneGenerator
 	# 			 (exact duration will also depend on the beat).
         def note_samples(note, tempo)
 		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
-
-		# Decide how much space to allow before and after the note.
-		# TODO: should maybe depend on staccato/legato-ness
 		samples_per_beat = (60.0 / tempo) * SAMPLE_RATE
+		samples = []
 
-		# TODO: Law of Demeter violation; notes should know their own length at this point.
-		timeslot = note.beat.duration * samples_per_beat
-		start_delay = timeslot * START_DELAY
-		after_delay = timeslot * AFTER_DELAY
-
-		# Adjust delays to account for early/late beats
-		delay_adjustment = start_delay * note.beat.timing
-		start_delay += delay_adjustment
-		after_delay -= delay_adjustment
-
-		note_length = timeslot - start_delay - after_delay
-
-                samples = []
+		start_delay = note.start_delay * samples_per_beat
+		after_delay = note.after_delay * samples_per_beat
+		note_length = (note.duration * samples_per_beat) - start_delay - after_delay
 
 		samples << ([0.0] * start_delay)
+
 		samples << note_length.to_i.times.map do |index|
-                        wave_fraction = index / samples_per_wave.to_f
+			wave_fraction = index / samples_per_wave.to_f
 			note.beat.amplitude * Math.sin(wave_fraction * TAU)
                 end
 		samples << ([0.0] * after_delay)

@@ -18,4 +18,16 @@ class Note < Struct.new(:frequency, :beat)
 		# Can't set frequency to 0 as it causes divide-by-zero errors
 		new(1, Rhythm::Beat.new(0, beat.duration, beat.timing))
 	end
+
+	def start_delay
+		beat.start_delay
+	end
+
+	def after_delay
+		beat.after_delay
+	end
+
+	def duration
+		beat.duration
+	end
 end
