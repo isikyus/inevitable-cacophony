@@ -34,32 +34,39 @@ RSpec.describe Rhythm do
 					expect(subject.beats.map(&:amplitude)).to eq beats
 				end
 
+				# Separate odd and even canonical beats since the even-indexed ones are spacing between notes.
+				let(:canonical_beats) do
+					odd_beats, even_beats = subject.canonical.beats.
+                                                each_with_index.
+                                                group_by { |_beat, index| index.odd? }.
+                                                values_at(true, false).
+
+                                                # Remove the indexes again.
+                                                map { |values| values.map(&:first) }
+
+					{
+						spacing: even_beats,
+						notes: odd_beats
+					}
+				end
+
 				# TODO: not testing this for scores with 0's because it's trickier
-				if !beats.include?(0)
-					specify 'preserves pitches when canonicalized' do
-						expect(subject.canonical.beats.map(&:amplitude).reject(&:zero?)).to eq beats
-					end
+				specify 'preserves pitches when canonicalized' do
+					expect(canonical_beats[:notes].map(&:amplitude)).to eq beats
 				end
 
 				specify 'Inserts spacing between notes appropriately' do
-					odd_beats, even_beats = subject.canonical.beats.
-						each_with_index.
-						group_by { |_beat, index| index.odd? }.
-						values_at(true, false).
 
-						# Remove the indexes again.
-						map { |values| values.map(&:first) }
-
-					odd_durations = odd_beats.map(&:duration)
-					even_durations = even_beats.map(&:duration)
+					note_durations = canonical_beats[:notes].map(&:duration)
+					space_durations = canonical_beats[:spacing].map(&:duration)
 
 					# Remove first and last off-duty beats as they'll be half-gaps to center the note.
-					expect(even_durations.shift).to eq Rhythm::START_DELAY
-					expect(even_durations.pop).to eq Rhythm::AFTER_DELAY
+					expect(space_durations.shift).to eq Rhythm::START_DELAY
+					expect(space_durations.pop).to eq Rhythm::AFTER_DELAY
 
-					expect(odd_durations).to eq_array_with_delta(LENGTH_DELTA,
+					expect(note_durations).to eq_array_with_delta(LENGTH_DELTA,
 										     [NOTE_LENGTH] * beats.length)
-					expect(even_durations).to eq_array_with_delta(LENGTH_DELTA,
+					expect(space_durations).to eq_array_with_delta(LENGTH_DELTA,
 									      [INTER_NOTE_DELAY] * (beats.length - 1))
 				end
 
