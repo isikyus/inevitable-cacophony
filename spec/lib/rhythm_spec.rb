@@ -205,7 +205,6 @@ RSpec.describe Rhythm do
 			end
 
 			specify 'adds and possibly scales amplitudes of the original beats' do
-				combined_amplitudes = subject.beats.map(&:amplitude)
 				primary_amplitudes = primary.beats.map(&:amplitude)
 				secondary_amplitudes = secondaries.first.beats.map(&:amplitude)
 
