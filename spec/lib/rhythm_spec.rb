@@ -104,7 +104,7 @@ RSpec.describe Rhythm do
 					expect(canonical.length).to eq 30
 
 					# Should sound on the first/30th, seventh (10 * (1 - 0.3)) and 20th ticks of the 30.
-					expect(canonical).to eq ([1] + ([nil] * 6) + [1] + ([nil] * 12) + [1] + ([nil] * 10))
+					expect(canonical).to eq ([1.0] + ([nil] * 6) + [1.0] + ([nil] * 12) + [1.0] + ([nil] * 9))
 				end
 			end
 		end
@@ -127,7 +127,7 @@ RSpec.describe Rhythm do
                                         expect(canonical.length).to eq 30
 
                                         # Should sound on the first/30th, 13th (10 * 1.3) and 20th ticks of the 30.
-                                        expect(canonical).to eq ([1] + ([nil] * 12) + [1] + ([nil] * 6) + [1] + ([nil] * 10))
+                                        expect(canonical).to eq ([1.0] + ([nil] * 12) + [1.0] + ([nil] * 6) + [1.0] + ([nil] * 9))
                                 end
                         end
 		end
@@ -205,7 +205,7 @@ RSpec.describe Rhythm do
 				]
 			end
 
-			let(:expected_amplitudes) { [2, 1, 1, 1, 1, 1].map(:to_f) }
+			let(:expected_amplitudes) { [2, 1, 1, 1, 1, 1].map(&:to_f) }
 
 			specify 'doubles amplitude when beats stack' do
 				stacked, *unstacked = subject.beats.map(&:amplitude)

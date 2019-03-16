@@ -3,15 +3,25 @@
 class Rhythm
 
         # Amount of silence before a note, as a fraction of the note's duration
-        START_DELAY = 0.3
+	START_DELAY = (0.3).rationalize
 
         # Amount of silence after notes, as a fraction  of duration.
-        AFTER_DELAY = 0.3
+	AFTER_DELAY = (0.3).rationalize
 
 	# Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
 	# Duration -- how long it is, in arbitrary beat units (think metronome ticks)
 	# Timing -- how early or late the beat is, relative to the same metaphorical metronome.
 	class Beat < Struct.new(:amplitude, :duration, :timing)
+
+		# How much earlier or later than normal this beat's time slicke should start,
+		# accounting for the standard start/end delays, timing, and duration.
+		# Negative numbers start earlier, positive ones later.
+		#
+		# @return [Float]
+		def start_offset
+			standard_start_delay = START_DELAY * duration
+			start_delay - standard_start_delay
+		end
 
 		# How much silence there is before this note starts,
 		# after the previous note has finished its time (like padding in CSS).
@@ -149,11 +159,21 @@ class Rhythm
 			raise "Cannot yet canonicalise rhythms with non-integer length"
 		end
 
-		self.beats.map do |beat|
-			if beat.amplitude.zero?
-				nil
-			else
-				beat.amplitude
+		# Figure out the timing offset we need to allow for,
+		# and space the beats enough to make it work.
+		timing_offset_denominators = self.beats.map do |beat|
+			beat.start_offset.rationalize.denominator
+		end
+		denominator = timing_offset_denominators.inject(1, &:lcm)
+
+		scaled_duration = duration * denominator
+		Array.new(scaled_duration).tap do |spaced_beats|
+			self.beats.each_with_index do |beat, index|
+				unless beat.amplitude.zero?
+					offset_index = index + beat.start_offset
+					scaled_index = offset_index * denominator
+					spaced_beats[scaled_index] = beat.amplitude
+				end
 			end
 		end
 	end
