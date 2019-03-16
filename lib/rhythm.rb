@@ -140,28 +140,22 @@ class Rhythm
 		end)
 	end
 
-	# @return [Rhythm::Canonical] A "canonical" form of this rhythm, with all beats lasting 100% of their time slice,
-	#                  and silent periods due to incomplete beats or timing always represented as beats.
+	# @return [Array<Numeric,NilClass>] An array where a[i] is the amplitude of the beat at time-step i,
+	# 					or nil if no beat is played then (due to rests or it not
+	# 					being in the rhythm at all).
+	# 				    This will be as long as necessary to represent the rhythm accurately.
 	def canonical
-		new_beats = []
-		spacing = 0
-
-		each_beat do |beat|
-
-			spacing += beat.start_delay
-			new_beats << Beat.new(0, spacing, 0)
-
-			active_duration = beat.duration - beat.start_delay - beat.after_delay
-			new_beats << Beat.new(beat.amplitude, active_duration, 0)
-
-			# Save after spacing so we can combine it with the start delay of the next note.
-			spacing = beat.after_delay
+		if duration != duration.to_i
+			raise "Cannot yet canonicalise rhythms with non-integer length"
 		end
 
-		# Add the extra time at the end of the rhythm.
-		new_beats << Beat.new(0, spacing, 0)
-
-		Rhythm::Canonical.new(new_beats)
+		self.beats.map do |beat|
+			if beat.amplitude.zero?
+				nil
+			else
+				beat.amplitude
+			end
+		end
 	end
 
 	private

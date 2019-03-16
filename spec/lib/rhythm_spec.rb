@@ -6,7 +6,7 @@ require 'rhythm'
 RSpec.describe Rhythm do
 
 	subject { Rhythm.from_string(score) }
-	let(:canonical_durations) { subject.canonical.beats.map(&:duration) }
+	let(:canonical_durations) { subject.canonical.map(&:duration) }
 
 	INTER_NOTE_DELAY = Rhythm::START_DELAY + Rhythm::AFTER_DELAY
 	NOTE_LENGTH = 1 - INTER_NOTE_DELAY
@@ -14,6 +14,26 @@ RSpec.describe Rhythm do
 	# Allowable delay in note durations.
 	# Set by trial and error to get tests to pass
 	LENGTH_DELTA = 2 ** -50
+
+	shared_examples_for 'beats without special timing' do
+                describe 'canonical form' do
+                        let(:canonical) { subject.canonical }
+
+                        specify 'puts each non-zero beat in the correct spot' do
+                                beats.each_with_index do |amplitude, index|
+                                        if amplitude.zero?
+                                                expect(canonical[index]).to be_nil
+                                        else
+                                                expect(canonical[index]).to eq amplitude
+                                        end
+                                end
+                        end
+                end
+
+		specify 'does not have special timing' do
+			expect(subject.beats.map(&:timing).uniq).to eq [0]
+		end
+	end
 
 	describe 'pitch-accented beats' do
 		SCORES_TO_BEATS = {
@@ -29,14 +49,15 @@ RSpec.describe Rhythm do
 		SCORES_TO_BEATS.each do |score, beats|
 			context "parsing #{score}" do
 				let(:score) { score }
+				let(:beats) { beats }
 
 				specify 'produces the correct pitches' do
 					expect(subject.beats.map(&:amplitude)).to eq beats
 				end
 
-				# Separate odd and even canonical beats since the even-indexed ones are spacing between notes.
-				let(:canonical_beats) do
-					odd_beats, even_beats = subject.canonical.beats.
+				# Separate odd and even canonical since the even-indexed ones are spacing between notes.
+				let(:canonical) do
+					odd_beats, even_beats = subject.canonical.
                                                 each_with_index.
                                                 group_by { |_beat, index| index.odd? }.
                                                 values_at(true, false).
@@ -50,29 +71,7 @@ RSpec.describe Rhythm do
 					}
 				end
 
-				# TODO: not testing this for scores with 0's because it's trickier
-				specify 'preserves pitches when canonicalized' do
-					expect(canonical_beats[:notes].map(&:amplitude)).to eq beats
-				end
-
-				specify 'Inserts spacing between notes appropriately' do
-
-					note_durations = canonical_beats[:notes].map(&:duration)
-					space_durations = canonical_beats[:spacing].map(&:duration)
-
-					# Remove first and last off-duty beats as they'll be half-gaps to center the note.
-					expect(space_durations.shift).to eq Rhythm::START_DELAY
-					expect(space_durations.pop).to eq Rhythm::AFTER_DELAY
-
-					expect(note_durations).to eq_array_with_delta(LENGTH_DELTA,
-										     [NOTE_LENGTH] * beats.length)
-					expect(space_durations).to eq_array_with_delta(LENGTH_DELTA,
-									      [INTER_NOTE_DELAY] * (beats.length - 1))
-				end
-
-				specify 'canonicalisation is idempotent' do
-					expect(subject.canonical.beats).to eq subject.canonical.canonical.beats
-				end
+				include_examples 'beats without special timing'
 			end
 		end
 	end
@@ -82,20 +81,9 @@ RSpec.describe Rhythm do
 
 		context 'with no special timing marks' do
 			let(:score) { '| x - X !' }
+			let(:beats) { [4/9.0, 0, 2/3.0, 1] }
 
-			specify 'is normal' do
-				expect(timings).to eq([0.0, 0.0, 0.0, 0.0])
-			end
-
-			specify 'spaces before and after delays equally' do
-				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					Rhythm::START_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY,
-					NOTE_LENGTH, Rhythm::AFTER_DELAY
-				])
-			end
+			include_examples 'beats without special timing'
 		end
 
 		context 'with marked early beats' do
@@ -105,13 +93,19 @@ RSpec.describe Rhythm do
 				expect(timings).to eq([0.0, -1.0, 0.0])
 			end
 
-			specify 'adjusts spacing around those beats in canonical form' do
-				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					Rhythm::START_DELAY,
-					NOTE_LENGTH, Rhythm::AFTER_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY + Rhythm::START_DELAY,
-					NOTE_LENGTH, Rhythm::AFTER_DELAY
-				])
+			describe 'canonical form' do
+				let(:canonical) { subject.canonical }
+
+				specify 'is stretched enough to place those beats earlier' do
+
+					# TODO: assuming particular start/end offsets
+					expect(Rhythm::START_DELAY).to eq 0.3
+
+					expect(canonical.length).to eq 30
+
+					# Should sound on the first/30th, seventh (10 * (1 - 0.3)) and 20th ticks of the 30.
+					expect(canonical).to eq ([1] + ([nil] * 6) + [1] + ([nil] * 12) + [1] + ([nil] * 10))
+				end
 			end
 		end
 
@@ -122,14 +116,20 @@ RSpec.describe Rhythm do
 				expect(timings).to eq([0.0, 1.0, 0.0])
 			end
 
-			specify 'adjusts spacing around those beats in canonical form' do
-				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					Rhythm::START_DELAY,
-					NOTE_LENGTH, INTER_NOTE_DELAY + Rhythm::AFTER_DELAY,
-					NOTE_LENGTH, Rhythm::START_DELAY,
-					NOTE_LENGTH, Rhythm::AFTER_DELAY
-				])
-			end
+                        describe 'canonical form' do
+                                let(:canonical) { subject.canonical }
+
+                                specify 'is stretched enough to place those beats later' do
+
+                                        # TODO: assuming particular start/end offsets
+                                        expect(Rhythm::START_DELAY).to eq 0.3
+
+                                        expect(canonical.length).to eq 30
+
+                                        # Should sound on the first/30th, 13th (10 * 1.3) and 20th ticks of the 30.
+                                        expect(canonical).to eq ([1] + ([nil] * 12) + [1] + ([nil] * 6) + [1] + ([nil] * 10))
+                                end
+                        end
 		end
 	end
 
@@ -165,17 +165,36 @@ RSpec.describe Rhythm do
 				expect(durations).to eq([1, 1/3.0, 2/3.0, 2/3.0, 1/3.0, 1])
 			end
 
-			specify 'builds canonical durations to suit the combined beats' do
-				expect(canonical_durations).to eq_array_with_delta(LENGTH_DELTA, [
-					Rhythm::START_DELAY,
-					NOTE_LENGTH, 		Rhythm::AFTER_DELAY + Rhythm::START_DELAY/3.0,
-					NOTE_LENGTH/3.0, 	Rhythm::AFTER_DELAY/3.0 + (Rhythm::START_DELAY * 2/3.0),
-					(NOTE_LENGTH * 02/3.0), (Rhythm::AFTER_DELAY * 2/3.0) + (Rhythm::START_DELAY * 2/3.0),
-					(NOTE_LENGTH * 02/3.0), (Rhythm::AFTER_DELAY * 2/3.0) + (Rhythm::START_DELAY/3.0),
-					NOTE_LENGTH/3.0, 	(Rhythm::AFTER_DELAY/3.0) + Rhythm::START_DELAY,
-					NOTE_LENGTH, 		Rhythm::AFTER_DELAY,
-				])
-			end
+			describe 'canonical form' do
+                                let(:canonical) { subject.canonical }
+
+                                specify 'is stretched enough to place each beat correctly' do
+                                        expect(canonical.length).to eq 12
+				end
+
+				specify 'does indeed place each beat correctly' do
+					expect(canonical[0]).not_to be_nil
+					expect(canonical[1]).to be_nil
+					expect(canonical[2]).to be_nil
+					expect(canonical[3]).not_to be_nil
+					expect(canonical[4]).not_to be_nil
+					expect(canonical[5]).to be_nil
+					expect(canonical[6]).not_to be_nil
+					expect(canonical[7]).to be_nil
+					expect(canonical[8]).not_to be_nil
+					expect(canonical[9]).not_to be_nil
+					expect(canonical[10]).to be_nil
+					expect(canonical[11]).to be_nil
+                                end
+
+				specify 'uses expected amplitudes' do
+					# Fetch only beats that existed in the parent rhythms
+					parent_beats = canonical.
+						values_at(0, 3, 4, 6, 8, 9).
+						map { |b| b.nil? ? 0 : b }
+					expect(parent_beats).to eq expected_amplitudes
+				end
+                        end
 		end
 
 		describe '4-3 without accenting' do
@@ -186,11 +205,15 @@ RSpec.describe Rhythm do
 				]
 			end
 
+			let(:expected_amplitudes) { [2, 1, 1, 1, 1, 1].map(:to_f) }
+
 			specify 'doubles amplitude when beats stack' do
 				stacked, *unstacked = subject.beats.map(&:amplitude)
 
 				expect(unstacked.uniq.length).to eq 1
 				expect(stacked).to eq(unstacked.uniq.first * 2)
+
+				expect([stacked] + unstacked).to eq expected_amplitudes
 			end
 
                         it_should_behave_like 'a 4-3 polyrhythm'
@@ -204,19 +227,21 @@ RSpec.describe Rhythm do
 				]
 			end
 
+			let(:expected_amplitudes) do
+                                primary_amplitudes = primary.beats.map(&:amplitude)
+                                secondary_amplitudes = secondaries.first.beats.map(&:amplitude)
+
+                                expected_amplitudes  = [
+                                        (primary_amplitudes[0] + secondary_amplitudes[0]),
+                                        primary_amplitudes[1],
+                                        secondary_amplitudes[1],
+                                        primary_amplitudes[2],
+                                        secondary_amplitudes[2],
+                                        primary_amplitudes[3],
+                                ]
+			end
+
 			specify 'adds and possibly scales amplitudes of the original beats' do
-				primary_amplitudes = primary.beats.map(&:amplitude)
-				secondary_amplitudes = secondaries.first.beats.map(&:amplitude)
-
-				expected_amplitudes  = [
-					(primary_amplitudes[0] + secondary_amplitudes[0]),
-					primary_amplitudes[1],
-					secondary_amplitudes[1],
-					primary_amplitudes[2],
-					secondary_amplitudes[2],
-					primary_amplitudes[3],
-				]
-
 				expect(subject.beats.map(&:amplitude)).to eq expected_amplitudes
 			end
 
