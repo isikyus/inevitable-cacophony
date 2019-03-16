@@ -148,6 +148,10 @@ RSpec.describe Rhythm do
 				expect(subject.primary).to eq primary
 			end
 
+			specify 'retains all components' do
+				expect(subject.components).to eq base_rhythms
+			end
+
 			specify 'speeds up or slows down the secondary to fit' do
 				expect(subject.secondaries.length).to eq 1
 
@@ -177,7 +181,10 @@ RSpec.describe Rhythm do
 					expect(canonical[1]).to be_nil
 					expect(canonical[2]).to be_nil
 					expect(canonical[3]).not_to be_nil
-					expect(canonical[4]).not_to be_nil
+
+					# This beat is nil in one test because it's a 0 amplitude
+					# in the underlying rhythm.
+					expect(canonical[4].nil?).to eq expected_amplitudes[2].zero?
 					expect(canonical[5]).to be_nil
 					expect(canonical[6]).not_to be_nil
 					expect(canonical[7]).to be_nil

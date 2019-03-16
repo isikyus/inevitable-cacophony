@@ -16,13 +16,47 @@ class Polyrhythm < Rhythm
 		end
 
 		@primary = primary
-		@secondaries = secondaries.map { |s| s.stretch(primary.duration) }
+		@secondaries = secondaries
 
 		# TODO: not very efficient to create then throw away a Rhythm just for #stretch
 		super(combined_rhythm.stretch(primary.duration).beats)
 	end
 
 	attr_accessor :primary, :secondaries
+
+	# @return [Array<Rhythm>] All the component rhythms that make up this polyrhythm
+	def components
+		[primary, *secondaries]
+	end
+
+	# Calculates the canonical form by combining the two component rhythms.
+	# @return [Array<Float>]
+	def canonical
+
+		# The new rhythm will need enough ticks to accurately represent both the old ones.
+		common_multiple  = components.map(&:duration).inject(1, &:lcm)
+
+		# Stretch each component rhythm to the right length, and sum them.
+		Array.new(common_multiple).tap do |canonical|
+
+			components.map(&:canonical).each do |beat_times|
+				stretch_factor = common_multiple / beat_times.length
+				
+				unless stretch_factor * beat_times.length == common_multiple
+					raise "Expected dividing LCM of lengths by one length to be an integer."
+				end
+
+				beat_times.each_with_index do |amplitude, index|
+					unless amplitude.nil?
+						stretched_index = index * stretch_factor
+
+						canonical[stretched_index] ||= 0
+						canonical[stretched_index] += amplitude
+					end
+				end
+			end
+		end
+	end
 
 	private
 

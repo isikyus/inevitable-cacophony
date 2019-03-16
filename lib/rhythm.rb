@@ -135,13 +135,14 @@ class Rhythm
 		@beats.each(&block)
 	end
 
-	# @return [Numeric] Total duration of all beats in this rhythm.
+	# @return [Integer] Total duration of all beats in this rhythm.
 	def duration
 		each_beat.sum(&:duration)
 	end
 
-	# @param new_duration [Numeric] The new number of time steps to take (in total, not per bar).
+	# @param new_duration [Integer] The new number of time steps to take (in total, not per bar).
 	# @return [Rhythm] This rhythm, but re-scaled to take up the given amount of time steps.
+	# TODO: remove or make exact	
 	def stretch(new_duration)
 		scale_factor = new_duration / duration.to_f
 
