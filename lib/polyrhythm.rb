@@ -2,24 +2,21 @@
 
 class Polyrhythm < Rhythm
 
-        # Creates a new polyrhythm by combining two simpler component rhythms.
+	# Creates a new polyrhythm by combining two simpler component rhythms.
 	# It will have the same duration as the primary rhythm, but include
 	# beats from both it and all the secondaries.
 	#
 	# TODO: do I want to emphasise the primary rhythm more?
-        #
-        # @param primary [Rhythm] The rhythm that will be considered the primary.
-        # @param secondaries [Array<Rhythm>] The other component rhythms.
+	#
+	# @param primary [Rhythm] The rhythm that will be considered the primary.
+	# @param secondaries [Array<Rhythm>] The other component rhythms.
 	def initialize(primary, secondaries)
-		combined_rhythm = [primary, *secondaries].inject do |r1, r2|
-			rhythm_product(r1, r2)
-		end
-
 		@primary = primary
 		@secondaries = secondaries
 
 		# TODO: not very efficient to create then throw away a Rhythm just for #stretch
-		super(combined_rhythm.stretch(primary.duration).beats)
+		unscaled_canon = Rhythm.new(beats_from_canonical(canonical))
+		super(unscaled_canon.stretch(primary.duration).beats)
 	end
 
 	attr_accessor :primary, :secondaries
@@ -34,19 +31,20 @@ class Polyrhythm < Rhythm
 	def canonical
 
 		# The new rhythm will need enough ticks to accurately represent both the old ones.
-		common_multiple  = components.map(&:duration).inject(1, &:lcm)
+		canon_components = components.map(&:canonical)
+		common_multiple = canon_components.map(&:length).inject(1, &:lcm)
 
 		# Stretch each component rhythm to the right length, and sum them.
 		Array.new(common_multiple).tap do |canonical|
 
-			components.map(&:canonical).each do |beat_times|
-				stretch_factor = common_multiple / beat_times.length
-				
-				unless stretch_factor * beat_times.length == common_multiple
+			canon_components.each do |component|
+				stretch_factor = common_multiple / component.length
+
+				unless stretch_factor * component.length == common_multiple
 					raise "Expected dividing LCM of lengths by one length to be an integer."
 				end
 
-				beat_times.each_with_index do |amplitude, index|
+				component.each_with_index do |amplitude, index|
 					unless amplitude.nil?
 						stretched_index = index * stretch_factor
 
@@ -60,67 +58,29 @@ class Polyrhythm < Rhythm
 
 	private
 
-	# Calculate a "product" of two rhythms, by stretching each one by intervals
-	# of the other rhythms duration, and then 'adding' them to produce a monophonic
-	# rhythm which is always playing whichever beat most recently started.
-	# If two beats would start simultaneously, they are replaced with a single
-	# double-amplitude beat.
+	# Calculate a set of beats with timings from the given canonical rhythm.
+	# TODO: properly account for pre-existing durations.
 	#
-	# This should be associative, and have the one-rest rhythm | - | as an identity;
-	# not sure if it's commutative. (TODO: test this)
-	#
-	# @param rhythm1 [Rhythm]
-	# @param rhythm2 [Rhythm]
-	# @return [Rhythm]
-	def rhythm_product(rhythm1, rhythm2)
+	# @param canonical [Array<Float,NilClass>]
+	# @return [Array<Beat>]
+	def beats_from_canonical(canonical)
+		[].tap do |beats|
+			amplitude = canonical.shift || 0
 
-		if (rhythm1.beats + rhythm2.beats).map(&:duration).any? { |d| d != d.to_f }
-			raise 'Can only accurately multiple beats of integer lengths'
-		end
+			duration = 1 # to account for the first timeslot that we just shifted off.
+			canonical.each do |this_beat|
+				if this_beat.nil?
+					duration += 1
+				else
+					beats << Beat.new(amplitude, duration, 0)
 
-
-		# Figure out the starting count of each beat,
-		# by counting both rhythms together using a common multiple.
-		common_multiple = rhythm1.duration.lcm(rhythm2.duration)
-		beats_by_count = Array.new(common_multiple)
-
-		[rhythm1, rhythm2].each do |rhythm|
-			offset = 0
-			rhythm.stretch(common_multiple).each_beat do |beat|
-				beats_by_count[offset] ||= []
-				beats_by_count[offset] << beat
-
-				offset += beat.duration
+					# Now start collecting time for the next beat.
+					duration = 1
+					amplitude = this_beat
+				end
 			end
+
+			beats << Beat.new(amplitude, duration, 0)
 		end
-
-		# Use the spaces in `beats_by_count` to set beat durations for the new rhythm.
-		current_beats = beats_by_count.shift
-		raise 'Expected a beat at offset 0' unless current_beats
-
-		duration = 1 # to account for the first timeslot that we just shifted off.
-		new_beats = []
-		beats_by_count.each do |tick|
-			if tick.nil? # No beats on this tick
-				duration += 1
-			else
-				# TODO: add differently-timed beats as separate "grace notes"
-				timing = current_beats.map(&:timing).sum / current_beats.length
-				amplitude = current_beats.map(&:amplitude).sum
-
-				new_beats << Beat.new(amplitude, duration, timing)
-
-				# Now start collecting time for the next beat.
-				duration = 1
-				current_beats = tick
-			end
-		end
-
-		# Add the last beat left at the end.
-		timing = current_beats.map(&:timing).sum / current_beats.length
-		amplitude = current_beats.map(&:amplitude).sum
-		new_beats << Beat.new(amplitude, duration, timing)
-
-		Rhythm.new(new_beats)
 	end
 end

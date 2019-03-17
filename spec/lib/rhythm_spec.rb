@@ -254,5 +254,55 @@ RSpec.describe Rhythm do
 
                         it_should_behave_like 'a 4-3 polyrhythm'
 		end
+
+		describe 'with timing adjustments' do
+			let(:scores) do
+				[
+					%q{| x x'x x'`x x' |},
+					%q{| x'`x x'|}
+				]
+			end
+
+			specify 'calculates canonical form correctly' do
+				expected_canonical = Array.new(60)
+				expected_canonical[0] = 1.0
+				expected_canonical[6] = 1.0
+				expected_canonical[13] = 1.0
+				expected_canonical[14] = 1.0
+				expected_canonical[20] = 1.0
+				expected_canonical[33] = 1.0
+				expected_canonical[37] = 1.0
+				expected_canonical[46] = 1.0
+				expected_canonical[53] = 1.0
+
+				expect(subject.canonical).to eq(expected_canonical)
+			end
+
+			specify 'calculates durations correctly' do
+				expect(subject.duration).to be_within(LENGTH_DELTA).of 6.0
+
+				durations = subject.beats.map(&:duration)
+				expect(durations).to eq_array_with_delta(LENGTH_DELTA, [
+					0.6, 0.7, 0.1,
+					0.6, 1.3, 0.4,
+					0.9, 0.7, 0.7
+				])
+			end
+
+			specify 'does not use timing offsets' do
+				expect(subject.beats.map(&:timing).uniq).to eq([0])
+			end
+
+			xspecify 'sums amplitudes only when beats are actually combined' do
+				expect(subject.beats.map(&:amplitude)).to eq([
+					1, 1,
+					1,
+					1,
+					1,
+					1,
+					1, 1
+				])
+			end
+		end
 	end
 end
