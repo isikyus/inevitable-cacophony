@@ -36,6 +36,7 @@ class Polyrhythm < Rhythm
 
 		# Stretch each component rhythm to the right length, and sum them.
 		Array.new(common_multiple).tap do |canonical|
+			note_lengths = canonical.dup
 
 			canon_components.each do |component|
 				stretch_factor = common_multiple / component.length
@@ -50,6 +51,30 @@ class Polyrhythm < Rhythm
 
 						canonical[stretched_index] ||= 0
 						canonical[stretched_index] += amplitude
+
+						# Only count nonzero beats for note length
+						if amplitude > 0
+							note_lengths[stretched_index] ||= 0
+							note_lengths[stretched_index] = [note_lengths[stretched_index], stretch_factor].max
+						end
+					end
+				end
+			end
+
+			# Remove any 0-valued notes that are interrupting other rhythms
+			duration_left = 0
+			note_lengths.each_with_index do |length, index|
+
+				# Track which note we're in
+				if length
+					duration_left = length
+				else
+					duration_left -= 1
+
+					# If we aren't in a sounded note (as length is set only then),
+					# are we in an unsounded one we should skip?
+					if duration_left > 0 && canonical[index] && canonical[index].zero?
+						canonical[index] = nil
 					end
 				end
 			end

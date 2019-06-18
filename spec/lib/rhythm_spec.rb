@@ -21,11 +21,7 @@ RSpec.describe Rhythm do
 
                         specify 'puts each non-zero beat in the correct spot' do
                                 beats.each_with_index do |amplitude, index|
-                                        if amplitude.zero?
-                                                expect(canonical[index]).to be_nil
-                                        else
-                                                expect(canonical[index]).to eq amplitude
-                                        end
+                                        expect(canonical[index]).to eq amplitude
                                 end
                         end
                 end
@@ -229,30 +225,53 @@ RSpec.describe Rhythm do
 		describe '4-3 with accented beats' do
 			let(:scores) do
 				[
-					'! x X x',
-					'x - X'
+					'- x X x',
+					'x ! X'
+				]
+			end
+		end
+
+		describe '4-3 with beats extended through silence of the other rhythm' do
+			let(:scores) do
+				[
+					# Back to front just to test selection of primary duration.
+					'x - x',
+					'x - x -'
 				]
 			end
 
-			let(:expected_amplitudes) do
-                                primary_amplitudes = primary.beats.map(&:amplitude)
-                                secondary_amplitudes = secondaries.first.beats.map(&:amplitude)
+			specify 'keeps full length of uninterrupted beats' do
+				expected_canonical = [
+					2.0, nil, nil,
 
-                                expected_amplitudes  = [
-                                        (primary_amplitudes[0] + secondary_amplitudes[0]),
-                                        primary_amplitudes[1],
-                                        secondary_amplitudes[1],
-                                        primary_amplitudes[2],
-                                        secondary_amplitudes[2],
-                                        primary_amplitudes[3],
-                                ]
+					# Nil rather than 0 because the 1st beat of the 3-beat rhythm continues
+					# this tick. The 2nd of the other rhythm is silent and therefore doesn't
+					# interrupt.
+					nil,
+
+					# 0 here because the sounding first beat wouldn't sound beyond this point
+					# in either rhythm played alone.
+					0, nil,
+					1.0, nil,
+
+					# Again, 3rd beat not interrupted because 4th beat is silent.
+					1.0, nil, nil, nil
+				]
+
+				expect(subject.canonical).to eq(expected_canonical)
 			end
 
-			specify 'adds and possibly scales amplitudes of the original beats' do
-				expect(subject.beats.map(&:amplitude)).to eq expected_amplitudes
+			specify 'does not cut uninterrupted durations' do
+				expect(subject.beats.map(&:duration)).to eq [1, 0.5, 0.5, 1]
 			end
 
-                        it_should_behave_like 'a 4-3 polyrhythm'
+			specify 'still sums amplitudes where relevant' do
+				expect(subject.beats.map(&:amplitude)).to eq [2.0, 0, 1.0, 1.0]
+			end
+
+			specify 'still keeps duration of primary' do
+				expect(subject.duration).to eq 3
+			end
 		end
 
 		describe 'with timing adjustments' do

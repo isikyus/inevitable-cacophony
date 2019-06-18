@@ -170,11 +170,9 @@ class Rhythm
 		scaled_duration = duration * denominator
 		Array.new(scaled_duration).tap do |spaced_beats|
 			self.beats.each_with_index do |beat, index|
-				unless beat.amplitude.zero?
-					offset_index = index + beat.start_offset
-					scaled_index = offset_index * denominator
-					spaced_beats[scaled_index] = beat.amplitude
-				end
+				offset_index = index + beat.start_offset
+				scaled_index = offset_index * denominator
+				spaced_beats[scaled_index] = beat.amplitude
 			end
 		end
 	end
