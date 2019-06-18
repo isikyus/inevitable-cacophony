@@ -312,14 +312,16 @@ RSpec.describe Rhythm do
 				expect(subject.beats.map(&:timing).uniq).to eq([0])
 			end
 
-			xspecify 'sums amplitudes only when beats are actually combined' do
+			specify 'sums amplitudes only when beats are actually combined' do
 				expect(subject.beats.map(&:amplitude)).to eq([
 					1, 1,
 					1,
+
+					1, 1,
 					1,
-					1,
-					1,
-					1, 1
+
+					1, 1,
+					1					
 				])
 			end
 		end
