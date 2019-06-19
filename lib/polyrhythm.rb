@@ -30,37 +30,45 @@ class Polyrhythm < Rhythm
 	# @return [Array<Float>]
 	def canonical
 
-		# Split off one component just so we can use Array#zip
+		# Sum the beats at each tick of the component rhythms,
+		# but only add 0's (stop current beat and be silent)
+		# when _all_ components are silent.
+		#
+		# We always stop the existing beat if the new one _isn't_ silent,
+		# since it would interrupt the existing sound anyway.
+
+		sounding = Set.new
 		first, *rest = aligned_components
-
-		# Sum the beats at each tick of the component rhythms
-		sounding = Array.new(components.length)
 		first.zip(*rest).map do |beats_at_tick|
-			if beats_at_tick.all?(&:nil?)
-				nil
-			else
-				amplitude = beats_at_tick.compact.sum
 
-				if amplitude > 0
-					beats_at_tick.each_with_index do |sound, index|
-						sounding[index] = !sound.nil?
-					end
-
-					amplitude
+			# Any channels with nonzero amplitude start sounding a new beat.
+			# Any zeroes stop sounding the existing beat.
+			# Other channels (at `nil`) keep their current sound.
+			new_beats = Set.new
+			finished_beats = Set.new
+			beats_at_tick.each_with_index do |amplitude, index|
+				if amplitude.nil?
+					next
+				elsif amplitude > 0
+					new_beats.add(index)
 				else
-					# 0's only stop beats belonging ot their own component.
-					beats_at_tick.each_with_index do |sound, index|
-						if sound && sound == 0
-							sounding[index] = nil
-						end
-					end
+					finished_beats.add(index)
+				end
+			end
 
-					if sounding.all?(&:nil?)
-						0
-					else
-						# Some beats are still sounding; don't interrupt them.
-						nil
-					end
+			# If we're playing new beats, they interrupt whatever came before.
+			# If every beat has now stopped, go silent.
+			# Otherwise, keep playing what's still sounding.
+			if new_beats.any?
+				sounding = new_beats
+				beats_at_tick.compact.sum
+			else
+				sounding.subtract(finished_beats)
+
+				if finished_beats.any? && sounding.empty?
+					0
+				else
+					nil
 				end
 			end
 		end
