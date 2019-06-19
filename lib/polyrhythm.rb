@@ -30,51 +30,36 @@ class Polyrhythm < Rhythm
 	# @return [Array<Float>]
 	def canonical
 
-		# The new rhythm will need enough ticks to accurately represent both the old ones.
-		canon_components = components.map(&:canonical)
-		common_multiple = canon_components.map(&:length).inject(1, &:lcm)
+		# Split off one component just so we can use Array#zip
+		first, *rest = aligned_components
 
-		# Stretch each component rhythm to the right length, and sum them.
-		Array.new(common_multiple).tap do |canonical|
-			note_lengths = canonical.dup
+		# Sum the beats at each tick of the component rhythms
+		sounding = Array.new(components.length)
+		first.zip(*rest).map do |beats_at_tick|
+			if beats_at_tick.all?(&:nil?)
+				nil
+			else
+				amplitude = beats_at_tick.compact.sum
 
-			canon_components.each do |component|
-				stretch_factor = common_multiple / component.length
+				if amplitude > 0
+					beats_at_tick.each_with_index do |sound, index|
+						sounding[index] = !sound.nil?
+					end
 
-				unless stretch_factor * component.length == common_multiple
-					raise "Expected dividing LCM of lengths by one length to be an integer."
-				end
-
-				component.each_with_index do |amplitude, index|
-					unless amplitude.nil?
-						stretched_index = index * stretch_factor
-
-						canonical[stretched_index] ||= 0
-						canonical[stretched_index] += amplitude
-
-						# Only count nonzero beats for note length
-						if amplitude > 0
-							note_lengths[stretched_index] ||= 0
-							note_lengths[stretched_index] = [note_lengths[stretched_index], stretch_factor].max
+					amplitude
+				else
+					# 0's only stop beats belonging ot their own component.
+					beats_at_tick.each_with_index do |sound, index|
+						if sound && sound == 0
+							sounding[index] = nil
 						end
 					end
-				end
-			end
 
-			# Remove any 0-valued notes that are interrupting other rhythms
-			duration_left = 0
-			note_lengths.each_with_index do |length, index|
-
-				# Track which note we're in
-				if length
-					duration_left = length
-				else
-					duration_left -= 1
-
-					# If we aren't in a sounded note (as length is set only then),
-					# are we in an unsounded one we should skip?
-					if duration_left > 0 && canonical[index] && canonical[index].zero?
-						canonical[index] = nil
+					if sounding.all?(&:nil?)
+						0
+					else
+						# Some beats are still sounding; don't interrupt them.
+						nil
 					end
 				end
 			end
@@ -106,6 +91,28 @@ class Polyrhythm < Rhythm
 			end
 
 			beats << Beat.new(amplitude, duration, 0)
+		end
+	end
+
+	# Returns the "canonical" forms of the component rhythms, but stretched
+	# all to the same length, so corresponding beats in each rhythm have the
+	# same index.
+	# @return [Array<Array<Float, NilClass>>]
+	def aligned_components
+		canon_components = components.map(&:canonical)
+		common_multiple = canon_components.map(&:length).inject(1, &:lcm)
+
+		# Stretch each component rhythm to the right length, and return them.
+		canon_components.map do |component|
+			stretch_factor = common_multiple / component.length
+
+			unless stretch_factor == stretch_factor.to_i
+				raise "Expected dividing LCM of lengths by one length to be an integer."
+			end
+
+			space_between_beats = stretch_factor - 1
+
+			component.map { |beat| [beat] + Array.new(space_between_beats) }.flatten
 		end
 	end
 end
