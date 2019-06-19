@@ -30,39 +30,20 @@ class Polyrhythm < Rhythm
 	# @return [Array<Float>]
 	def canonical
 
-		# Sum the beats at each tick of the component rhythms,
-		# but only add 0's (stop current beat and be silent)
-		# when _all_ components are silent.
-		#
-		# We always stop the existing beat if the new one _isn't_ silent,
-		# since it would interrupt the existing sound anyway.
-
 		sounding = Set.new
 		first, *rest = aligned_components
 		first.zip(*rest).map do |beats_at_tick|
 
-			# Any channels with nonzero amplitude start sounding a new beat.
-			# Any zeroes stop sounding the existing beat.
-			# Other channels (at `nil`) keep their current sound.
-			new_beats = Set.new
-			finished_beats = Set.new
-			beats_at_tick.each_with_index do |amplitude, index|
-				if amplitude.nil?
-					next
-				elsif amplitude > 0
-					new_beats.add(index)
-				else
-					finished_beats.add(index)
-				end
-			end
-
-			# If we're playing new beats, they interrupt whatever came before.
-			# If every beat has now stopped, go silent.
-			# Otherwise, keep playing what's still sounding.
+			# If we're starting new beats, they interrupt whatever came before.
+			new_beats = indices_of(beats_at_tick) { |b| b && b > 0 }
 			if new_beats.any?
-				sounding = new_beats
+				sounding = new_beats.to_set
 				beats_at_tick.compact.sum
 			else
+
+				# If every beat has now stopped, go silent.
+				# Otherwise, keep playing what's still sounding.
+				finished_beats = indices_of(beats_at_tick, 0)
 				sounding.subtract(finished_beats)
 
 				if finished_beats.any? && sounding.empty?
@@ -121,6 +102,23 @@ class Polyrhythm < Rhythm
 			space_between_beats = stretch_factor - 1
 
 			component.map { |beat| [beat] + Array.new(space_between_beats) }.flatten
+		end
+	end
+
+	# TODO: should really be in some other class.
+	# Returns all indices of an array where the given value can be found,
+	# or all that match the given block
+	#
+	# @param array An object responding to #each_index and #[<index>]
+	# @param condition The object we're looking for in the array
+	# @return Array<Integer> indices into `array` matching the conditions.
+	#
+	# Source: steenslag at Stack Overflow (https://stackoverflow.com/a/13660352/10955118); CC-BY-SA
+	def indices_of(array, condition=nil, &block)
+		block ||= condition.method(:==)
+
+		array.each_index.select do |index|
+			block.call(array[index])
 		end
 	end
 end
