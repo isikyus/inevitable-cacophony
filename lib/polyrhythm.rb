@@ -33,25 +33,8 @@ class Polyrhythm < Rhythm
 		sounding = Set.new
 		first, *rest = aligned_components
 		first.zip(*rest).map do |beats_at_tick|
-
-			# If we're starting new beats, they interrupt whatever came before.
-			new_beats = indices_of(beats_at_tick) { |b| b && b > 0 }
-			if new_beats.any?
-				sounding = new_beats.to_set
-				beats_at_tick.compact.sum
-			else
-
-				# If every beat has now stopped, go silent.
-				# Otherwise, keep playing what's still sounding.
-				finished_beats = indices_of(beats_at_tick, 0)
-				sounding.subtract(finished_beats)
-
-				if finished_beats.any? && sounding.empty?
-					0
-				else
-					nil
-				end
-			end
+			beat, sounding = update_sounding_beats(sounding, beats_at_tick)
+			beat
 		end
 	end
 
@@ -103,6 +86,39 @@ class Polyrhythm < Rhythm
 
 			component.map { |beat| [beat] + Array.new(space_between_beats) }.flatten
 		end
+	end
+
+	# Given several channels and the set of beats currently playing,
+	# calculate the beat that should now start/stop/continue playing.
+	#
+	# @param sounding [Set{Integer}] The channels with a beat currently playing.
+	# @param current_channel_state [Array<Float>] The beat each channel has at this tick.
+	# 						(+nil+) means continuing an earlier beat.
+	# @return [Array<[Float, NilClass],Set{Integer}] A two-element array like +[beat, sounding]+,
+	# 		where +beat+ is the amplitude to play now (+nil+ to hold last note; 0 to stop),
+	# 		and +sounding+ is the Set of channels still playing.
+	def update_sounding_beats(sounding, current_channel_states)
+
+		beat = nil
+
+		# If we're starting new beats, they interrupt whatever came before.
+		new_beats = indices_of(current_channel_states) { |b| b && b > 0 }
+		if new_beats.any?
+			sounding = new_beats.to_set
+			beat = current_channel_states.compact.sum
+		else
+
+			# If every beat has now stopped, go silent.
+			# Otherwise, keep playing what's still sounding.
+			finished_beats = indices_of(current_channel_states, 0)
+			sounding.subtract(finished_beats)
+
+			if finished_beats.any? && sounding.empty?
+				beat = 0
+			end
+		end
+
+		[beat, sounding]
 	end
 
 	# TODO: should really be in some other class.
