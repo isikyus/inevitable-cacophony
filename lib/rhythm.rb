@@ -131,7 +131,7 @@ class Rhythm
 
 	# @param new_duration [Integer] The new number of time steps to take (in total, not per bar).
 	# @return [Rhythm] This rhythm, but re-scaled to take up the given amount of time steps.
-	# TODO: remove or make exact	
+	# TODO: remove or make exact
 	def stretch(new_duration)
 		scale_factor = new_duration / duration.to_f
 
