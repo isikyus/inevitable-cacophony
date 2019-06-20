@@ -65,17 +65,6 @@ class Rhythm
 		end
 	end
 
-	# The "canonical" version of a rhythm, with space between notes spelled out
-	# explicitly rather than implied by timing values.
-	class Canonical < Rhythm
-
-		# @return [Rhythm::Canonical] This same rhythm; already canonical.
-		def canonical
-			self
-		end
-	end
-
-	# Amplitude values for each Dwarf Fortress beat symbol.
 	# These are in no particular scale; the maximum volume will be whatever's loudest in any particular string.
 	BEAT_VALUES = {
 
