@@ -11,7 +11,7 @@ RSpec.describe Rhythm do
 	INTER_NOTE_DELAY = Rhythm::START_DELAY + Rhythm::AFTER_DELAY
 	NOTE_LENGTH = 1 - INTER_NOTE_DELAY
 
-	# Allowable delay in note durations.
+	# Allowable error in note durations.
 	# Set by trial and error to get tests to pass
 	LENGTH_DELTA = 2 ** -50
 

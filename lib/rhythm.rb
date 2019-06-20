@@ -13,7 +13,7 @@ class Rhythm
 	# Timing -- how early or late the beat is, relative to the same metaphorical metronome.
 	class Beat < Struct.new(:amplitude, :duration, :timing)
 
-		# How much earlier or later than normal this beat's time slicke should start,
+		# How much earlier or later than normal this beat's time slice should start,
 		# accounting for the standard start/end delays, timing, and duration.
 		# Negative numbers start earlier, positive ones later.
 		#
@@ -151,10 +151,10 @@ class Rhythm
 		end)
 	end
 
-	# @return [Array<Numeric,NilClass>] An array where a[i] is the amplitude of the beat at time-step i,
-	# 					or nil if no beat is played then (due to rests or it not
-	# 					being in the rhythm at all).
-	# 				    This will be as long as necessary to represent the rhythm accurately.
+	# @return [Array<Numeric,NilClass>] An array where a[i] is the amplitude of the beat at time-step i
+	# 				    (rests are 0), or nil if no beat is played then.
+	# 				    This will be as long as necessary to represent the rhythm accurately,
+	# 				    including early and late beats.
 	def canonical
 		if duration != duration.to_i
 			raise "Cannot yet canonicalise rhythms with non-integer length"
