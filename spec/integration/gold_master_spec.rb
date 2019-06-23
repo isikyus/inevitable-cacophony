@@ -37,6 +37,17 @@ RSpec.describe 'Inevitable Cacophony' do
 			end
 		end
 
+		context 'for the builtin 7-11 test polyrhythm' do
+			let(:generated_data) do
+				generate_with_args('-7')
+			end
+			let(:fixture_file) { 'spec/fixtures/7-11-polyrhythm.wav' }
+
+			specify 'works' do
+				expect(generated_data).to eq known_data
+			end
+		end
+
 		context 'from a given octave structure' do
 			let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
 			let(:form_description) { File.open(description_file) { |f| f.read } }
