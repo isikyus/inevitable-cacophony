@@ -1,5 +1,7 @@
 # Represents a rhythm that combines two or more simpler rhythms.
 
+require 'set'
+
 class Polyrhythm < Rhythm
 
 	# Creates a new polyrhythm by combining two simpler component rhythms.

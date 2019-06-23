@@ -78,6 +78,22 @@ OptionParser.new do |opts|
 		}
 	end
 
+	opts.on('-7', '--seven-eleven', 'Play a 7:11 Polyrhythm') do
+		command = -> {
+			seven = Rhythm.from_string('| x x x x x x x |')
+			eleven = Rhythm.from_string('| x x x x x x x x x x x |')
+			seven_eleven = Rhythm.poly(seven, eleven)
+
+                        notes = 3.times.map do
+                                seven_eleven.each_beat.map do |beat|
+                                        Note.new(440, beat)
+                                end
+                        end.flatten
+
+                        tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
+		}
+	end
+
 	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description stdin') do |form|
 		@input = form
 	end
