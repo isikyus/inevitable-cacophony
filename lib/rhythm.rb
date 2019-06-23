@@ -166,6 +166,10 @@ class Rhythm
 		end
 	end
 
+	def inspect
+		"<#Rhythm duration=#{duration} @beats=#{beats.inspect}>"
+	end
+
 	private
 
 	# @param rhythm_string [String] In the notation Dwarf Fortress produces, like | X x ! x |
