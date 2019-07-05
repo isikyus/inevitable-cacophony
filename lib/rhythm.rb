@@ -129,17 +129,6 @@ class Rhythm
 		each_beat.sum(&:duration)
 	end
 
-	# @param new_duration [Integer] The new number of time steps to take (in total, not per bar).
-	# @return [Rhythm] This rhythm, but re-scaled to take up the given amount of time steps.
-	# TODO: remove or make exact
-	def stretch(new_duration)
-		scale_factor = new_duration / duration.to_f
-
-		Rhythm.new(beats.map do |beat|
-			Beat.new(beat.amplitude, beat.duration * scale_factor, beat.timing)
-		end)
-	end
-
 	# @return [Array<Numeric,NilClass>] An array where a[i] is the amplitude of the beat at time-step i
 	# 				    (rests are 0), or nil if no beat is played then.
 	# 				    This will be as long as necessary to represent the rhythm accurately,

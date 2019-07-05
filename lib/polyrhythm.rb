@@ -16,9 +16,9 @@ class Polyrhythm < Rhythm
 		@primary = primary
 		@secondaries = secondaries
 
-		# TODO: not very efficient to create then throw away a Rhythm just for #stretch
-		unscaled_canon = Rhythm.new(beats_from_canonical(canonical))
-		super(unscaled_canon.stretch(primary.duration).beats)
+		unscaled_beats = beats_from_canonical(canonical)
+		scaled_beats = scale_beats(unscaled_beats, @primary.duration)
+		super(scaled_beats)
 	end
 
 	attr_accessor :primary, :secondaries
@@ -137,6 +137,18 @@ class Polyrhythm < Rhythm
 
 		array.each_index.select do |index|
 			block.call(array[index])
+		end
+	end
+
+	# Scales each beat in the given list so the list has the given total duration.
+	#
+	# @param beats [Array<Beat>]
+	# @param duration [Float]
+	def scale_beats(beats, total_duration)
+		scale_factor = total_duration.to_f / beats.map(&:duration).sum
+
+		beats.map do |beat|
+			Beat.new(beat.amplitude, beat.duration * scale_factor, beat.timing)
 		end
 	end
 end
