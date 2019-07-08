@@ -1,6 +1,6 @@
 require 'optparse'
 
-require 'rhythm'
+require 'parser/rhythm_line'
 require 'polyrhythm'
 require 'octave_structure'
 require 'tone_generator'
@@ -11,7 +11,7 @@ tone = ToneGenerator.new
 command = -> {
 	# Spike'd quick-and-dirty attempt at playing chords in rhythm.
 	rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
-	rhythm = Rhythm.from_string(rhythm_score)
+	rhythm = Parser::RhythmLine.new.parse(rhythm_score)
 
 	octave = OctaveStructure.new(input)
 
@@ -46,7 +46,7 @@ OptionParser.new do |opts|
 
 	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
 		command = -> {
-			beats = Rhythm.from_string(input)
+			beats = Parser::RhythmLine.new.parse(input)
 
 			notes = 3.times.map do
 				beats.each_beat.map do |beat|
@@ -81,8 +81,8 @@ OptionParser.new do |opts|
 
 	opts.on('-7', '--seven-eleven', 'Play a 7:11 Polyrhythm') do
 		command = -> {
-			seven = Rhythm.from_string('| x x x x x x x |')
-			eleven = Rhythm.from_string('| x x x x x x x x x x x |')
+			seven = Parser::RhythmLine.new.parse('| x x x x x x x |')
+			eleven = Parser::RhythmLine.new.parse('| x x x x x x x x x x x |')
 			seven_eleven = Polyrhythm.new(seven, eleven)
 
                         notes = 3.times.map do

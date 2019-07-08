@@ -1,11 +1,12 @@
 require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
-require 'rhythm'
+# TODO: shouldn't need parser to test things like #canonical
+require 'parser/rhythm_line'
 
 RSpec.describe Rhythm do
 
-	subject { Rhythm.from_string(score) }
+	subject { Parser::RhythmLine.new.parse(score) }
 	let(:canonical_durations) { subject.canonical.map(&:duration) }
 
 	INTER_NOTE_DELAY = Rhythm::START_DELAY + Rhythm::AFTER_DELAY
