@@ -1,6 +1,7 @@
 require 'optparse'
 
 require 'rhythm'
+require 'polyrhythm'
 require 'octave_structure'
 require 'tone_generator'
 require 'phrase'
@@ -82,7 +83,7 @@ OptionParser.new do |opts|
 		command = -> {
 			seven = Rhythm.from_string('| x x x x x x x |')
 			eleven = Rhythm.from_string('| x x x x x x x x x x x |')
-			seven_eleven = Rhythm.poly(seven, eleven)
+			seven_eleven = Polyrhythm.new(seven, eleven)
 
                         notes = 3.times.map do
                                 seven_eleven.each_beat.map do |beat|

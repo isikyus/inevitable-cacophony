@@ -2,6 +2,8 @@
 
 require 'set'
 
+require 'rhythm'
+
 class Polyrhythm < Rhythm
 
 	# Creates a new polyrhythm by combining two simpler component rhythms.

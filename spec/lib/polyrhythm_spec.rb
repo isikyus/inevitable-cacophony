@@ -1,14 +1,13 @@
 require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
-require 'rhythm'
 require 'polyrhythm'
 
 RSpec.describe Polyrhythm do
 	let(:primary) { base_rhythms.first }
 	let(:secondaries) { base_rhythms - [primary] }
 
-	subject { Rhythm.poly(primary, secondaries) }
+	subject { Polyrhythm.new(primary, secondaries) }
 
 	shared_examples_for 'a 4-3 polyrhythm' do
 

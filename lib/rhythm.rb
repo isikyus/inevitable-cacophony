@@ -105,15 +105,6 @@ class Rhythm
 		new(parse(rhythm_string))
 	end
 
-	# Creates a new polyrhythm by combining two simpler component rhythms.
-	#
-	# @param primary [Rhythm] The rhythm that will be considered the primary.
-	#                         Defines the timing of the combined rhythm.
-	# @param secondaries [Array<Rhythm>] The other component rhythms.
-	def self.poly(primary, *secondaries)
-		Polyrhythm.new(primary, *secondaries)
-	end
-
 	def initialize(beats)
 		@beats = beats
 	end
@@ -186,7 +177,3 @@ class Rhythm
 		end
 	end
 end
-
-# Require subclasses only once parent class has been defined.
-# TODO: probably not the ideal way to do this.
-require 'polyrhythm'
