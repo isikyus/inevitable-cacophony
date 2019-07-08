@@ -111,7 +111,13 @@ RSpec.describe Polyrhythm do
 			]
 		end
 
-		pending "where's the rest of this test?!"
+		let(:expected_amplitudes) { [4/9.0, 4/6.0, 1, 1, 6/9.0, 4/6.0].map(&:to_f) }
+
+		specify 'correctly sums accented amplitudes' do
+			expect(subject.beats.map(&:amplitude)).to eq expected_amplitudes
+		end
+
+		it_should_behave_like 'a 4-3 polyrhythm'
 	end
 
 	describe '4-3 with beats extended through silence of the other rhythm' do
