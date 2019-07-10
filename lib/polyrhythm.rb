@@ -42,6 +42,13 @@ class Polyrhythm < Rhythm
 		end
 	end
 
+	def == other
+		self.class == other.class &&
+			self.primary == other.primary &&
+			self.secondaries == other.secondaries
+	end
+
+
 	private
 
 	# Calculate a set of beats with timings from the given canonical rhythm.

@@ -109,4 +109,9 @@ class Rhythm
 	def inspect
 		"<#Rhythm duration=#{duration} @beats=#{beats.inspect}>"
 	end
+
+	def == other
+		self.class == other.class &&
+			self.beats == other.beats
+	end
 end
