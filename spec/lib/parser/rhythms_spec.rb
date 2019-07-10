@@ -89,10 +89,10 @@ RSpec.describe Parser::Rhythms do
 			expect(subject[:nek]).to eq(nek)
 		end
 
-		xspecify 'combines them into the correct polyrhythm' do
+		specify 'combines them into the correct polyrhythm' do
 			expect(subject[:sluste]).to be_a Polyrhythm
-			expect(subject[:sluste]).primary.to eq bepa
-			expect(subject[:sluste]).secondary.to eq nek
+			expect(subject[:sluste].primary).to eq bepa
+			expect(subject[:sluste].secondaries).to eq [nek]
 		end
 	end
 end
