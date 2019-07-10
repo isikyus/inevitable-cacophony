@@ -68,5 +68,9 @@ module Parser
 
 			Rhythm.new(scaled_beats)
 		end
+
+		def self.parse(rhythm_string)
+			new.parse(rhythm_string)
+		end
 	end
 end

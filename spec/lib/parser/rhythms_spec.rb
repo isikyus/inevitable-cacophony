@@ -33,52 +33,52 @@ RSpec.describe Parser::Rhythms do
 
 		let(:bepa) do
 			Rhythm.new([
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(1, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(1, 1, 0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(1.0, 1, 0.0),
 
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
 
-				Rhythm::Beat.new(4/6.0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(4/6.0, 1, 0)
+				Rhythm::Beat.new(4/6.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(4/6.0, 1, 0.0)
 			])
 		end
 
 		let(:nek) do
 			Rhythm.new([
-				Rhythm::Beat.new(0, 1, 0),
-				Rhythm::Beat.new(1, 1, 0)
+				Rhythm::Beat.new(0.0, 1, 0.0),
+				Rhythm::Beat.new(1.0, 1, 0.0)
 			])
 		end
 
@@ -89,7 +89,7 @@ RSpec.describe Parser::Rhythms do
 			expect(subject[:nek]).to eq(nek)
 		end
 
-		specify 'combines them into the correct polyrhythm' do
+		xspecify 'combines them into the correct polyrhythm' do
 			expect(subject[:sluste]).to be_a Polyrhythm
 			expect(subject[:sluste]).primary.to eq bepa
 			expect(subject[:sluste]).secondary.to eq nek
