@@ -30,8 +30,8 @@ module Parser
 	class Rhythms
 
 		# Regular expressions used in parsing
-		SIMPLE_RHYTHM_SENTENCE = /The (?<name>[^ ]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/
-		COMPOSITE_RHYTHM_SENTENCE = /The (?<name>[^ ]+) rhythm is made from [-a-z ]+ patterns: (?<patterns>[^.]+)(\.|$)/
+		SIMPLE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/
+		COMPOSITE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is made from [-a-z ]+ patterns: (?<patterns>[^.]+)(\.|$)/
 
 		# "the <rhythm>". Used to match individual components in COMPOSITE_RHYTHM_SENTENCE
 		THE_RHYTHM = /the (?<rhythm_name>[[:alpha:]]+)( \((?<reference_comment>[^)]+)\))?/
@@ -67,6 +67,7 @@ module Parser
 			# Find the rhythm description and the following paragraph with the score.
 			parser.sections.each_cons(2) do |rhythm, score|
 				match = SIMPLE_RHYTHM_SENTENCE.match(rhythm)
+
 				# Make sure we're actually dealing with a rhythm, not some other form element.
 				next unless match
 
