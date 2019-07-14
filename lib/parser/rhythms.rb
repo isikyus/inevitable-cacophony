@@ -109,25 +109,28 @@ module Parser
 			primary = nil
 			secondaries = []
 
-			reference_string.scan(THE_RHYTHM).map do |rhythm_name, comment|
-				component = base_rhythms[rhythm_name.to_sym]
-				raise(UnknownBaseRhythm.new(rhythm_name)) unless component
+			rhythms_with_comments = reference_string.scan(THE_RHYTHM).map do |rhythm_name, comment|
+                                component = base_rhythms[rhythm_name.to_sym]
+                                raise(UnknownBaseRhythm.new(rhythm_name)) unless component
 
-				if comment.nil?
-					secondaries << component
-				elsif comment == IS_PRIMARY_COMMENT
-
-					if primary
-						raise Error.new("Setting primary rhythm to #{comment} but was already #{primary}")
-					else
-						primary = component
-					end
-
-				else
-					raise UnrecognisedFormSyntax.new("Unrecognised rhythm comment #{comment} in #{intro_sentence}")
-				end
+				[component, comment]
 			end
 
+			primary_rhythms = rhythms_with_comments.select { |_, comment| comment == IS_PRIMARY_COMMENT }
+
+			if primary_rhythms.length != 1
+				raise "Unexpected number of primary rhythms in #{primary_rhythms.inspect}; expected exactly 1"
+			end
+			primary = primary_rhythms.first.first
+
+			remaining_rhythms = rhythms_with_comments - primary_rhythms
+			remaining_comments = remaining_rhythms.map(&:last).compact.uniq
+
+			if remaining_comments.any?
+				raise "Unrecognised rhythm comment(s) #{remaining_comments.inspect}"
+			end
+
+			secondaries = remaining_rhythms.select {|_, comment| comment.nil? }.map(&:first)
 			[primary, *secondaries]
 		end
 	end
