@@ -11,6 +11,12 @@ To play a specific rhythm (in the notation used by the game):
 	ruby -Ilib cacophony.rb --beat -e '| ! x X x |' | aplay
 
 
+You can also play polyrhythms where each component rhythm is simply | x x ... x |.
+(More complex rhythms are possible but you'll need to write out a full musical form to describe them.)
+
+	ruby -Ilib cacophony.rb --beat --polyrhythm 7:11 | aplay
+
+
 To generate a tune from a given form description (support is pretty limited so far):
 
 	ruby -Ilib cacophony.rb < form_description.txt | aplay
