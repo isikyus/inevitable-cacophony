@@ -38,9 +38,9 @@ RSpec.describe 'Inevitable Cacophony' do
 			end
 		end
 
-		context 'for the builtin 7-11 test polyrhythm' do
+		context 'from given basic polyrhythms' do
 			let(:generated_data) do
-				generate_with_args('-7')
+				generate_with_args('--polyrhythm', '7:11', '--beat')
 			end
 			let(:fixture_file) { 'spec/fixtures/7-11-polyrhythm.wav' }
 
