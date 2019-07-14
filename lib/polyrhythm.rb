@@ -36,10 +36,14 @@ class Polyrhythm < Rhythm
 
 		sounding = Set.new
 		first, *rest = aligned_components
-		first.zip(*rest).map do |beats_at_tick|
+		unnormalised = first.zip(*rest).map do |beats_at_tick|
 			beat, sounding = update_sounding_beats(sounding, beats_at_tick)
 			beat
 		end
+
+		# Renormalise to a maximum volume of 100%
+		max_amplitude = unnormalised.compact.max.to_f
+		unnormalised.map { |b| b && b / max_amplitude }
 	end
 
 	def == other

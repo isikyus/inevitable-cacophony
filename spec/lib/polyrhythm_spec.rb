@@ -79,7 +79,7 @@ RSpec.describe Polyrhythm do
 			]
 		end
 
-		let(:expected_amplitudes) { [2, 1, 1, 1, 1, 1].map(&:to_f) }
+		let(:expected_amplitudes) { [1.0, 0.5, 0.5, 0.5, 0.5, 0.5] }
 
 		specify 'doubles amplitude when beats stack' do
 			stacked, *unstacked = subject.beats.map(&:amplitude)
@@ -138,7 +138,7 @@ RSpec.describe Polyrhythm do
 
 		specify 'keeps full length of uninterrupted beats' do
 			expected_canonical = [
-				2.0, nil, nil,
+				1.0, nil, nil,
 
 				# Nil rather than 0 because the 1st beat of the 3-beat rhythm continues
 				# this tick. The 2nd of the other rhythm is silent and therefore doesn't
@@ -148,10 +148,10 @@ RSpec.describe Polyrhythm do
 				# 0 here because the sounding first beat wouldn't sound beyond this point
 				# in either rhythm played alone.
 				0, nil,
-				1.0, nil,
+				0.5, nil,
 
 				# Again, 3rd beat not interrupted because 4th beat is silent.
-				1.0, nil, nil, nil
+				0.5, nil, nil, nil
 			]
 
 			expect(subject.canonical).to eq(expected_canonical)
@@ -162,7 +162,7 @@ RSpec.describe Polyrhythm do
 		end
 
 		specify 'still sums amplitudes where relevant' do
-			expect(subject.beats.map(&:amplitude)).to eq [2.0, 0, 1.0, 1.0]
+			expect(subject.beats.map(&:amplitude)).to eq [1.0, 0, 0.5, 0.5]
 		end
 
 		specify 'still keeps duration of primary' do
