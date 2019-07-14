@@ -15,8 +15,9 @@ command = -> {
 	3.times do
 		chord_notes = []
 		rhythm.each_beat do |beat|
+			chords = octave.chords.values
 			if chord_notes.empty?
-				chord_notes = octave.chords.values.sample.note_scalings.dup
+				chord_notes = chords.sample(random: rng).note_scalings.dup
 			end
 
 			note = Note.new(tonic * chord_notes.shift, beat)
@@ -33,6 +34,10 @@ def options
 	@options ||= {
 		tempo: 120 # beats per minute
 	}
+end
+
+def rng
+	@rng ||= Random.new(options[:seed] || Random.new_seed)
 end
 
 def rhythm
@@ -122,6 +127,13 @@ OptionParser.new do |opts|
 
 	opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
 		options[:tempo] = tempo.to_i
+	end
+
+	opts.on('-S', '--seed SEED', 'Generate random numbers with the given seed, for repeatable results.') do |seed|
+		int_seed = seed.to_i
+		raise "Expected seed to be a number" unless seed == int_seed.to_s
+
+		options[:seed] = int_seed
 	end
 end.parse!
 

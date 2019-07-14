@@ -1,0 +1,47 @@
+# Modified from a form called The Venerable Lilac
+# because the original has a really complex rhythm and
+# I couldn't tell by ear whether it was correct or not.
+
+Cebela and Two Three is a form of music used to commemorate important events originating in the Calm Hide. The form guides musicians during improvised performances. A speaker recites nonsensical words and sounds while the music is played on a liqui and two teca. The musical voices bring melody and counterpoint. The melody and counterpoint both have short phrases throughout the form. It is performed using the cebela scale and in the itho rhythm. Throughout, when possible, performers are to use grace notes, alternate tension and repose, modulate frequently and play legato.
+
+The speaker should always be firey.
+
+The liqui always does the counterpoint melody and should feel mysterious.
+
+Each teca always does the main melody and should feel mysterious.
+
+Cebela and Two Three has a well-defined multi-passage structure: a brief passage and another one to two passages, a brief bridge-passage and a finale.
+
+The first simple passage becomes frenzied as it proceeds. Each of the teca is confined to the dull top register and the liqui stays in the strained middle register. Only one pitch is ever played at a time in this passage. The passage should be performed using locally improvisation. The passage should often include a rising melody patter with flattened third degree, sometimes include a rising-falling melody pattern with flattened fourth degree on the fall as well as glides, mordents, and rapid runs and sometimes include a falling-rising melody pattern with glides, mordents and rapid runs.
+
+Each of the second simple passages is consistently slowing, and it is to be loud. Each of the teca ranges from the buzzy high register to the dull top register and the liqui covers its entire range. Chords are packed close together in dense clusters in this passage.
+
+The bridge-passage is very slow, and it is to be soft. Each of the teca covers its entire range from the even low register to the dull top register and the liqui covers its entire range. This passage is richly layered with full chords making use of the available range.
+
+The finale is fast, and it is to be loud. Each of the teca ranges from the even middle register to the buzzy high register and the liqui covers its entire range. This passage is richly layered with full chords making use of the available range.
+
+Scales are constructed from twelve notes spaced evenly throughout the octave.
+The tonic note is a fixed tone passed from teacher to student.
+After a scale is constructed, notes are named according to degree.
+The names are imeri (spoken im), thuna (thu), arazi (ar), fidale (fi), tarathe (ta), cuthefi (cu) and cede (ce).
+
+The cebela heptatonic scale is thought of as joined chords spanning a perfect fifth and a perfect fourth.
+These chords are named eyo and aweme.
+
+The eyo pentachord is the 1st, the 3rd, the 4th, the 5th, and the 8th degrees of the semitone octave scale.
+
+The aweme tetrachord is the 8th, the 9th, the 10th, and the 13th (completing the octave) degrees of the semitone octave scale.
+
+The twothree rhythm is made from two patterns: the triple (considered the primary), and the double. The patterns are to be played over the same period of time, concluding together regardless of beat number.
+
+The triple rhythm is a single line with three beats. The beats are named timafi (spoken ti), emu (em), and úpe (úp). The beat is stressed as follows:
+
+| X x x |
+
+where X marks an accented beat, x is a beat, and | indicates a bar.
+
+The double rhythm is a single line with two beats. The beat is stressed as follows:
+
+| x x |
+
+where x is a beat, and | indicates a bar.
