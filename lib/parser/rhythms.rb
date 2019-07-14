@@ -87,28 +87,8 @@ module Parser
 
 				# TODO: write something that handles named matches a bit better
 				intro_sentence = paragraph.find(COMPOSITE_RHYTHM_SENTENCE).match(COMPOSITE_RHYTHM_SENTENCE)
-
-				# TODO: assumes the first rhythm in the list is always the primary.
-				primary = nil
-				secondaries = []
-				intro_sentence[:patterns].scan(THE_RHYTHM).map do |rhythm_name, comment|
-					component = base_rhythms[rhythm_name.to_sym]
-					raise(UnknownBaseRhythm.new(rhythm_name)) unless component
-
-					if comment.nil?
-						secondaries << component
-					elsif comment == IS_PRIMARY_COMMENT
-
-						if primary
-							raise Error.new("Setting primary rhythm to #{comment} but was already #{primary}")
-						else
-							primary = component
-						end
-
-					else
-						raise UnrecognisedFormSyntax.new("Unrecognised rhythm comment #{comment} in #{intro_sentence}")
-					end
-				end
+				polyrhythm_name = intro_sentence[:name].to_sym
+				primary, *secondaries = parse_polyrhythm_components(intro_sentence[:patterns], base_rhythms)
 
 				combination_type = paragraph.find(COMBINATION_TYPE_SENTENCE).match(COMBINATION_TYPE_SENTENCE)[:type_summary]
 
@@ -116,11 +96,39 @@ module Parser
 					raise UnrecognisedFormSyntax.new("Unrecognised polyrhythm type #{combination_type}")
 				end
 
-				polyrhythm_key = intro_sentence[:name].to_sym
-				composite_rhythms[polyrhythm_key] = Polyrhythm.new(primary, secondaries)
+				composite_rhythms[polyrhythm_name] = Polyrhythm.new(primary, secondaries)
 			end
 
 			composite_rhythms
+		end
+
+		# @param reference_string [String] The list of rhythms used, like "the anto (considered the primary), the tak, ..."
+		# @param base_rhythms [Hash{Symbol, Rhythm}]
+		# @return [Array<Rhythm>] The matched rhythms, with the primary one as first element/.
+		def parse_polyrhythm_components(reference_string, base_rhythms)
+			primary = nil
+			secondaries = []
+
+			reference_string.scan(THE_RHYTHM).map do |rhythm_name, comment|
+				component = base_rhythms[rhythm_name.to_sym]
+				raise(UnknownBaseRhythm.new(rhythm_name)) unless component
+
+				if comment.nil?
+					secondaries << component
+				elsif comment == IS_PRIMARY_COMMENT
+
+					if primary
+						raise Error.new("Setting primary rhythm to #{comment} but was already #{primary}")
+					else
+						primary = component
+					end
+
+				else
+					raise UnrecognisedFormSyntax.new("Unrecognised rhythm comment #{comment} in #{intro_sentence}")
+				end
+			end
+
+			[primary, *secondaries]
 		end
 	end
 end
