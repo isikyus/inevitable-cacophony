@@ -96,20 +96,13 @@ OptionParser.new do |opts|
 		}
 	end
 
-	opts.on('-7', '--seven-eleven', 'Play a 7:11 Polyrhythm') do
-		command = -> {
-			seven = Parser::RhythmLine.new.parse('| x x x x x x x |')
-			eleven = Parser::RhythmLine.new.parse('| x x x x x x x x x x x |')
-			seven_eleven = Polyrhythm.new(seven, eleven)
+	opts.on('-p', '--polyrhythm RATIO', "Rather than loading rhythm normally, use a polyrhythm in the given ratio (e.g 7:11, 2:3:4). The first number will be 'primary' and determine the tempo.") do |ratio|
+		components = ratio.split(':').map do |length|
+			Rhythm.new([Rhythm::Beat.new(1, 1, 0)] * length.to_i)
+		end
 
-                        notes = 3.times.map do
-                                seven_eleven.each_beat.map do |beat|
-                                        Note.new(440, beat)
-                                end
-                        end.flatten
-
-                        tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
-		}
+		primary, *secondaries = components
+		@rhythm = Polyrhythm.new(primary, secondaries)
 	end
 
 	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description from stdin') do |form|
