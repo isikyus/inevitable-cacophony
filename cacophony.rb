@@ -107,7 +107,7 @@ OptionParser.new do |opts|
 		}
 	end
 
-	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description stdin') do |form|
+	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description from stdin') do |form|
 		@input = form
 	end
 
