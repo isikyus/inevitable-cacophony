@@ -22,7 +22,7 @@ If everything's worked, you should be able to run the tests, with:
 
 	bundle exec rspec
 
-And view Inevitable Cacophony options, with:
+and view Inevitable Cacophony options, with:
 
 	bundle exec ruby -Ilib cacophony.rb --help
 
