@@ -107,6 +107,10 @@ OptionParser.new do |opts|
 		puts opts
 		exit
 	end
+
+	opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
+		options[:tempo] = tempo.to_i
+	end
 end.parse!
 
 command.call
