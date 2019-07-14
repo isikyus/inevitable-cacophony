@@ -9,10 +9,6 @@ require 'phrase'
 tone = ToneGenerator.new
 
 command = -> {
-	# Spike'd quick-and-dirty attempt at playing chords in rhythm.
-	rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
-	rhythm = Parser::RhythmLine.new.parse(rhythm_score)
-
 	octave = OctaveStructure.new(input)
 
 	tonic = 440 # Middle A
@@ -40,16 +36,23 @@ def options
 	}
 end
 
+def rhythm
+	@rhythm ||= begin
+		# Spike'd quick-and-dirty attempt at playing chords in rhythm.
+		rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
+		
+		Parser::RhythmLine.new.parse(rhythm_score)
+	end
+end
+
 OptionParser.new do |opts|
 
 	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
 
 	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
 		command = -> {
-			beats = Parser::RhythmLine.new.parse(input)
-
 			notes = 3.times.map do
-				beats.each_beat.map do |beat|
+				rhythm.each_beat.map do |beat|
 					Note.new(440, beat)
 				end
 			end.flatten

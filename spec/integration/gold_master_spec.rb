@@ -19,7 +19,7 @@ RSpec.describe 'Inevitable Cacophony' do
 			end
 
 			context 'in 4/4 time' do
-				let(:score) { '| x X x !' }
+				let(:score) { '| x X x ! |' }
 				let(:fixture_file) { 'spec/fixtures/4-4.wav' }
 
 				specify 'works' do
