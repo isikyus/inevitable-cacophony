@@ -43,7 +43,6 @@ module Parser
 
 
 		# Parses the rhythms from the given form text.
-		# TODO: is this the whole text or just the bit about rhythms?
 		#
 		# @param form_text [String]
 		# @return [Hash{Symbol,Rhythm}]

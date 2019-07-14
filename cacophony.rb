@@ -129,7 +129,7 @@ OptionParser.new do |opts|
 		options[:tempo] = tempo.to_i
 	end
 
-	opts.on('-S', '--seed SEED', 'Generate random numbers with the given seed, for repeatable results.') do |seed|
+	opts.on('-S', '--seed SEED', 'Generate random melodies with the given seed, for repeatable results.') do |seed|
 		int_seed = seed.to_i
 		raise "Expected seed to be a number" unless seed == int_seed.to_s
 

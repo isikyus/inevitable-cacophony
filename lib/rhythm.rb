@@ -1,4 +1,6 @@
-# Knows how to parse Dwarf Fortress rhythm notation, like | x x - X |
+# A rhythm, represented as a sequence of beats of varying length and volume.
+# Beats may be "early" or "late", but internally this is represented by
+# adjusting the durations of surrounding beats.
 
 class Rhythm
 

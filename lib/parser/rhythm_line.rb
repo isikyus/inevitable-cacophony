@@ -1,4 +1,4 @@
-# Parses Dwarf Fortress rhythm lines, like | x x' X - |,
+# Parses Dwarf Fortress rhythm lines, like | x x'X - |,
 # into Inevitable Cacophony's own internal rhythm representation.
 
 require 'rhythm'
@@ -6,6 +6,7 @@ require 'rhythm'
 module Parser
 	class RhythmLine
 
+		# Amplitude symbols used by Dwarf Fortress
 		# These are in no particular scale; the maximum volume will be whatever's loudest in any particular string.
 		BEAT_VALUES = {
 
