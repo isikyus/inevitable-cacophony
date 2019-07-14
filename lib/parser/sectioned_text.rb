@@ -17,6 +17,8 @@ module Parser
 		        @sections = description.split(delimiter).map(&:strip)
 		end
 
+		attr_accessor :sections
+
 		# Find a section (paragraph, sentence, etc.) of the description
 		# matching a given regular expression.
 		# @param key [Regex]

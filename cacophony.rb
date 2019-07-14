@@ -1,16 +1,13 @@
 require 'optparse'
 
-require 'rhythm'
+require 'parser/rhythms'
 require 'octave_structure'
 require 'tone_generator'
+require 'phrase'
 
 tone = ToneGenerator.new
 
 command = -> {
-	# Spike'd quick-and-dirty attempt at playing chords in rhythm.
-	rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
-	rhythm = Rhythm.new(rhythm_score)
-
 	octave = OctaveStructure.new(input)
 
 	tonic = 440 # Middle A
@@ -18,33 +15,63 @@ command = -> {
 	3.times do
 		chord_notes = []
 		rhythm.each_beat do |beat|
+			chords = octave.chords.values
 			if chord_notes.empty?
-				chord_notes = octave.chords.values.sample.note_scalings.dup
+				chord_notes = chords.sample(random: rng).note_scalings.dup
 			end
 
-			tone.add_note(tonic * chord_notes.shift, beat, 0.5)
+			note = Note.new(tonic * chord_notes.shift, beat)
+			tone.add_phrase(Phrase.new(note, tempo: options[:tempo]))
 		end
-	end		
+	end
 }
 
 def input
 	@input ||= $stdin.read
 end
 
-options = {}
+def options
+	@options ||= {
+		tempo: 120 # beats per minute
+	}
+end
+
+def rng
+	@rng ||= Random.new(options[:seed] || Random.new_seed)
+end
+
+def rhythm
+	@rhythm ||= begin
+		all_rhythms = Parser::Rhythms.new.parse(input)
+
+		# Pick the first rhythm mentioned in the file, which should be the one
+		# used by the first section of the piece.
+		rhythm_name = all_rhythms.keys.sort_by { |name| input.index(name.to_s) }.first
+
+		if all_rhythms[rhythm_name]
+			all_rhythms[rhythm_name]
+		else
+
+			# If no rhythms are mentioned, parse any rhythm string we can find in the input.
+			rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
+			Parser::RhythmLine.new.parse(rhythm_score)
+		end
+	end
+end
+
 OptionParser.new do |opts|
 
 	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
 
 	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
 		command = -> {
-			beats = Rhythm.new(input)
-
-			3.times do
-				beats.each_beat do |beat|
-					tone.add_note(440, beat, 0.5)
+			notes = 3.times.map do
+				rhythm.each_beat.map do |beat|
+					Note.new(440, beat)
 				end
-			end
+			end.flatten
+
+			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
 		}
 	end
 
@@ -61,13 +88,31 @@ OptionParser.new do |opts|
 			rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
 		        tonic = 440 # Hz; Middle A
 
-		        rising_and_falling.each do |factor|
-		                tone.add_note(factor * tonic, Rhythm::Beat.new(1, 0), 0.5)
+		        notes = rising_and_falling.map do |factor|
+				Note.new(factor * tonic, Rhythm::Beat.new(1, 1, 0))
 		        end
+
+			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
 		}
 	end
 
-	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description stdin') do |form|
+	opts.on('-7', '--seven-eleven', 'Play a 7:11 Polyrhythm') do
+		command = -> {
+			seven = Parser::RhythmLine.new.parse('| x x x x x x x |')
+			eleven = Parser::RhythmLine.new.parse('| x x x x x x x x x x x |')
+			seven_eleven = Polyrhythm.new(seven, eleven)
+
+                        notes = 3.times.map do
+                                seven_eleven.each_beat.map do |beat|
+                                        Note.new(440, beat)
+                                end
+                        end.flatten
+
+                        tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
+		}
+	end
+
+	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description from stdin') do |form|
 		@input = form
 	end
 
@@ -78,6 +123,17 @@ OptionParser.new do |opts|
 	opts.on('-h', '--help', 'Prints this help') do
 		puts opts
 		exit
+	end
+
+	opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
+		options[:tempo] = tempo.to_i
+	end
+
+	opts.on('-S', '--seed SEED', 'Generate random numbers with the given seed, for repeatable results.') do |seed|
+		int_seed = seed.to_i
+		raise "Expected seed to be a number" unless seed == int_seed.to_s
+
+		options[:seed] = int_seed
 	end
 end.parse!
 

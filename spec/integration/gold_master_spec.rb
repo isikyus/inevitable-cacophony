@@ -7,6 +7,7 @@ RSpec.describe 'Inevitable Cacophony' do
 		data, error, status = Open3.capture3('ruby', '-Ilib', 'cacophony.rb', *args)
 		expect(error).to be_empty
 		expect(status).to eq 0
+
 		data
 	end
 
@@ -19,7 +20,7 @@ RSpec.describe 'Inevitable Cacophony' do
 			end
 
 			context 'in 4/4 time' do
-				let(:score) { '| x X x !' }
+				let(:score) { '| x X x ! |' }
 				let(:fixture_file) { 'spec/fixtures/4-4.wav' }
 
 				specify 'works' do
@@ -34,6 +35,17 @@ RSpec.describe 'Inevitable Cacophony' do
 				specify 'works' do
 					expect(generated_data).to eq known_data
 				end
+			end
+		end
+
+		context 'for the builtin 7-11 test polyrhythm' do
+			let(:generated_data) do
+				generate_with_args('-7')
+			end
+			let(:fixture_file) { 'spec/fixtures/7-11-polyrhythm.wav' }
+
+			specify 'works' do
+				expect(generated_data).to eq known_data
 			end
 		end
 
@@ -70,6 +82,21 @@ RSpec.describe 'Inevitable Cacophony' do
 				specify 'works' do
 					expect(generated_data).to eq known_data
 				end
+			end
+		end
+
+		context 'with a specified rhythm' do
+			let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
+			let(:form_description) { File.open(description_file) { |f| f.read } }
+			let(:random_seed) { 314159 }
+			let(:fixture_file) { 'spec/fixtures/cebela_and_two_three__seed-314159.wav' }
+
+			let(:generated_data) do
+				generate_with_args('--seed', random_seed.to_s, '-e', form_description)
+	                        end
+
+			specify 'honours both' do
+				expect(generated_data).to eq known_data
 			end
 		end
 	end

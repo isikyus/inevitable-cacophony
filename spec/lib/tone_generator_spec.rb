@@ -1,26 +1,36 @@
 require 'spec_helper.rb'
 
 require 'tone_generator'
+require 'phrase'
 
 RSpec.describe ToneGenerator do
 
 	subject { ToneGenerator.new }
 
-	describe '#note_buffer' do
-		let(:duration) { 1.1 } # Seconds
-		let(:buffer) { subject.note_buffer(note) }
+	describe '#phrase_buffer' do
+		let(:amplitude) { 0.8 } # Out of 1
+		let(:timing) { 0.0 }
+		let(:note_length) { 1 }
+		let(:beat) { Rhythm::Beat.new(amplitude, note_length, timing) }
+
+		let(:bpm) { 90 }
+		let(:expected_duration) { 2.0/3 } # seconds 
+		let(:score) { Phrase.new(note, tempo: bpm) }
+
+		let(:buffer) { subject.phrase_buffer(score) }
 		let(:samples) { buffer.samples }
 
+		let(:expected_samples) { expected_duration * ToneGenerator::SAMPLE_RATE }
+
 		shared_examples_for 'adding any sound' do
-			
+
 			specify 'uses the correct duration' do
-				expected_samples = duration * ToneGenerator::SAMPLE_RATE
 				expect(samples.length).to be_within(0.1).of(expected_samples)
 			end
 		end
 
 		context 'adding a rest' do
-			let(:note) { Note.rest(duration) }
+			let(:note) { Note.rest(beat) }
 
 			specify 'creates a buffer of silence' do
 				expect(samples.uniq).to eq([0.0])
@@ -28,12 +38,9 @@ RSpec.describe ToneGenerator do
 
 			it_should_behave_like 'adding any sound'
 		end
-	
+
 		context 'adding a note' do
-			let(:amplitude) { 0.8 } # Out of 1
-			let(:timing) { 0.0 }
-			let(:beat) { Rhythm::Beat.new(amplitude, timing) }
-			let(:note) { Note.new(frequency, beat, duration) }
+			let(:note) { Note.new(frequency, beat) }
 
 			shared_examples_for 'frequency' do
 
@@ -58,6 +65,20 @@ RSpec.describe ToneGenerator do
 			context 'with a standard frequency (middle A)' do
 				let(:frequency) { 440 } # Middle A
 
+				describe 'with a short beat' do
+					let(:note_length) { 1/2.0 }
+					let(:expected_duration) { 1.0/3.0 } # Half a beat, at 90 BPM 
+
+					it_should_behave_like 'adding any sound'
+				end
+
+				describe 'with a different tempo' do
+					let(:bpm) { 210 }
+					let(:expected_duration) { 1 / 3.5 } # seconds -- i.e. 3.5 notes/second
+
+					it_should_behave_like 'adding any sound'
+				end
+
 				specify 'maxes out at the correct amplitude' do
 					expect(samples.max).to be_within(0.001).of(amplitude)
 					expect(samples.min).to be_within(0.001).of(-amplitude)
@@ -71,14 +92,14 @@ RSpec.describe ToneGenerator do
 						samples.slice_after { |s| !s.zero? }.to_a.last.length
 					end
 
-					let(:normal_leading_silence) { ToneGenerator::START_DELAY * ToneGenerator::SAMPLE_RATE * duration }
+					let(:normal_leading_silence) { Rhythm::START_DELAY * expected_samples }
 
 					specify 'includes silence before the note' do
 						expect(leading_silent_samples).to be_within(10).of(normal_leading_silence)
 					end
 
 					specify 'includes silence after the note' do
-						expected_trailing_silence = ToneGenerator::AFTER_DELAY * ToneGenerator::SAMPLE_RATE * duration
+						expected_trailing_silence = Rhythm::AFTER_DELAY * expected_samples
 						expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
 					end
 
@@ -86,21 +107,21 @@ RSpec.describe ToneGenerator do
 						let(:timing) { -1.0 }
 
 						specify 'reduces lead-in' do
-							expect(leading_silent_samples).to be_within(10).of(0)	
+							expect(leading_silent_samples).to be_within(10).of(0)
 						end
-					
-						# TODO: should probably rename this to mention duration.	
-						it_should_behave_like 'adding any sound'	
+
+						# TODO: should probably rename this to mention duration.
+						it_should_behave_like 'adding any sound'
 					end
 
 					context 'with a late beat' do
 						let(:timing) { 1.0 }
 
 						specify 'increases lead-in' do
-							expect(leading_silent_samples).to be_within(10).of(normal_leading_silence * 2)	
+							expect(leading_silent_samples).to be_within(10).of(normal_leading_silence * 2)
 						end
-					
-						it_should_behave_like 'adding any sound'	
+
+						it_should_behave_like 'adding any sound'
 					end
 
 				end

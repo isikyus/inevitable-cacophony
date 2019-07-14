@@ -8,60 +8,57 @@ class ToneGenerator
 
         SAMPLE_RATE = 44100 # Hertz
 
-	# Amount of silence before a note, as a fraction of the note's duration
-	START_DELAY = 0.3
-
-	# Amount of silence after notes, as a fraction  of duration.
-	AFTER_DELAY = 0.3
-
         # One full revolution of a circle (or one full cycle of a sine wave)
         TAU = Math::PI * 2
 
-        # Create a buffer representing a given note as an audio sample
+        # Create a buffer representing a given phrase as an audio sample
         #
-        # @param note [Note]
-        def note_buffer(note)
-		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
-		
-		# Decide how much space to allow before and after the note.
-		# TODO: should depend on note duration and maybe staccato/legato-ness
-		timeslot = note.duration * SAMPLE_RATE
-		start_delay = timeslot * START_DELAY
-		after_delay = timeslot * AFTER_DELAY
-
-		# Adjust delays to account for early/late beats
-		delay_adjustment = start_delay * note.beat.timing
-		start_delay += delay_adjustment
-		after_delay -= delay_adjustment
-
-		note_length = timeslot - start_delay - after_delay
-
-                samples = []
-		
-		samples << ([0.0] * start_delay)
-		samples << note_length.to_i.times.map do |index|
-                        wave_fraction = index / samples_per_wave.to_f
-			note.beat.amplitude * Math.sin(wave_fraction * TAU)
-                end
-		samples << ([0.0] * after_delay)
-
+        # @param phrase [Phrase]
+	def phrase_buffer(phrase)
+		samples = phrase.notes.map { |note| note_samples(note, phrase.tempo) }
                 WaveFile::Buffer.new(samples.flatten, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))
-        end
+	end
 
-	def add_note(frequency, amplitude, duration)
-		@notes << note_buffer(Note.new(frequency, amplitude, duration))
+	def add_phrase(phrase)
+		@phrases << phrase_buffer(phrase)
         end
 
         def write(io)
                 WaveFile::Writer.new(io, WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)) do |writer|
-                        @notes.each do |note|
-                                writer.write(note)
+                        @phrases.each do |phrase|
+                                writer.write(phrase)
                         end
                 end
         end
 
         def initialize
-                @notes = []
+                @phrases = []
+        end
+
+	private
+
+	# Create a array of amplitudes representing a single note as a sample.
+	#
+	# @param note [Note]
+	# @param tempo [Numeric] Tempo in BPM to play the note at
+	# 			 (exact duration will also depend on the beat).
+        def note_samples(note, tempo)
+		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
+		samples_per_beat = (60.0 / tempo) * SAMPLE_RATE
+		samples = []
+
+		start_delay = note.start_delay * samples_per_beat
+		after_delay = note.after_delay * samples_per_beat
+		note_length = (note.duration * samples_per_beat) - start_delay - after_delay
+
+		samples << ([0.0] * start_delay)
+
+		samples << note_length.to_i.times.map do |index|
+			wave_fraction = index / samples_per_wave.to_f
+			note.beat.amplitude * Math.sin(wave_fraction * TAU)
+                end
+		samples << ([0.0] * after_delay)
+		samples.flatten
         end
 end
 
