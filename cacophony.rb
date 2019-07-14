@@ -1,7 +1,6 @@
 require 'optparse'
 
-require 'parser/rhythm_line'
-require 'polyrhythm'
+require 'parser/rhythms'
 require 'octave_structure'
 require 'tone_generator'
 require 'phrase'
@@ -23,7 +22,7 @@ command = -> {
 			note = Note.new(tonic * chord_notes.shift, beat)
 			tone.add_phrase(Phrase.new(note, tempo: options[:tempo]))
 		end
-	end		
+	end
 }
 
 def input
@@ -38,10 +37,20 @@ end
 
 def rhythm
 	@rhythm ||= begin
-		# Spike'd quick-and-dirty attempt at playing chords in rhythm.
-		rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
-		
-		Parser::RhythmLine.new.parse(rhythm_score)
+		all_rhythms = Parser::Rhythms.new.parse(input)
+
+		# Pick the first rhythm mentioned in the file, which should be the one
+		# used by the first section of the piece.
+		rhythm_name = all_rhythms.keys.sort_by { |name| input.index(name.to_s) }.first
+
+		if all_rhythms[rhythm_name]
+			all_rhythms[rhythm_name]
+		else
+
+			# If no rhythms are mentioned, parse any rhythm string we can find in the input.
+			rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
+			Parser::RhythmLine.new.parse(rhythm_score)
+		end
 	end
 end
 
