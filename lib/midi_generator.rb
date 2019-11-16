@@ -13,20 +13,31 @@ class MidiGenerator
                 @phrases << phrase
         end
 
+        # @return [Midi::Track] Notes to be output to MIDI; mainly for testing.
+        def notes_track
+                build_notes_track(sequence, @phrases)
+        end
+
         # Write MIDI output to the given stream.
         def write(io)
-                seq = MIDI::Sequence.new
-                seq.tracks << meta_track(seq)
-                seq.tracks << notes_track(seq, @phrases)
+                sequence.tracks << notes_track(sequence, @phrases)
 
                 # Buffer output so we can send to stdout.
                 buffer = StringIO.new
-                seq.write(buffer)
+                sequence.write(buffer)
 
                 io.write(buffer.string)
         end
 
         private
+
+        def sequence
+                @sequence ||= begin
+                                 seq = MIDI::Sequence.new
+                                 seq.tracks << meta_track(seq)
+                                 seq
+                         end
+        end
 
         # TODO: why do I have to pass `seq` in,
         # when I'm then later adding the track back to seq.tracks?
@@ -46,7 +57,7 @@ class MidiGenerator
         end
 
         # TODO: multiple instruments?
-        def notes_track(seq, phrases)
+        def build_notes_track(seq, phrases)
                 track = MIDI::Track.new(seq)
                 track.name = 'Cacophony'
 
