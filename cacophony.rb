@@ -1,29 +1,37 @@
 require 'optparse'
-
 require 'parser/rhythms'
 require 'octave_structure'
+require 'midi_generator'
 require 'tone_generator'
 require 'phrase'
-
-tone = ToneGenerator.new
 
 command = -> {
 	octave = OctaveStructure.new(input)
 
 	tonic = 440 # Middle A
 
-	3.times do
+        3.times.map do
 		chord_notes = []
-		rhythm.each_beat do |beat|
+                rhythm.each_beat.map do |beat|
 			chords = octave.chords.values
 			if chord_notes.empty?
 				chord_notes = chords.sample(random: rng).note_scalings.dup
 			end
 
 			note = Note.new(tonic * chord_notes.shift, beat)
-			tone.add_phrase(Phrase.new(note, tempo: options[:tempo]))
+			Phrase.new(note, tempo: options[:tempo])
 		end
-	end
+        end.flatten
+}
+
+render = -> (phrases) {
+        tone = ToneGenerator.new
+        phrases.each { |phrase| tone.add_phrase(phrase) }
+
+        # Have to buffer output so wavefile can seek back to the beginning to write format info
+        output_buffer = StringIO.new
+        tone.write(output_buffer)
+        $stdout.write(output_buffer.string)
 }
 
 def input
@@ -71,7 +79,7 @@ OptionParser.new do |opts|
 				end
 			end.flatten
 
-			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
+			[Phrase.new(*notes, tempo: options[:tempo])]
 		}
 	end
 
@@ -92,7 +100,7 @@ OptionParser.new do |opts|
 				Note.new(factor * tonic, Rhythm::Beat.new(1, 1, 0))
 		        end
 
-			tone.add_phrase(Phrase.new(*notes, tempo: options[:tempo]))
+			[Phrase.new(*notes, tempo: options[:tempo])]
 		}
 	end
 
@@ -128,11 +136,16 @@ OptionParser.new do |opts|
 
 		options[:seed] = int_seed
 	end
+
+        opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (TODO: needs tuning file)') do
+                render = -> (phrases) {
+                        midi = MidiGenerator.new
+                        phrases.each do |phrase|
+                                midi.add_phrase(phrase)
+                        end
+                        midi.write($stdout)
+                }
+        end
 end.parse!
 
-command.call
-
-# Have to buffer output so wavefile can seek back to the beginning to write format info
-output_buffer = StringIO.new
-tone.write(output_buffer)
-$stdout.write(output_buffer.string)
+render.call(command.call)
