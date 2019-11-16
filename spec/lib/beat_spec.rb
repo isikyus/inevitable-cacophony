@@ -14,6 +14,10 @@ RSpec.describe Rhythm::Beat do
                 specify 'keeps total duration unchanged' do
                         expect(subject.duration).to eq 2
                 end
+
+                specify 'calculates length of actual sound' do
+                        expect(beat.sounding_time).to eq(2 - (Rhythm::AFTER_DELAY + Rhythm::START_DELAY) * 2)
+                end
         end
 
         context 'with timing set early' do
@@ -28,6 +32,10 @@ RSpec.describe Rhythm::Beat do
                 specify 'keeps total duration unchanged' do
                         expect(subject.duration).to eq 2
                 end
+
+                specify 'calculates length of actual sound' do
+                        expect(beat.sounding_time).to eq(2 - (Rhythm::AFTER_DELAY + Rhythm::START_DELAY) * 2)
+                end
         end
 
         context 'with timing set late' do
@@ -41,6 +49,10 @@ RSpec.describe Rhythm::Beat do
 
                 specify 'keeps total duration unchanged' do
                         expect(subject.duration).to eq 2
+                end
+
+                specify 'calculates length of actual sound' do
+                        expect(beat.sounding_time).to eq(2 - (Rhythm::AFTER_DELAY + Rhythm::START_DELAY) * 2)
                 end
         end
 end

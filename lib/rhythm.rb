@@ -41,6 +41,12 @@ class Rhythm
 			start_and_after_delays.last * duration
 		end
 
+                # How long this note sounds for,
+                # excluding any start/end delays.
+                def sounding_time
+                        duration * (1 - start_and_after_delays.sum)
+                end
+
 		private
 
 		# Calculate the before-note and after-note delays together,
