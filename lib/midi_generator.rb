@@ -35,17 +35,21 @@ class MidiGenerator
         # Create an array with frequencies in Hertz for each
         # MIDI note in the given octave structure.
         #
-        # @param octave [OctaveStructure]
+        # @param octave_structure [OctaveStructure]
         # @param tonic [Integer] The tonic frequency in Hertz.
         #                        This will correspond to Cacophony frequency 1,
         #                        and MIDI pitch 69
-        def frequency_table(octave, tonic)
+        def frequency_table(octave_structure, tonic)
+                octave = octave_structure.chromatic_scale.open
+                notes_per_octave = octave.length
 
-                # TODO: implement
                 (0..127).map do |index|
                         tonic_offset = index - MIDI_TONIC
-                        frequency = tonic * (2**(tonic_offset/12.0))
-                        frequency.ceil
+                        octave_offset, note = tonic_offset.divmod(notes_per_octave)
+
+                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+                        frequency = bottom_of_octave * octave.note_scalings[note]
+                        frequency.round
                 end
         end
 

@@ -4,20 +4,44 @@ require 'midi_generator'
 require 'phrase'
 require 'note'
 require 'rhythm'
+require 'octave_structure'
 
 RSpec.describe MidiGenerator do
         subject(:midi_generator) do
                 MidiGenerator.new
         end
 
+        let(:octave_structure) do
+                octave = OctaveStructure.new(<<-OCTAVE)
+                Scales are constructed from eleven notes spaced evenly throughout the octave.
+                (This guarantees our notes don't line up with 12TET)
+
+                The elven hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+                These chords are named alpha and beta.
+
+                The alpha trichord is the 1st, the 3rd, and the 5th degrees of the eleven-note octave scale.
+
+                The beta trichord is the 7th, the 9th, and the 12th (completing the octave) degrees of the eleven-note octave scale.
+                OCTAVE
+        end
+
+        let(:scale) do
+                octave_structure.scales[:elven]
+        end
+
+        let(:beats) do
+                [Rhythm::Beat.new(1, 1, 0)] * 5
+        end
+
         let(:phrase) do
                 Phrase.new(
                         *[
-                                Note.new(440, beats[0]),
-                                Note.new(550, beats[1]),
-                                Note.new(660, beats[2]),
-                                Note.new(770, beats[3]),
-                                Note.new(880, beats[4])
+                                # First two notes are in the previous octave
+                                Note.new(scale.note_scalings[-2] / 2, beats[0]),
+                                Note.new(scale.note_scalings[-1] / 2, beats[1]),
+                                Note.new(scale.note_scalings[0], beats[2]),
+                                Note.new(scale.note_scalings[1], beats[3]),
+                                Note.new(scale.note_scalings[2], beats[4])
                         ],
                         tempo: 120
                 )
@@ -74,7 +98,7 @@ RSpec.describe MidiGenerator do
 
                         # start_deltas[0] is the space between notes 0 and 1
                         expect(start_deltas[1]).to be < start_deltas[0]
-                       
+
                         expect(start_deltas[2]).to be > start_deltas[0]
                         expect(start_deltas[1..2].sum).to eq(2 * start_deltas[0])
 
@@ -105,5 +129,20 @@ RSpec.describe MidiGenerator do
                 end
         end
 
-        specify 'preserves frequencies'
+        context 'mapping scale information' do
+                # Middle A - 440 Hertz
+                let(:tonic) { 440.0 }
+
+                specify 'assigns MIDI notes according to a consistent mapping' do
+                        note_ons = track.select { |e| e.is_a?(MIDI::NoteOn) }
+                        frequency_table = midi_generator.frequency_table(octave_structure, tonic)
+                        midi_frequencies = note_ons.map { |n| frequency_table[n.note] }
+
+                        expect(midi_frequencies[0]).to be_within(0.5).of(tonic * phrase.notes[0].frequency)
+                        expect(midi_frequencies[1]).to be_within(0.5).of(tonic * phrase.notes[1].frequency)
+                        expect(midi_frequencies[2]).to be_within(0.5).of(tonic * phrase.notes[2].frequency)
+                        expect(midi_frequencies[3]).to be_within(0.5).of(tonic * phrase.notes[3].frequency)
+                        expect(midi_frequencies[4]).to be_within(0.5).of(tonic * phrase.notes[4].frequency)
+                end
+        end
 end

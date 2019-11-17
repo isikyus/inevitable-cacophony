@@ -19,6 +19,10 @@ class OctaveStructure
                 end
 
                 attr_accessor :note_scalings
+
+                def length
+                        note_scalings.length
+                end
         end
 
         class Chord < NoteSequence
