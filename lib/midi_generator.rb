@@ -20,7 +20,7 @@ class MidiGenerator
 
         # Write MIDI output to the given stream.
         def write(io)
-                sequence.tracks << notes_track(sequence, @phrases)
+                sequence.tracks << notes_track
 
                 # Buffer output so we can send to stdout.
                 buffer = StringIO.new
