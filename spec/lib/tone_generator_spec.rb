@@ -5,7 +5,10 @@ require 'phrase'
 
 RSpec.describe ToneGenerator do
 
-	subject { ToneGenerator.new }
+        # Middle A
+        let(:tonic) { 440 }
+
+	subject { ToneGenerator.new(tonic) }
 
 	describe '#phrase_buffer' do
 		let(:amplitude) { 0.8 } # Out of 1
@@ -40,7 +43,7 @@ RSpec.describe ToneGenerator do
 		end
 
 		context 'adding a note' do
-			let(:note) { Note.new(frequency, beat) }
+			let(:note) { Note.new(ratio, beat) }
 
 			shared_examples_for 'frequency' do
 
@@ -63,7 +66,8 @@ RSpec.describe ToneGenerator do
 			end
 
 			context 'with a standard frequency (middle A)' do
-				let(:frequency) { 440 } # Middle A
+				let(:ratio) { 1 }
+                                let(:frequency) { tonic }
 
 				describe 'with a short beat' do
 					let(:note_length) { 1/2.0 }
@@ -132,7 +136,8 @@ RSpec.describe ToneGenerator do
 			end
 
 			context 'with a different frequency' do
-				let(:frequency) { 1111 } # Hertz; some random note
+                                let(:frequency) { 1111 } # Some random note
+                                let(:ratio) { frequency / tonic.to_f }
 
 				it_should_behave_like 'frequency'
 			end

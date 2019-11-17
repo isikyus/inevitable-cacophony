@@ -8,8 +8,6 @@ require 'phrase'
 command = -> {
 	octave = OctaveStructure.new(input)
 
-	tonic = 440 # Middle A
-
         3.times.map do
 		chord_notes = []
                 rhythm.each_beat.map do |beat|
@@ -18,14 +16,14 @@ command = -> {
 				chord_notes = chords.sample(random: rng).note_scalings.dup
 			end
 
-			note = Note.new(tonic * chord_notes.shift, beat)
+			note = Note.new(chord_notes.shift, beat)
 			Phrase.new(note, tempo: options[:tempo])
 		end
         end.flatten
 }
 
 render = -> (phrases) {
-        tone = ToneGenerator.new
+        tone = ToneGenerator.new(options[:tonic])
         phrases.each { |phrase| tone.add_phrase(phrase) }
 
         # Have to buffer output so wavefile can seek back to the beginning to write format info
@@ -40,7 +38,8 @@ end
 
 def options
 	@options ||= {
-		tempo: 120 # beats per minute
+                tempo: 120, # beats per minute
+                tonic: 440 # Hz; middle A
 	}
 end
 
@@ -75,7 +74,7 @@ OptionParser.new do |opts|
 		command = -> {
 			notes = 3.times.map do
 				rhythm.each_beat.map do |beat|
-					Note.new(440, beat)
+					Note.new(1, beat)
 				end
 			end.flatten
 
@@ -94,10 +93,8 @@ OptionParser.new do |opts|
 				end
 
 			rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
-		        tonic = 440 # Hz; Middle A
-
 		        notes = rising_and_falling.map do |factor|
-				Note.new(factor * tonic, Rhythm::Beat.new(1, 1, 0))
+				Note.new(factor, Rhythm::Beat.new(1, 1, 0))
 		        end
 
 			[Phrase.new(*notes, tempo: options[:tempo])]
@@ -144,6 +141,14 @@ OptionParser.new do |opts|
                                 midi.add_phrase(phrase)
                         end
                         midi.write($stdout)
+                }
+        end
+
+        opts.on('-M', '--midi-tuning', 'Instead of music, generate a Scala (Timidity-compatible) tuning file for use with MIDI output from --midi') do
+                command = -> {
+                        midi = MidiGenerator.new
+                        octave_structure = OctaveStructure.new(input)
+                        midi.write_frequencies(octave_structure, options[:tonic], $stdout)
                 }
         end
 end.parse!
