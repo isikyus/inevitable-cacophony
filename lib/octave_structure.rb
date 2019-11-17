@@ -5,7 +5,7 @@ require 'parser/sectioned_text'
 class OctaveStructure
 
 	# Frequency scaling for a difference of one whole octave
-	OCTAVE = 2
+	OCTAVE_RATIO = 2
 
 	# Represent a sequence of notes from an octave -- either a chord,
 	# or the notes of a scale.
@@ -39,7 +39,7 @@ class OctaveStructure
 		#
 		# @return [Scale]
 		def open
-			if note_scalings.last == OCTAVE
+			if note_scalings.last == OCTAVE_RATIO
 
 				# -1 is the last note; we want to end on the one before that, so -2
 				Scale.new(@chords, note_scalings[0..-2])
