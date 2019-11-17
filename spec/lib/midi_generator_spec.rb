@@ -82,7 +82,28 @@ RSpec.describe MidiGenerator do
                 end
         end
 
-        specify 'preserves volume'
+        context 'with varying amplitude' do
+                let(:beats) do
+                        [
+                                Rhythm::Beat.new(1, 1, 0),
+                                Rhythm::Beat.new(0.5, 1, 0),
+                                Rhythm::Beat.new(0.25, 1, 0),
+                                Rhythm::Beat.new(0, 1, 0),
+                                Rhythm::Beat.new(1, 1, 0)
+                        ]
+                end
+
+                specify 'preserves the different volumes' do
+                        note_ons = track.events.select { |e| e.is_a?(MIDI::NoteOn) }
+                        velocities = note_ons.map { |n| n.velocity }
+
+                        expect(velocities[0]).to eq 127
+                        expect(velocities[1]).to eq 64
+                        expect(velocities[2]).to eq 32
+                        expect(velocities[3]).to eq 0
+                        expect(velocities[4]).to eq 127
+                end
+        end
 
         specify 'preserves frequencies'
 end

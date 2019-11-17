@@ -72,32 +72,36 @@ class MidiGenerator
 
                 phrases.each do |phrase|
                         phrase.notes.each do |note|
-                                midi_note = midi_index(note)
-                                beat = note.beat
-
-                                track.events << MIDI::NoteOn.new(
-                                        0,
-                                        midi_note,
-                                        127,
-                                        # TODO: can notes be out of order?
-                                        # TODO: code smell to refer to seq
-                                        # Beat duration 1 conveniently matches
-                                        # midilib's quarter-note = 1.
-                                        seq.length_to_delta(beat.start_delay) + leftover_delay
-                                )
-
-                                track.events << MIDI::NoteOff.new(
-                                        0,
-                                        midi_note,
-                                        127,
-                                        seq.length_to_delta(beat.sounding_time)
-                                )
-
-                                leftover_delay = seq.length_to_delta(beat.after_delay)
+                                track.events += midi_events_for_note(leftover_delay, note, seq)
+                                leftover_delay = seq.length_to_delta(note.beat.after_delay)
                         end
                 end
 
                 track
+        end
+
+        # TODO: code smell to pass in seq
+        def midi_events_for_note(delay_before, note, seq)
+                midi_note = midi_index(note)
+                beat = note.beat
+
+                [
+                        MIDI::NoteOn.new(
+                                0,
+                                midi_note,
+                                (beat.amplitude * 127).ceil,
+                                # TODO: can notes be out of order?
+                                # Beat duration 1 conveniently matches
+                                # midilib's quarter-note = 1.
+                                seq.length_to_delta(beat.start_delay) + delay_before
+                        ),
+                        MIDI::NoteOff.new(
+                                0,
+                                midi_note,
+                                127,
+                                seq.length_to_delta(beat.sounding_time)
+                        )
+                ]
         end
 
         def midi_index(note)
