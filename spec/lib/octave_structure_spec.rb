@@ -43,12 +43,12 @@ RSpec.describe OctaveStructure do
 					2 ** (20/24.0),
 					2 ** (21/24.0),
 					2 ** (22/24.0),
-					2 ** (23/24.0),
+					2 ** (23/24.0)
 				]
 			end
 
-			xspecify 'parses them correctly' do
-				subject.octave_divisions.each_with_index do |scaling, index|
+			specify 'parses them correctly' do
+                                subject.chromatic_scale.open.note_scalings.each_with_index do |scaling, index|
 					expect(scaling).to be_within(0.0001).of(expected_scalings[index])
 				end
 			end

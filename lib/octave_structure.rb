@@ -82,15 +82,46 @@ class OctaveStructure
 
         def parse_octave_structure(octave_paragraph)
                 octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
-                note_count_word = octave_sentence.match(/Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/).captures.first
+                note_count_match = octave_sentence.match(/Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/)
 
-                if note_count_word
+                if note_count_match
+                        note_count_word = note_count_match.captures.first
                         divisions = parse_number_word(note_count_word)
                         numerator = divisions.to_f
 
                         (0...divisions).map { |index| 2 ** (index/numerator) }
                 else
-                        raise("Cannot parse octave description:\n#{octave_paragraph}")
+                        parse_exact_notes(octave_paragraph)
+                end
+        end
+
+        def parse_exact_notes(octave_paragraph)
+                exact_spacing_sentence = octave_paragraph.find(/their spacing is roughly/)
+                spacing_match = exact_spacing_sentence.match(/In quartertones, their spacing is roughly 1((-|x){23})0/)
+
+                if spacing_match
+                        # Always include the tonic
+                        note_scalings = [1]
+
+                        note_positions = spacing_match.captures.first
+                        step_size = 2**(1.0 / note_positions.length.succ)
+                        ratio = 1
+                        note_positions.each_char do |pos|
+                                ratio *= step_size
+                                
+                                case pos
+                                when 'x'
+                                        note_scalings << ratio
+                                when '-'
+                                        # Do nothing; no note here
+                                else
+                                        raise "Unexpected note position symbol #{pos.inspect}"
+                                end
+                        end
+
+                        note_scalings
+                else
+                        raise "Cannot parse octave text"
                 end
         end
 
