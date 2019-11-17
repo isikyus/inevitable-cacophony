@@ -48,8 +48,7 @@ class MidiGenerator
                         octave_offset, note = tonic_offset.divmod(notes_per_octave)
 
                         bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
-                        frequency = bottom_of_octave * octave.note_scalings[note]
-                        frequency.round
+                        bottom_of_octave * octave.note_scalings[note]
                 end
         end
 

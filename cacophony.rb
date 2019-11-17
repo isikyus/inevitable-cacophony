@@ -148,7 +148,12 @@ OptionParser.new do |opts|
                 command = -> {
                         midi = MidiGenerator.new
                         octave_structure = OctaveStructure.new(input)
-                        midi.write_frequencies(octave_structure, options[:tonic], $stdout)
+                        midi.frequency_table(octave_structure, options[:tonic])
+                }
+                render = -> (frequencies) {
+                        frequencies.each do |frequency|
+                                $stdout.puts (frequency * 1000).round
+                        end
                 }
         end
 end.parse!
