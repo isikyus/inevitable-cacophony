@@ -7,6 +7,9 @@ require 'midilib/consts'
 
 class MidiGenerator
 
+        # Middle A in MIDI
+        MIDI_TONIC = 69
+
         # Add a phrase to the MIDI output we will generate.
         def add_phrase(phrase)
                 @phrases ||= []
@@ -27,6 +30,23 @@ class MidiGenerator
                 sequence.write(buffer)
 
                 io.write(buffer.string)
+        end
+
+        # Create an array with frequencies in Hertz for each
+        # MIDI note in the given octave structure.
+        #
+        # @param octave [OctaveStructure]
+        # @param tonic [Integer] The tonic frequency in Hertz.
+        #                        This will correspond to Cacophony frequency 1,
+        #                        and MIDI pitch 69
+        def frequency_table(octave, tonic)
+
+                # TODO: implement
+                (0..127).map do |index|
+                        tonic_offset = index - MIDI_TONIC
+                        frequency = tonic * (2**(tonic_offset/12.0))
+                        frequency.ceil
+                end
         end
 
         private
@@ -105,8 +125,8 @@ class MidiGenerator
         end
 
         def midi_index(note)
-                # Guess based on closest 12TET frequency.
+                # Guess based on closest 12TET frequency, assuming tonic of 440 Hz.
                 # TODO: need to know about the scale.
-                ((Math.log(note.frequency / 440.0, 2) * 12) + 64).round.to_i
+                ((Math.log(note.frequency, 2) * 12) + MIDI_TONIC).round.to_i
         end
 end
