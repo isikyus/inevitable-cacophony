@@ -84,19 +84,28 @@ RSpec.describe 'Inevitable Cacophony' do
 				end
 			end
 
-                        context 'with MIDI output' do
+                        context 'generating MIDI' do
 			        let(:description_file) { 'spec/fixtures/eleven_note_scale.txt' }
                                 let(:generated_data) do
-                                        generate_with_args('-s', '-m', '-e', form_description)
-                                end
-                                let(:fixture_file) { 'spec/fixtures/eleven_note_scale.midi' }
-
-                                specify 'generates the MIDI file' do
-                                        expect(generated_data).to eq known_data
+                                        generate_with_args('-s', *extra_args, '-e', form_description)
                                 end
 
-                                specify 'generates a separate Scala tuning file' do
-                                        pending
+                                context 'MIDI file itself'
+                                        let(:fixture_file) { 'spec/fixtures/eleven_note_scale.midi' }
+                                        let(:extra_args) { ['-m'] }
+
+                                        specify 'generates' do
+                                                expect(generated_data).to eq known_data
+                                        end
+                                end
+
+                                context 'Scala tuning file' do
+                                        let(:extra_args) { ['-M'] }
+                                        let(:fixture_file) { 'spec/fixtures/eleven_note_scale.tuning' }
+
+                                        specify 'generates a separate Scala tuning file' do
+                                                expect(generated_data).to eq known_data
+                                        end
                                 end
                         end
 		end
