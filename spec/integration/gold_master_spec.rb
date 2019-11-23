@@ -90,7 +90,7 @@ RSpec.describe 'Inevitable Cacophony' do
                                         generate_with_args('-s', *extra_args, '-e', form_description)
                                 end
 
-                                context 'MIDI file itself'
+                                context 'MIDI file itself' do
                                         let(:fixture_file) { 'spec/fixtures/eleven_note_scale.midi' }
                                         let(:extra_args) { ['-m'] }
 
