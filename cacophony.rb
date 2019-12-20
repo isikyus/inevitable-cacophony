@@ -134,7 +134,7 @@ OptionParser.new do |opts|
 		options[:seed] = int_seed
 	end
 
-        opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (TODO: needs tuning file)') do
+        opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (needs file from -M to play in tune)') do
                 render = -> (phrases) {
                         midi = MidiGenerator.new
                         phrases.each do |phrase|
