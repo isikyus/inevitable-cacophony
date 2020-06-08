@@ -1,4 +1,6 @@
 require 'optparse'
+require 'stringio'
+
 require 'parser/rhythms'
 require 'octave_structure'
 require 'midi_generator'
