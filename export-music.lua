@@ -23,6 +23,23 @@ end
 MELODY_STYLES = { 'rising', 'falling', 'rising-falling', 'falling-rising' }
 MELODY_FREQUENCIES = { 'always', 'often', 'sometimes' }
 
+local function IntervalsData(intervals)
+    local intervalsData = {}
+
+    for i, interval in ipairs(intervals) do
+        local intervalData = {}
+
+        intervalData['degree'] = interval.degree
+        intervalData['rising'] = interval.flags.rising
+        intervalData['flattened'] = interval.flags.flattened
+        intervalData['sharpened'] = interval.flags.sharpened
+
+        intervalsData[i+1] = intervalData
+    end
+
+    return intervalsData
+end
+
 local function MelodiesData(melodies)
     local melodiesData = {}
 
@@ -31,7 +48,7 @@ local function MelodiesData(melodies)
 
         melodyData['style'] = MELODY_STYLES[melody.style]
         melodyData['frequency'] = MELODY_FREQUENCIES[melody.frequency]
-        -- melodyData['intervals'] = IntervalData(melody.intervals)
+        melodyData['intervals'] = IntervalsData(melody.intervals)
         melodyData['features'] = {
             GlideFromNoteToNote = melody.features.GlideFromNoteToNote,
             UseGraceNotes = melody.features.UseGraceNotes,
