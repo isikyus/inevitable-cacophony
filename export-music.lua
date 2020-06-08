@@ -14,7 +14,7 @@ json = require('json')
 local function MapList(lookups, list)
     local listData = {}
     for i, entry in ipairs(list) do
-        listData[i] = lookups[entry]
+        listData[i + 1] = lookups[entry]
     end
 
     return listData
@@ -35,7 +35,7 @@ local function VocalsData(vocals)
             voice.phrase_lengths
         )
 
-        vocalsData[i] = voiceData
+        vocalsData[i + 1] = voiceData
     end
 
     return vocalsData
@@ -58,7 +58,7 @@ local function MusicalFormsData()
         form['repeats_as_necessary'] = v.flags.repeats_as_necessary
         form['vocals'] = VocalsData(v.scales)
 
-        formsData[i] = form
+        formsData[i + 1] = form
     end
 
     return formsData
