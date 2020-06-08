@@ -20,6 +20,44 @@ local function MapList(lookups, list)
     return listData
 end
 
+MELODY_STYLES = { 'rising', 'falling', 'rising-falling', 'falling-rising' }
+MELODY_FREQUENCIES = { 'always', 'often', 'sometimes' }
+
+local function MelodiesData(melodies)
+    local melodiesData = {}
+
+    for i, melody in ipairs(melodies) do
+        melodyData = {}
+
+        melodyData['style'] = MELODY_STYLES[melody.style]
+        melodyData['frequency'] = MELODY_FREQUENCIES[melody.frequency]
+        -- melodyData['intervals'] = IntervalData(melody.intervals)
+        melodyData['features'] = {
+            GlideFromNoteToNote = melody.features.GlideFromNoteToNote,
+            UseGraceNotes = melody.features.UseGraceNotes,
+            UseMordents = melody.features.UseMordents,
+            MakeTrills = melody.features.MakeTrills,
+            PlayRapidRuns = melody.features.PlayRapidRuns,
+            LocallyImprovise = melody.features.LocallyImprovise,
+            SpreadSyllablesOverManyNotes = melody.features.SpreadSyllablesOverManyNotes,
+            MatchNotesAndSyllables = melody.features.MatchNotesAndSyllables,
+
+            Syncopate = melody.features.Syncopate,
+            AddFills = melody.features.AddFills,
+            AlternateTensionAndRepose = melody.features.AlternateTensionAndRepose,
+            ModulateFrequently = melody.features.ModulateFrequently,
+            PlayArpeggios = melody.features.PlayArpeggios,
+            PlayStaccato = melody.features.PlayStaccato,
+            PlayLegato = melody.features.PlayLegato,
+            FreelyAdjustBeats = melody.features.FreelyAdjustBeats,
+        }
+
+        melodiesData[i + 1] = melodyData
+    end
+
+    return melodiesData
+end
+
 local function VocalsData(vocals)
     local vocalsData = {}
 
@@ -34,6 +72,7 @@ local function VocalsData(vocals)
             { 'short', 'mid-length', 'long', 'varied-length' },
             voice.phrase_lengths
         )
+        voiceData['melodies'] = MelodiesData(voice.anon_21)
 
         vocalsData[i + 1] = voiceData
     end
