@@ -20,8 +20,8 @@ local function MapList(lookups, list)
     return listData
 end
 
-MELODY_STYLES = { 'rising', 'falling', 'rising-falling', 'falling-rising' }
-MELODY_FREQUENCIES = { 'always', 'often', 'sometimes' }
+local MELODY_STYLES = { 'rising', 'falling', 'rising-falling', 'falling-rising' }
+local MELODY_FREQUENCIES = { 'always', 'often', 'sometimes' }
 
 local function IntervalsData(intervals)
     local intervalsData = {}
@@ -40,6 +40,28 @@ local function IntervalsData(intervals)
     return intervalsData
 end
 
+local function MapFeatures(features)
+     return {
+        GlideFromNoteToNote = features.GlideFromNoteToNote,
+        UseGraceNotes = features.UseGraceNotes,
+        UseMordents = features.UseMordents,
+        MakeTrills = features.MakeTrills,
+        PlayRapidRuns = features.PlayRapidRuns,
+        LocallyImprovise = features.LocallyImprovise,
+        SpreadSyllablesOverManyNotes = features.SpreadSyllablesOverManyNotes,
+        MatchNotesAndSyllables = features.MatchNotesAndSyllables,
+
+        Syncopate = features.Syncopate,
+        AddFills = features.AddFills,
+        AlternateTensionAndRepose = features.AlternateTensionAndRepose,
+        ModulateFrequently = features.ModulateFrequently,
+        PlayArpeggios = features.PlayArpeggios,
+        PlayStaccato = features.PlayStaccato,
+        PlayLegato = features.PlayLegato,
+        FreelyAdjustBeats = features.FreelyAdjustBeats,
+    }
+end
+
 local function MelodiesData(melodies)
     local melodiesData = {}
 
@@ -49,25 +71,7 @@ local function MelodiesData(melodies)
         melodyData['style'] = MELODY_STYLES[melody.style]
         melodyData['frequency'] = MELODY_FREQUENCIES[melody.frequency]
         melodyData['intervals'] = IntervalsData(melody.intervals)
-        melodyData['features'] = {
-            GlideFromNoteToNote = melody.features.GlideFromNoteToNote,
-            UseGraceNotes = melody.features.UseGraceNotes,
-            UseMordents = melody.features.UseMordents,
-            MakeTrills = melody.features.MakeTrills,
-            PlayRapidRuns = melody.features.PlayRapidRuns,
-            LocallyImprovise = melody.features.LocallyImprovise,
-            SpreadSyllablesOverManyNotes = melody.features.SpreadSyllablesOverManyNotes,
-            MatchNotesAndSyllables = melody.features.MatchNotesAndSyllables,
-
-            Syncopate = melody.features.Syncopate,
-            AddFills = melody.features.AddFills,
-            AlternateTensionAndRepose = melody.features.AlternateTensionAndRepose,
-            ModulateFrequently = melody.features.ModulateFrequently,
-            PlayArpeggios = melody.features.PlayArpeggios,
-            PlayStaccato = melody.features.PlayStaccato,
-            PlayLegato = melody.features.PlayLegato,
-            FreelyAdjustBeats = melody.features.FreelyAdjustBeats,
-        }
+        melodyData['features'] = MapFeatures(melody.features)
 
         melodiesData[i + 1] = melodyData
     end
@@ -97,6 +101,31 @@ local function VocalsData(vocals)
     return vocalsData
 end
 
+local function InstrumentsData(instruments)
+    local style = df.musical_form_style
+    local instrumentsData = {}
+
+    for i, instrument in ipairs(instruments) do
+        local instrumentData = {}
+
+        instrumentData['instrument'] = instrument_subtype
+        instrumentData['substitutions'] = {
+            singer = instrument.substitutions.singer,
+            speaker = instrument.substitutions.speaker,
+            chanter = instrument.substitutions.chanter
+        }
+        instrumentData['features'] = MapFeatures(instrument.features)
+        instrumentData['minimum_required'] = instrument.minimum_required
+        instrumentData['maximum_permitted'] = instrument.maximum_permitted
+        instrumentData['dynamic_style'] = style[instrument.dynamic_style]
+        instrumentData['overall_style'] = style[instrument.overall_style]
+
+        instrumentsData[i + 1] = instrumentData
+    end
+
+    return instrumentsData
+end
+
 local function MusicalFormsData()
     local style = df.musical_form_style
     local formsData = {}
@@ -114,6 +143,7 @@ local function MusicalFormsData()
         form['repeats_as_necessary'] = v.flags.repeats_as_necessary
         form['vocals'] = VocalsData(v.scales)
         form['melodies'] = MelodiesData(v.melodies)
+        form['instruments'] = InstrumentsData(v.instruments)
 
         formsData[i + 1] = form
     end
