@@ -113,6 +113,7 @@ local function MusicalFormsData()
         form['produces_individual_songs'] = v.flags.produces_individual_songs
         form['repeats_as_necessary'] = v.flags.repeats_as_necessary
         form['vocals'] = VocalsData(v.scales)
+        form['melodies'] = MelodiesData(v.melodies)
 
         formsData[i + 1] = form
     end
