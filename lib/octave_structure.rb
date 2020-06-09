@@ -223,7 +223,7 @@ class OctaveStructure
                 if words_to_numbers[word]
                         words_to_numbers[word]
                 elsif word.start_with?('twenty-')
-                        words_to_numbers[word.delete('twenty-')] + 20
+                        words_to_numbers[word.delete_prefix('twenty-')] + 20
                 else
                         "Unsupported number name #{word}"
                 end
