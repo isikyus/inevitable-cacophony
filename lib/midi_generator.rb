@@ -17,13 +17,14 @@ class MidiGenerator
         end
 
         # @return [Midi::Track] Notes to be output to MIDI; mainly for testing.
-        def notes_track
+        def notes_track(sequence=build_sequence)
                 build_notes_track(sequence, @phrases)
         end
 
         # Write MIDI output to the given stream.
         def write(io)
-                sequence.tracks << notes_track
+                sequence = build_sequence
+                sequence.tracks << notes_track(sequence)
 
                 # Buffer output so this method can be called on stdout.
                 buffer = StringIO.new
@@ -54,12 +55,10 @@ class MidiGenerator
 
         private
 
-        def sequence
-                @sequence ||= begin
-                                 seq = MIDI::Sequence.new
-                                 seq.tracks << meta_track(seq)
-                                 seq
-                         end
+        def build_sequence
+                seq = MIDI::Sequence.new
+                seq.tracks << meta_track(seq)
+                seq
         end
 
         # TODO: why do I have to pass `seq` in,
