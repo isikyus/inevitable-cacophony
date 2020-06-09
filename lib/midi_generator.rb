@@ -25,7 +25,7 @@ class MidiGenerator
         def write(io)
                 sequence.tracks << notes_track
 
-                # Buffer output so we can send to stdout.
+                # Buffer output so this method can be called on stdout.
                 buffer = StringIO.new
                 sequence.write(buffer)
 
