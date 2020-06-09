@@ -12,21 +12,21 @@ RSpec.describe MidiGenerator do
         end
 
         let(:octave_structure) do
-                octave = OctaveStructure.new(<<-OCTAVE)
-                Scales are constructed from eleven notes spaced evenly throughout the octave.
+                OctaveStructure.new(<<-OCTAVE)
+                Scales are constructed from seven notes spaced evenly throughout the octave.
                 (This guarantees our notes don't line up with 12TET)
 
-                The elven hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+                The test hexatonic scale is thought of as two disjoint chords spanning no particular interval.
                 These chords are named alpha and beta.
 
-                The alpha trichord is the 1st, the 3rd, and the 5th degrees of the eleven-note octave scale.
+                The alpha trichord is the 1st, the 2nd, and the 4th degrees of the seven-note octave scale.
 
-                The beta trichord is the 7th, the 9th, and the 12th (completing the octave) degrees of the eleven-note octave scale.
+                The beta trichord is the 5th, the 6th, and the 7th (completing the octave) degrees of the seven-note octave scale.
                 OCTAVE
         end
 
         let(:scale) do
-                octave_structure.scales[:elven]
+                octave_structure.scales[:test]
         end
 
         let(:beats) do
@@ -133,16 +133,146 @@ RSpec.describe MidiGenerator do
                 # Middle A - 440 Hertz
                 let(:tonic) { 440.0 }
 
-                specify 'assigns MIDI notes according to a consistent mapping' do
-                        note_ons = track.select { |e| e.is_a?(MIDI::NoteOn) }
-                        frequency_table = midi_generator.frequency_table(octave_structure, tonic)
-                        midi_frequencies = note_ons.map { |n| frequency_table[n.note] }
+                let(:note_ons) do
+                        track.select { |e| e.is_a?(MIDI::NoteOn) }
+                end
 
-                        expect(midi_frequencies[0]).to be_within(0.5).of(tonic * phrase.notes[0].frequency)
-                        expect(midi_frequencies[1]).to be_within(0.5).of(tonic * phrase.notes[1].frequency)
-                        expect(midi_frequencies[2]).to be_within(0.5).of(tonic * phrase.notes[2].frequency)
-                        expect(midi_frequencies[3]).to be_within(0.5).of(tonic * phrase.notes[3].frequency)
-                        expect(midi_frequencies[4]).to be_within(0.5).of(tonic * phrase.notes[4].frequency)
+                let(:midi_frequencies) do
+                        frequency_table = midi_generator.frequency_table(octave_structure, tonic)
+                        note_ons.map { |n| frequency_table[n.note] }
+                end
+
+                context 'with a 7-note scale that fits in the octave' do
+                        specify 'assigns MIDI notes that match the frequency table' do
+                                expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
+                                expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+                                expect(midi_frequencies[2]).to be_within(0.01).of(tonic * phrase.notes[2].frequency)
+                                expect(midi_frequencies[3]).to be_within(0.01).of(tonic * phrase.notes[3].frequency)
+                                expect(midi_frequencies[4]).to be_within(0.01).of(tonic * phrase.notes[4].frequency)
+                        end
+
+                        specify 'uses distinct MIDI notes for different frequencies' do
+                                expect(midi_frequencies.uniq).to eq midi_frequencies
+                        end
+
+                        context 'with notes at the edges of MIDI range' do
+                                let(:phrase) do
+                                        Phrase.new(
+                                                 Note.new(scale.note_scalings[0] / 2**5, beats[0]),
+                                                 Note.new(scale.note_scalings[-1] * 2**5, beats[1]),
+                                                 tempo: 120
+                                        )
+                                end
+
+                                specify 'preserves relative position in the octave' do
+                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (5 * 12))
+                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (5 * 12))
+                                end
+
+                                specify 'assigns MIDI notes that match the frequency table' do
+                                        expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
+                                        expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+                                end
+                        end
+
+                        context "with notes outside of MIDI's range" do
+                                let(:phrase) do
+                                        Phrase.new(
+                                                 Note.new(scale.note_scalings[0] / 2**6. beats[1]),
+                                                 Note.new(scale.note_scalings[-1] * 2**6, beats[0]),
+                                                 tempo: 120
+                                        )
+                                end
+
+                                specify 'fails cleanly' do
+                                        expect { track }.to raise_error(MidiGenerator::OutOfRange)
+                                end
+                        end
+                end
+
+                context 'with more notes per octave than 12TET' do
+                         let(:octave_structure) do
+                                OctaveStructure.new(<<-OCTAVE)
+                                Scales are constructed from twenty-one notes spaced evenly throughout the octave.
+
+                                The test hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+                                These chords are named alpha and beta.
+
+                                The alpha trichord is the 1st, the 5th, and the 9th degrees of the twenty-one-note octave scale.
+
+                                The beta trichord is the 11th, the 16th, and the 21st (completing the octave) degrees of the twenty-one-note octave scale.
+                                OCTAVE
+                        end
+
+                        specify 'assigns MIDI notes that match the frequency table' do
+                                expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
+                                expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+                                expect(midi_frequencies[2]).to be_within(0.01).of(tonic * phrase.notes[2].frequency)
+                                expect(midi_frequencies[3]).to be_within(0.01).of(tonic * phrase.notes[3].frequency)
+                                expect(midi_frequencies[4]).to be_within(0.01).of(tonic * phrase.notes[4].frequency)
+                        end
+
+                        specify 'uses distinct MIDI notes for different frequencies' do
+                                expect(midi_frequencies.uniq).to eq midi_frequencies
+                        end
+
+                        context 'with notes at the edges of MIDI range' do
+                                let(:phrase) do
+                                        Phrase.new(
+                                                 Note.new(scale.note_scalings[0] / 2**3, beats[0]),
+                                                 Note.new(scale.note_scalings[-1] * 2**3, beats[1]),
+                                                 tempo: 120
+                                        )
+                                end
+
+                                specify 'preserves relative position in the octave' do
+                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (3 * 21))
+                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (3 * 21))
+                                end
+
+                                specify 'assigns MIDI notes that match the frequency table' do
+                                        expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
+                                        expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+                                end
+                        end
+
+
+                        context "with notes outside of MIDI's range" do
+                                let(:phrase) do
+                                        Phrase.new(
+                                                 Note.new(scale.note_scalings[0] / 2**4, beats[0]),
+                                                 Note.new(scale.note_scalings[-1] * 2**4, beats[1]),
+                                                 tempo: 120
+                                        )
+                                end
+
+                                specify 'fails cleanly' do
+                                        expect { track }.to raise_error(MidiGenerator::OutOfRange)
+                                end
+                        end
+                end
+
+                context 'with exactly a 12-tone scale' do
+                         let(:octave_structure) do
+                                octave = OctaveStructure.new(<<-OCTAVE)
+                                Scales are constructed from twelve notes spaced evenly throughout the octave.
+
+                                The test equalishtonic scale is thought of as two joined chords spanning no particular interval.
+                                These chords are named alpha and beta.
+
+                                The alpha pentachord is the 1st, the 3rd, the 5th, the 6th, and the 7th degrees of the twelve-note octave scale.
+
+                                The beta pentachord is the 7th, the 9th, the 11th, and the 12th (completing the octave) degrees of the twelve-note octave scale.
+                                OCTAVE
+                        end
+
+                        specify 'assigns the correct MIDI notes' do
+                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 2)
+                                expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC - 1)
+                                expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
+                                expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 1)
+                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 22)
+                        end
                 end
         end
 end
