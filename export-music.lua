@@ -159,25 +159,25 @@ local function ScaleData()
 
                 scaleData['id'] = scale.id
                 scaleData['flags'] = scale.flags
-                scaleData['unk_enum'] = scale.anon_1
+                scaleData['unk_enum'] = scale.unk_enum
 
-                if scale.anon_1 == 1 then
+                if scale.unk_enum == 1 then
                         -- "Degrees of the quartertone octave scale",
                         -- used when the scale doesn't have evenly spaced notes.
                         scaleData['quartertone_degrees'] = {}
-                        for unkIdx = 1, scale.anon_3 do
-                                scaleData['quartertone_degrees'][unkIdx] = scale.anon_2[unkIdx - 1]
+                        for unkIdx = 1, scale.unk_indices_used do
+                                scaleData['quartertone_degrees'][unkIdx] = scale.unk_indices[unkIdx - 1]
                         end
                 end
 
                 -- scale_data['sub1'] = MapScaleSub1(scale.scale_sub1)
-                scaleData['unk1_unk_1'] = scale.unk1.anon_1
+                scaleData['unk1_unk_1'] = scale.unk1.unk_1
                 scaleData['notes'] = {}
-                for noteIdx = 1, scale.unk1.anon_5 do
+                for noteIdx = 1, scale.unk1.length do
                         scaleData['notes'][noteIdx] = {
-                                name = scale.unk1.anon_2[noteIdx - 1],
-                                abbreviation = scale.unk1.anon_3[noteIdx - 1],
-                                number = scale.unk1.anon_4[noteIdx - 1],
+                                name = scale.unk1.name[noteIdx - 1],
+                                abbreviation = scale.unk1.abreviation[noteIdx - 1],
+                                number = scale.unk1.number[noteIdx - 1],
                         }
                 end
 
