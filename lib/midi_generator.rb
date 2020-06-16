@@ -7,8 +7,26 @@ require 'midilib/consts'
 
 class MidiGenerator
 
+        # Raised when there is no MIDI index available for
+        # a note we're trying to output
+        class OutOfRange < StandardError
+                def initialize(frequency, table)
+                        super("Not enough MIDI indices to represent #{frequency} Hz. "\
+                              "Available range is  #{table.inspect}")
+                end
+        end
+
+
         # Middle A in MIDI
         MIDI_TONIC = 69
+
+        # Set up a MIDI generator for a specific octave structure and tonic
+        # We need to know the octave structure because it determines
+        # how we allocate MIDI note indices to frequencies.
+        def initialize(octave_structure, tonic)
+                @chromatic_scale = octave_structure.chromatic_scale.open
+                @tonic = tonic
+        end
 
         # Add a phrase to the MIDI output we will generate.
         def add_phrase(phrase)
@@ -33,23 +51,28 @@ class MidiGenerator
                 io.write(buffer.string)
         end
 
-        # Create an array with frequencies in Hertz for each
+        # An array with frequencies in Hertz for each
         # MIDI note in the given octave structure.
         #
         # @param octave_structure [OctaveStructure]
         # @param tonic [Integer] The tonic frequency in Hertz.
         #                        This will correspond to Cacophony frequency 1,
         #                        and MIDI pitch 69
-        def frequency_table(octave_structure, tonic)
-                octave = octave_structure.chromatic_scale.open
-                notes_per_octave = octave.length
+        def frequency_table
+                @frequencies ||= begin
 
-                (0..127).map do |index|
-                        tonic_offset = index - MIDI_TONIC
-                        octave_offset, note = tonic_offset.divmod(notes_per_octave)
+                        # TODO Use 12-note octaves where possible to maximise the chance of
+                        # working with regular 12TET-tuned instruments.
+                        notes_per_octave = @chromatic_scale.length
 
-                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
-                        bottom_of_octave * octave.note_scalings[note]
+                        (0..127).map do |index|
+                                tonic_offset = index - MIDI_TONIC
+                                octave_offset, note = tonic_offset.divmod(notes_per_octave)
+
+                                bottom_of_octave = @tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+                                bottom_of_octave * @chromatic_scale.note_scalings[note]
+                        end
+
                 end
         end
 
@@ -127,8 +150,13 @@ class MidiGenerator
         end
 
         def midi_index(note)
-                # Guess based on closest 12TET frequency, assuming tonic of 440 Hz.
-                # TODO: need to know about the scale.
-                ((Math.log(note.frequency, 2) * 12) + MIDI_TONIC).round.to_i
+                # TODO: not reliable for approximate matching
+                frequency = @tonic * note.ratio
+
+                if (match = frequency_table.index(frequency))
+                        match
+                else
+                        raise OutOfRange.new(frequency, frequency_table)
+                end
         end
 end

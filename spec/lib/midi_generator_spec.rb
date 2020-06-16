@@ -8,8 +8,11 @@ require 'octave_structure'
 
 RSpec.describe MidiGenerator do
         subject(:midi_generator) do
-                MidiGenerator.new
+                MidiGenerator.new(octave_structure, tonic)
         end
+
+        # Middle A - 440 Hertz
+        let(:tonic) { 440.0 }
 
         let(:octave_structure) do
                 OctaveStructure.new(<<-OCTAVE)
@@ -26,7 +29,7 @@ RSpec.describe MidiGenerator do
         end
 
         let(:scale) do
-                octave_structure.scales[:test]
+                octave_structure.scales[:test].open
         end
 
         let(:beats) do
@@ -130,30 +133,28 @@ RSpec.describe MidiGenerator do
         end
 
         context 'mapping scale information' do
-                # Middle A - 440 Hertz
-                let(:tonic) { 440.0 }
-
                 let(:note_ons) do
                         track.select { |e| e.is_a?(MIDI::NoteOn) }
                 end
 
                 let(:midi_frequencies) do
-                        frequency_table = midi_generator.frequency_table(octave_structure, tonic)
-                        note_ons.map { |n| frequency_table[n.note] }
+                        note_ons.map { |n| midi_generator.frequency_table[n.note] }
                 end
 
-                context 'with a 7-note scale that fits in the octave' do
+                shared_examples_for 'scale mapping' do
                         specify 'assigns MIDI notes that match the frequency table' do
-                                expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
-                                expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
-                                expect(midi_frequencies[2]).to be_within(0.01).of(tonic * phrase.notes[2].frequency)
-                                expect(midi_frequencies[3]).to be_within(0.01).of(tonic * phrase.notes[3].frequency)
-                                expect(midi_frequencies[4]).to be_within(0.01).of(tonic * phrase.notes[4].frequency)
+                                midi_frequencies.each_with_index do |frequency, index|
+                                        expect(frequency).to be_within(0.01).of(tonic * phrase.notes[index].frequency)
+                                end
                         end
 
                         specify 'uses distinct MIDI notes for different frequencies' do
-                                expect(midi_frequencies.uniq).to eq midi_frequencies
+                                expect(midi_frequencies.to_set).to eq phrase.notes.map { |n| tonic * n.frequency }.to_set
                         end
+                end
+
+                context 'with a 7-note scale that fits in the octave' do
+                        include_examples 'scale mapping'
 
                         context 'with notes at the edges of MIDI range' do
                                 let(:phrase) do
@@ -164,7 +165,7 @@ RSpec.describe MidiGenerator do
                                         )
                                 end
 
-                                specify 'preserves relative position in the octave' do
+                                pending 'preserves relative position in the octave' do
                                         expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (5 * 12))
                                         expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (5 * 12))
                                 end
@@ -175,11 +176,11 @@ RSpec.describe MidiGenerator do
                                 end
                         end
 
-                        context "with notes outside of MIDI's range" do
+                        pending "with notes outside of MIDI's range" do
                                 let(:phrase) do
                                         Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**6. beats[1]),
-                                                 Note.new(scale.note_scalings[-1] * 2**6, beats[0]),
+                                                 Note.new(scale.note_scalings[0] / 2**6, beats[0]),
+                                                 Note.new(scale.note_scalings[0] * 2**6, beats[1]),
                                                  tempo: 120
                                         )
                                 end
@@ -204,30 +205,20 @@ RSpec.describe MidiGenerator do
                                 OCTAVE
                         end
 
-                        specify 'assigns MIDI notes that match the frequency table' do
-                                expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
-                                expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
-                                expect(midi_frequencies[2]).to be_within(0.01).of(tonic * phrase.notes[2].frequency)
-                                expect(midi_frequencies[3]).to be_within(0.01).of(tonic * phrase.notes[3].frequency)
-                                expect(midi_frequencies[4]).to be_within(0.01).of(tonic * phrase.notes[4].frequency)
-                        end
-
-                        specify 'uses distinct MIDI notes for different frequencies' do
-                                expect(midi_frequencies.uniq).to eq midi_frequencies
-                        end
+                        include_examples 'scale mapping'
 
                         context 'with notes at the edges of MIDI range' do
                                 let(:phrase) do
                                         Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**3, beats[0]),
-                                                 Note.new(scale.note_scalings[-1] * 2**3, beats[1]),
+                                                 Note.new(scale.note_scalings[0] / 2**2, beats[0]),
+                                                 Note.new(scale.note_scalings[0] * 2**2, beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
-                                specify 'preserves relative position in the octave' do
-                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (3 * 21))
-                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (3 * 21))
+                                specify 'uses nonstandard octave size to keep notes distinct' do
+                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (2 * 21))
+                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (2 * 21))
                                 end
 
                                 specify 'assigns MIDI notes that match the frequency table' do
@@ -257,21 +248,21 @@ RSpec.describe MidiGenerator do
                                 octave = OctaveStructure.new(<<-OCTAVE)
                                 Scales are constructed from twelve notes spaced evenly throughout the octave.
 
-                                The test equalishtonic scale is thought of as two joined chords spanning no particular interval.
+                                The test amajorishtonic scale is thought of as two disjoint chords spanning no particular interval.
                                 These chords are named alpha and beta.
 
-                                The alpha pentachord is the 1st, the 3rd, the 5th, the 6th, and the 7th degrees of the twelve-note octave scale.
+                                The alpha pentachord is the 1st, the 3rd, the 5th, and the 6th degrees of the twelve-note octave scale.
 
-                                The beta pentachord is the 7th, the 9th, the 11th, and the 12th (completing the octave) degrees of the twelve-note octave scale.
+                                The beta tetrachord is the 8th, the 10th, the 12th, and the 13th (completing the octave) degrees of the twelve-note octave scale.
                                 OCTAVE
                         end
 
                         specify 'assigns the correct MIDI notes' do
-                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 2)
+                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 3)
                                 expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC - 1)
                                 expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
-                                expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 1)
-                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 22)
+                                expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 2)
+                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 4)
                         end
                 end
         end
