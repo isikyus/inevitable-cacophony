@@ -49,6 +49,13 @@ def rng
 	@rng ||= Random.new(options[:seed] || Random.new_seed)
 end
 
+def midi_generator
+        @midi_generator ||= begin
+                octave_structure = OctaveStructure.new(input)
+                MidiGenerator.new(octave_structure, options[:tonic])
+        end
+end
+
 def rhythm
 	@rhythm ||= begin
 		all_rhythms = Parser::Rhythms.new.parse(input)
@@ -138,19 +145,16 @@ OptionParser.new do |opts|
 
         opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (needs file from -M to play in tune)') do
                 render = -> (phrases) {
-                        midi = MidiGenerator.new
                         phrases.each do |phrase|
-                                midi.add_phrase(phrase)
+                                midi_generator.add_phrase(phrase)
                         end
-                        midi.write($stdout)
+                        midi_generator.write($stdout)
                 }
         end
 
         opts.on('-M', '--midi-tuning', 'Instead of music, generate a Scala (Timidity-compatible) tuning file for use with MIDI output from --midi') do
                 command = -> {
-                        midi = MidiGenerator.new
-                        octave_structure = OctaveStructure.new(input)
-                        midi.frequency_table(octave_structure, options[:tonic])
+                        midi_generator.frequency_table
                 }
                 render = -> (frequencies) {
                         frequencies.each do |frequency|
