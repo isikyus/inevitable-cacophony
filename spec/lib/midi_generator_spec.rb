@@ -160,14 +160,23 @@ RSpec.describe MidiGenerator do
                                 let(:phrase) do
                                         Phrase.new(
                                                  Note.new(scale.note_scalings[0] / 2**5, beats[0]),
-                                                 Note.new(scale.note_scalings[-1] * 2**5, beats[1]),
+
+                                                 # Note 4 (1.64 times the tonic) in the 4th octave is the
+                                                 # highest ntoe in our scale that's less than MIDI's note 127
+                                                 # (G9). This is somewhere between 12TET's F9 and F#9
+                                                 Note.new(2**5 / scale.note_scalings[3], beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
-                                pending 'preserves relative position in the octave' do
+                                specify 'preserves relative position in the octave' do
                                         expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (5 * 12))
-                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (5 * 12))
+
+                                        note_below_4_in_octave_9 = MidiGenerator::MIDI_TONIC + (5 * 12) - 4
+                                        expect(note_ons[1].note).to be_between(
+                                                note_below_4_in_octave_9,
+                                                note_below_4_in_octave_9 + 1
+                                        )
                                 end
 
                                 specify 'assigns MIDI notes that match the frequency table' do
@@ -176,7 +185,7 @@ RSpec.describe MidiGenerator do
                                 end
                         end
 
-                        pending "with notes outside of MIDI's range" do
+                        context "with notes outside of MIDI's range" do
                                 let(:phrase) do
                                         Phrase.new(
                                                  Note.new(scale.note_scalings[0] / 2**6, beats[0]),

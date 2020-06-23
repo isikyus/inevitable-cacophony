@@ -16,9 +16,11 @@ class MidiGenerator
                 end
         end
 
-
         # Middle A in MIDI
         MIDI_TONIC = 69
+
+        # Standard western notes per octave assumed by MIDI
+        MIDI_OCTAVE_NOTES = 12
 
         # Set up a MIDI generator for a specific octave structure and tonic
         # We need to know the octave structure because it determines
@@ -59,24 +61,69 @@ class MidiGenerator
         #                        This will correspond to Cacophony frequency 1,
         #                        and MIDI pitch 69
         def frequency_table
-                @frequencies ||= begin
 
-                        # TODO Use 12-note octaves where possible to maximise the chance of
-                        # working with regular 12TET-tuned instruments.
-                        notes_per_octave = @chromatic_scale.length
-
-                        (0..127).map do |index|
-                                tonic_offset = index - MIDI_TONIC
-                                octave_offset, note = tonic_offset.divmod(notes_per_octave)
-
-                                bottom_of_octave = @tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
-                                bottom_of_octave * @chromatic_scale.note_scalings[note]
-                        end
-
+                # Use 12-note octaves where possible to maximise the chance of
+                # working with regular 12TET-tuned instruments.
+                @frequencies ||= if @chromatic_scale.length < MIDI_OCTAVE_NOTES
+                        optimise_frequency_matches(@chromatic_scale, @tonic)
+                else
+                        use_every_midi_note(@chromatic_scale, @tonic)
                 end
         end
 
         private
+
+        # Build a frequency table that maps successive MIDI indices to
+        # successive notes in the given scale, using MIDI index space as
+        # efficiently as possible at the cost of octaves not lining up.
+        def use_every_midi_note(scale, tonic)
+                notes_per_octave = scale.length
+
+                (0..127).map do |index|
+                        tonic_offset = index - MIDI_TONIC
+                        octave_offset, note = tonic_offset.divmod(notes_per_octave)
+
+                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+                        bottom_of_octave * scale.note_scalings[note]
+                end
+        end
+
+        # Build a frequency table that uses standard MIDI frequencies wherever possible,
+        # maximising compatibility with 12TET at the cost of a reduced frequency range.
+        def optimise_frequency_matches(scale, tonic)
+                notes_per_octave = MIDI_OCTAVE_NOTES
+                frequencies_to_cover = scale.note_scalings.dup
+
+                octave_breakdown = notes_per_octave.times.map do |index|
+                        standard_frequency = 2 ** (index / 12.0)
+                        next_frequency = frequencies_to_cover.last
+
+                        if next_frequency <= standard_frequency
+
+                                # Using any higher index would be worse; so use this one for our current frequency.
+                                frequencies_to_cover.shift
+
+                        else
+                                # Is there room to use a higher index?
+                                # TODO: even if there is, the higher index might be worse if next_frequency is less than a quarter tone above standard_frequency — but we get away with this for now because everything we can parse from DF is in quarter-tone resolution or lower.
+                                if (notes_per_octave - index) > frequencies_to_cover.length
+                                        standard_frequency
+                                else
+                                        # Have to put this frequency here because any higher will leave us no room for later notes in the scale.
+                                        frequencies_to_cover.shift
+                                end
+                        end
+
+                end
+
+                (0..127).map do |index|
+                        tonic_offset = index - MIDI_TONIC
+                        octave_offset, note = tonic_offset.divmod(notes_per_octave)
+
+                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+                        bottom_of_octave * octave_breakdown[note]
+                end
+        end
 
         def build_sequence
                 seq = MIDI::Sequence.new
