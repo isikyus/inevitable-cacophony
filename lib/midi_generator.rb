@@ -22,6 +22,11 @@ class MidiGenerator
         # Standard western notes per octave assumed by MIDI
         MIDI_OCTAVE_NOTES = 12
 
+        # Maximum increase/decrease between two frequencies we can consider
+        # "equal". Approximately 1/30th of human Just Noticeable Difference
+        # for pitch.
+        FREQUENCY_FUDGE_FACTOR = (1.0/10_000)
+
         # Set up a MIDI generator for a specific octave structure and tonic
         # We need to know the octave structure because it determines
         # how we allocate MIDI note indices to frequencies.
@@ -91,23 +96,28 @@ class MidiGenerator
         # Build a frequency table that uses standard MIDI frequencies wherever possible,
         # maximising compatibility with 12TET at the cost of a reduced frequency range.
         def optimise_frequency_matches(scale, tonic)
-                notes_per_octave = MIDI_OCTAVE_NOTES
                 frequencies_to_cover = scale.note_scalings.dup
+                standard_frequencies = MIDI_OCTAVE_NOTES.times.map do |index|
+                        OctaveStructure::OCTAVE_RATIO ** (index / MIDI_OCTAVE_NOTES.to_f)
+                end
 
-                octave_breakdown = notes_per_octave.times.map do |index|
-                        standard_frequency = 2 ** (index / 12.0)
-                        next_frequency = frequencies_to_cover.last
+                octave_breakdown = standard_frequencies.each_with_index.map do |standard, index|
+                        next_frequency = frequencies_to_cover.first
 
-                        if next_frequency <= standard_frequency
+                        if next_frequency.nil?
+                                # Covered whole scale already; use regular frequencies.
+                                standard
 
-                                # Using any higher index would be worse; so use this one for our current frequency.
+                        elsif next_frequency <= standard * (1 + FREQUENCY_FUDGE_FACTOR)
+
+                                # We've already passed this frequency, so use it immediately.
                                 frequencies_to_cover.shift
 
                         else
                                 # Is there room to use a higher index?
                                 # TODO: even if there is, the higher index might be worse if next_frequency is less than a quarter tone above standard_frequency — but we get away with this for now because everything we can parse from DF is in quarter-tone resolution or lower.
-                                if (notes_per_octave - index) > frequencies_to_cover.length
-                                        standard_frequency
+                                if (standard_frequencies.length - index) > frequencies_to_cover.length
+                                        standard
                                 else
                                         # Have to put this frequency here because any higher will leave us no room for later notes in the scale.
                                         frequencies_to_cover.shift

@@ -24,7 +24,7 @@ RSpec.describe MidiGenerator do
 
                 The alpha trichord is the 1st, the 2nd, and the 4th degrees of the seven-note octave scale.
 
-                The beta trichord is the 5th, the 6th, and the 7th (completing the octave) degrees of the seven-note octave scale.
+                The beta trichord is the 5th, the 6th, and the 8th (completing the octave) degrees of the seven-note octave scale.
                 OCTAVE
         end
 
@@ -161,10 +161,13 @@ RSpec.describe MidiGenerator do
                                         Phrase.new(
                                                  Note.new(scale.note_scalings[0] / 2**5, beats[0]),
 
-                                                 # Note 4 (1.64 times the tonic) in the 4th octave is the
-                                                 # highest ntoe in our scale that's less than MIDI's note 127
-                                                 # (G9). This is somewhere between 12TET's F9 and F#9
-                                                 Note.new(2**5 / scale.note_scalings[3], beats[1]),
+                                                 # Scale note 5 (6th degree of the octave/7;
+                                                 # 1.64 times the tonic) in the 4th octave is
+                                                 # the highest note in our scale that's
+                                                 # less than MIDI's note 127 (G9).
+                                                 #
+                                                 # This is somewhere between 12TET's F9 and F#9
+                                                 Note.new(scale.note_scalings[4] * 2**4, beats[1]),
                                                  tempo: 120
                                         )
                                 end
@@ -173,6 +176,7 @@ RSpec.describe MidiGenerator do
                                         expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (5 * 12))
 
                                         note_below_4_in_octave_9 = MidiGenerator::MIDI_TONIC + (5 * 12) - 4
+
                                         expect(note_ons[1].note).to be_between(
                                                 note_below_4_in_octave_9,
                                                 note_below_4_in_octave_9 + 1
@@ -272,6 +276,28 @@ RSpec.describe MidiGenerator do
                                 expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
                                 expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 2)
                                 expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 4)
+                        end
+                end
+
+                context 'with a scale that is a subset of 12TET' do
+                        let(:octave_structure) do
+                                octave = OctaveStructure.new(<<-OCTAVE)
+				Scales are constructed from nine notes dividing the octave.
+				In quartertones, their spacing is roughly 1--x--x--x--x--x--x--x--0,
+				where 1 is the tonic, 0 marks the octave, and x marks other notes.
+                                OCTAVE
+                        end
+
+                        let(:scale) { octave_structure.chromatic_scale.open }
+
+                        include_examples 'scale mapping'
+
+                        specify 'assigns matching MIDI notes where possible' do
+                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 3)
+                                #expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC - 1.5)
+                                expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
+                                #expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 1.5)
+                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 3)
                         end
                 end
         end
