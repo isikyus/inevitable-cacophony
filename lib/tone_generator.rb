@@ -31,7 +31,9 @@ class ToneGenerator
                 end
         end
 
-        def initialize
+        # @param tonic [Numeric] The tonic frequency, in Hertz
+        def initialize(tonic)
+                @tonic = tonic
                 @phrases = []
         end
 
@@ -43,7 +45,7 @@ class ToneGenerator
 	# @param tempo [Numeric] Tempo in BPM to play the note at
 	# 			 (exact duration will also depend on the beat).
         def note_samples(note, tempo)
-		samples_per_wave = SAMPLE_RATE / note.frequency.to_f
+		samples_per_wave = SAMPLE_RATE / (note.ratio.to_f * @tonic)
 		samples_per_beat = (60.0 / tempo) * SAMPLE_RATE
 		samples = []
 

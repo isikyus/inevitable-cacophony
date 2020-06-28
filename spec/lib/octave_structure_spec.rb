@@ -7,6 +7,53 @@ RSpec.describe OctaveStructure do
 
 	describe 'parsing octave structures' do
 
+		context 'with numbers higher than twenty' do
+			let(:scale_text) do
+				<<-SCALE
+                                Scales are constructed from twenty-one notes spaced evenly throughout the octave.
+
+                                The vignt-un hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+                                These chords are named alpha and beta.
+
+                                The alpha trichord is the 1st, the 5th, and the 9th degrees of the twenty-one-note octave scale.
+
+                                The beta trichord is the 11th, the 16th, and the 21st (completing the octave) degrees of the twenty-one-note octave scale.
+				SCALE
+			end
+
+			let(:expected_scalings) do
+				[
+					1,
+					2 ** (1/21.0),
+					2 ** (2/21.0),
+					2 ** (3/21.0),
+					2 ** (4/21.0),
+					2 ** (5/21.0),
+					2 ** (6/21.0),
+					2 ** (7/21.0),
+					2 ** (8/21.0),
+					2 ** (9/21.0),
+					2 ** (10/21.0),
+					2 ** (11/21.0),
+					2 ** (12/21.0),
+					2 ** (13/21.0),
+					2 ** (14/21.0),
+					2 ** (15/21.0),
+					2 ** (16/21.0),
+					2 ** (17/21.0),
+					2 ** (18/21.0),
+					2 ** (19/21.0),
+					2 ** (20/21.0),
+				]
+			end
+
+			specify 'parses them correctly' do
+                                subject.chromatic_scale.open.note_scalings.each_with_index do |scaling, index|
+					expect(scaling).to be_within(0.0001).of(expected_scalings[index])
+				end
+			end
+		end
+
 		context 'with exact spacing' do
 			let(:scale_text) do
 				# Source: The Day Can Say
@@ -43,12 +90,12 @@ RSpec.describe OctaveStructure do
 					2 ** (20/24.0),
 					2 ** (21/24.0),
 					2 ** (22/24.0),
-					2 ** (23/24.0),
+					2 ** (23/24.0)
 				]
 			end
 
-			xspecify 'parses them correctly' do
-				subject.octave_divisions.each_with_index do |scaling, index|
+			specify 'parses them correctly' do
+                                subject.chromatic_scale.open.note_scalings.each_with_index do |scaling, index|
 					expect(scaling).to be_within(0.0001).of(expected_scalings[index])
 				end
 			end

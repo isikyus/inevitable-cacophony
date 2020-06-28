@@ -1,0 +1,9 @@
+Scales are constructed from eleven notes spaced evenly throughout the octave.
+(This guarantees our notes don't line up with 12TET)
+
+The elven hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+These chords are named alpha and beta.
+
+The alpha trichord is the 1st, the 3rd, and the 5th degrees of the eleven-note octave scale.
+
+The beta trichord is the 7th, the 9th, and the 12th (completing the octave) degrees of the eleven-note octave scale.
