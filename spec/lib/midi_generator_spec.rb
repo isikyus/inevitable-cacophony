@@ -138,7 +138,7 @@ RSpec.describe MidiGenerator do
                 end
 
                 let(:midi_frequencies) do
-                        note_ons.map { |n| midi_generator.frequency_table[n.note] }
+                        note_ons.map { |n| midi_generator.frequency_table.table[n.note] }
                 end
 
                 shared_examples_for 'scale mapping' do
@@ -173,9 +173,9 @@ RSpec.describe MidiGenerator do
                                 end
 
                                 specify 'preserves relative position in the octave' do
-                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (5 * 12))
+                                        expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - (5 * 12))
 
-                                        note_below_4_in_octave_9 = MidiGenerator::MIDI_TONIC + (5 * 12) - 4
+                                        note_below_4_in_octave_9 = MidiGenerator::FrequencyTable::MIDI_TONIC + (5 * 12) - 4
 
                                         expect(note_ons[1].note).to be_between(
                                                 note_below_4_in_octave_9,
@@ -199,7 +199,7 @@ RSpec.describe MidiGenerator do
                                 end
 
                                 specify 'fails cleanly' do
-                                        expect { track }.to raise_error(MidiGenerator::OutOfRange)
+                                        expect { track }.to raise_error(MidiGenerator::FrequencyTable::OutOfRange)
                                 end
                         end
                 end
@@ -230,8 +230,8 @@ RSpec.describe MidiGenerator do
                                 end
 
                                 specify 'uses nonstandard octave size to keep notes distinct' do
-                                        expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - (2 * 21))
-                                        expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC + (2 * 21))
+                                        expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - (2 * 21))
+                                        expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + (2 * 21))
                                 end
 
                                 specify 'assigns MIDI notes that match the frequency table' do
@@ -251,7 +251,7 @@ RSpec.describe MidiGenerator do
                                 end
 
                                 specify 'fails cleanly' do
-                                        expect { track }.to raise_error(MidiGenerator::OutOfRange)
+                                        expect { track }.to raise_error(MidiGenerator::FrequencyTable::OutOfRange)
                                 end
                         end
                 end
@@ -271,11 +271,11 @@ RSpec.describe MidiGenerator do
                         end
 
                         specify 'assigns the correct MIDI notes' do
-                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 3)
-                                expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC - 1)
-                                expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
-                                expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 2)
-                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 4)
+                                expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
+                                expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 1)
+                                expect(note_ons[2].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
+                                expect(note_ons[3].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 2)
+                                expect(note_ons[4].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 4)
                         end
                 end
 
@@ -293,11 +293,11 @@ RSpec.describe MidiGenerator do
                         include_examples 'scale mapping'
 
                         specify 'assigns matching MIDI notes where possible' do
-                                expect(note_ons[0].note).to eq(MidiGenerator::MIDI_TONIC - 3)
-                                #expect(note_ons[1].note).to eq(MidiGenerator::MIDI_TONIC - 1.5)
-                                expect(note_ons[2].note).to eq(MidiGenerator::MIDI_TONIC + 0)
-                                #expect(note_ons[3].note).to eq(MidiGenerator::MIDI_TONIC + 1.5)
-                                expect(note_ons[4].note).to eq(MidiGenerator::MIDI_TONIC + 3)
+                                expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
+                                #expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 1.5)
+                                expect(note_ons[2].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
+                                #expect(note_ons[3].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 1.5)
+                                expect(note_ons[4].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 3)
                         end
                 end
         end

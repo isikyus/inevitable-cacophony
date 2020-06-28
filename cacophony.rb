@@ -157,7 +157,7 @@ OptionParser.new do |opts|
                         midi_generator.frequency_table
                 }
                 render = -> (frequencies) {
-                        frequencies.each do |frequency|
+                        frequencies.table.each do |frequency|
                                 $stdout.puts (frequency * 1000).round
                         end
                 }
