@@ -69,9 +69,7 @@ class MidiGenerator
 
                 def build_table(octave_structure, tonic)
                         chromatic = octave_structure.chromatic_scale.open.note_scalings
-                        octave_breakdown = (chromatic.length <= MIDI_OCTAVE_NOTES) ?
-                                                best_match_ratios(chromatic) :
-                                                chromatic
+                        octave_breakdown = best_match_ratios(chromatic)
 
                         MIDI_RANGE.map do |index|
                                 tonic_offset = index - MIDI_TONIC
@@ -82,14 +80,15 @@ class MidiGenerator
                         end
                 end
 
-                # Pick a MIDI index within the octave (0..11) for each given frequency.
-                # (Ideally one close to the actual target frequency, or the exact match
-                # if there is one).
-                # Assumes there are 12 or fewer target frequencies (if not there's no point
-                # trying to match them because they won't match up after one octave anyway).
+                # Pick a MIDI index within the octave for each given frequency.
                 #
-                # The remaining space is left as the default MIDI frequencies, not that it
-                # matters for our purposes.
+                # If there are few enough (<12) frequencies in the generated scale,
+                # we try to keep as much of the normal MIDI tuning as possible, and
+                # only re-tune what we need. If the DF scale is a subset of 12TET,
+                # this should return the standard MIDI tuning.
+                #
+                # Other than that it isn't guaranteed to be optimal; currently it's
+                # a fairly naieve greedy algorithm.
                 #
                 # @return [Array] Re-tuned ratios for each position in the MIDI octave.
                 def best_match_ratios(frequencies_to_cover)
