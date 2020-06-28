@@ -5,6 +5,9 @@
 require 'midilib/sequence'
 require 'midilib/consts'
 
+# Using for OctaveStructure::OCTAVE_RATIO; may be better to just use two.
+require_relative 'octave_structure'
+
 class MidiGenerator
 
         # Raised when there is no MIDI index available for
@@ -21,6 +24,11 @@ class MidiGenerator
 
         # Standard western notes per octave assumed by MIDI
         MIDI_OCTAVE_NOTES = 12
+
+        # 12TET values of those notes.
+        STANDARD_MIDI_FREQUENCIES = MIDI_OCTAVE_NOTES.times.map do |index|
+                OctaveStructure::OCTAVE_RATIO ** (index / MIDI_OCTAVE_NOTES.to_f)
+        end
 
         # Maximum increase/decrease between two frequencies we can consider
         # "equal". Approximately 1/30th of human Just Noticeable Difference
@@ -97,18 +105,26 @@ class MidiGenerator
         # maximising compatibility with 12TET at the cost of a reduced frequency range.
         def optimise_frequency_matches(scale, tonic)
                 frequencies_to_cover = scale.note_scalings.dup
-                standard_frequencies = MIDI_OCTAVE_NOTES.times.map do |index|
-                        OctaveStructure::OCTAVE_RATIO ** (index / MIDI_OCTAVE_NOTES.to_f)
-                end
+                octave_breakdown = best_match_ratios(frequencies_to_cover)
 
-                octave_breakdown = standard_frequencies.each_with_index.map do |standard, index|
+                (0..127).map do |index|
+                        tonic_offset = index - MIDI_TONIC
+                        octave_offset, note = tonic_offset.divmod(MIDI_OCTAVE_NOTES)
+
+                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+                        bottom_of_octave * octave_breakdown[note]
+                end
+        end
+
+        def best_match_ratios(frequencies_to_cover)
+                STANDARD_MIDI_FREQUENCIES.each_with_index.map do |standard, index|
 
                         # We've done all the special frequencies we need; fill gaps with 12TET.
                         next standard if frequencies_to_cover.empty?
 
                         next_frequency = frequencies_to_cover.first
                         at_or_past_match = next_frequency <= standard * (1 + FREQUENCY_FUDGE_FACTOR)
-                        out_of_room = (standard_frequencies.length - index) <= frequencies_to_cover.length
+                        out_of_room = (STANDARD_MIDI_FREQUENCIES.length - index) <= frequencies_to_cover.length
 
                         if at_or_past_match || out_of_room
 
@@ -118,15 +134,6 @@ class MidiGenerator
                         else
                                 standard
                         end
-
-                end
-
-                (0..127).map do |index|
-                        tonic_offset = index - MIDI_TONIC
-                        octave_offset, note = tonic_offset.divmod(MIDI_OCTAVE_NOTES)
-
-                        bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
-                        bottom_of_octave * octave_breakdown[note]
                 end
         end
 
