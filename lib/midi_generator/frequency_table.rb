@@ -98,11 +98,11 @@ class MidiGenerator
                                 # We've done all the special frequencies we need; fill gaps with 12TET.
                                 next standard if frequencies_to_cover.empty?
 
+                                slots_left = MIDI_OCTAVE_NOTES - index
                                 next_frequency = frequencies_to_cover.first
-                                at_or_past_match = next_frequency <= standard * (1 + FREQUENCY_FUDGE_FACTOR)
-                                out_of_room = (STANDARD_MIDI_FREQUENCIES.length - index) <= frequencies_to_cover.length
 
-                                if at_or_past_match || out_of_room
+                                if frequencies_to_cover.length > slots_left ||
+                                                sounds_same_or_flatter?(next_frequency, standard)
 
                                         # Either this is a good spot for this frequency,
                                         # or we're out of room to put it anywhere better.
@@ -111,6 +111,13 @@ class MidiGenerator
                                         standard
                                 end
                         end
+                end
+
+                # Like < but considers a greater value equal too if it's within
+                # FREQUENCY_FUDGE_FACTOR
+                def sounds_same_or_flatter?(a, b)
+                        b_plus_delta = b + (b * FREQUENCY_FUDGE_FACTOR)
+                        a < b_plus_delta
                 end
         end
 end
