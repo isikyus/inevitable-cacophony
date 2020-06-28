@@ -258,7 +258,7 @@ RSpec.describe MidiGenerator do
 
                 context 'with exactly a 12-tone scale' do
                          let(:octave_structure) do
-                                octave = OctaveStructure.new(<<-OCTAVE)
+                                OctaveStructure.new(<<-OCTAVE)
                                 Scales are constructed from twelve notes spaced evenly throughout the octave.
 
                                 The test amajorishtonic scale is thought of as two disjoint chords spanning no particular interval.
@@ -281,7 +281,7 @@ RSpec.describe MidiGenerator do
 
                 context 'with a scale that is a subset of 12TET' do
                         let(:octave_structure) do
-                                octave = OctaveStructure.new(<<-OCTAVE)
+                                OctaveStructure.new(<<-OCTAVE)
 				Scales are constructed from nine notes dividing the octave.
 				In quartertones, their spacing is roughly 1--x--x--x--x--x--x--x--0,
 				where 1 is the tonic, 0 marks the octave, and x marks other notes.
