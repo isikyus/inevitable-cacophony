@@ -10,7 +10,7 @@ require 'octave_structure'
 
 class MidiGenerator
         class FrequencyTable
-                
+
                 # Raised when there is no MIDI index available for
                 # a note we're trying to output
                 class OutOfRange < StandardError
@@ -93,31 +93,33 @@ class MidiGenerator
                 #
                 # @return [Array] Re-tuned ratios for each position in the MIDI octave.
                 def best_match_ratios(frequencies_to_cover)
-                        STANDARD_MIDI_FREQUENCIES.each_with_index.map do |standard, index|
+                        standard_octave = STANDARD_MIDI_FREQUENCIES.dup
+                        ratios = []
 
-                                # We've done all the special frequencies we need; fill gaps with 12TET.
-                                next standard if frequencies_to_cover.empty?
+                        while (next_frequency = frequencies_to_cover.shift)
 
-                                slots_left = MIDI_OCTAVE_NOTES - index
-                                next_frequency = frequencies_to_cover.first
+                                # Skip ahead (padding slots with 12TET frequencies from low to high) until:
+                                #
+                                # * the next 12TET frequency would be sharper, or
+                                # * any more padding will leave us without enough space.
+                                while (standard = standard_octave.shift) &&
+                                                sounds_flatter?(standard, next_frequency) &&
+                                                standard_octave.length > frequencies_to_cover.length
 
-                                if frequencies_to_cover.length > slots_left ||
-                                                sounds_same_or_flatter?(next_frequency, standard)
-
-                                        # Either this is a good spot for this frequency,
-                                        # or we're out of room to put it anywhere better.
-                                        frequencies_to_cover.shift
-                                else
-                                        standard
+                                        ratios << standard
                                 end
+
+                                # Use this frequency in this slot.
+                                ratios << next_frequency
                         end
+
+                        ratios
                 end
 
-                # Like < but considers a greater value equal too if it's within
-                # FREQUENCY_FUDGE_FACTOR
-                def sounds_same_or_flatter?(a, b)
-                        b_plus_delta = b + (b * FREQUENCY_FUDGE_FACTOR)
-                        a < b_plus_delta
+                # Like < but considers values within FREQUENCY_FUDGE_FACTOR equal
+                def sounds_flatter?(a, b)
+                        threshold = b * (1 - FREQUENCY_FUDGE_FACTOR)
+                        a < threshold
                 end
         end
 end
