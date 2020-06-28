@@ -102,33 +102,28 @@ class MidiGenerator
                 end
 
                 octave_breakdown = standard_frequencies.each_with_index.map do |standard, index|
+
+                        # We've done all the special frequencies we need; fill gaps with 12TET.
+                        next standard if frequencies_to_cover.empty?
+
                         next_frequency = frequencies_to_cover.first
+                        at_or_past_match = next_frequency <= standard * (1 + FREQUENCY_FUDGE_FACTOR)
+                        out_of_room = (standard_frequencies.length - index) <= frequencies_to_cover.length
 
-                        if next_frequency.nil?
-                                # Covered whole scale already; use regular frequencies.
-                                standard
+                        if at_or_past_match || out_of_room
 
-                        elsif next_frequency <= standard * (1 + FREQUENCY_FUDGE_FACTOR)
-
-                                # We've already passed this frequency, so use it immediately.
+                                # Either this is a good spot for this frequency,
+                                # or we're out of room to put it anywhere better.
                                 frequencies_to_cover.shift
-
                         else
-                                # Is there room to use a higher index?
-                                # TODO: even if there is, the higher index might be worse if next_frequency is less than a quarter tone above standard_frequency — but we get away with this for now because everything we can parse from DF is in quarter-tone resolution or lower.
-                                if (standard_frequencies.length - index) > frequencies_to_cover.length
-                                        standard
-                                else
-                                        # Have to put this frequency here because any higher will leave us no room for later notes in the scale.
-                                        frequencies_to_cover.shift
-                                end
+                                standard
                         end
 
                 end
 
                 (0..127).map do |index|
                         tonic_offset = index - MIDI_TONIC
-                        octave_offset, note = tonic_offset.divmod(notes_per_octave)
+                        octave_offset, note = tonic_offset.divmod(MIDI_OCTAVE_NOTES)
 
                         bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
                         bottom_of_octave * octave_breakdown[note]
