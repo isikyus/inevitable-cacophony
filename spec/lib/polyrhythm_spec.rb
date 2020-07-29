@@ -1,13 +1,13 @@
 require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
-require 'polyrhythm'
+require 'inevitable_cacophony/polyrhythm'
 
-RSpec.describe Polyrhythm do
+RSpec.describe  InevitableCacophony::Polyrhythm do
 	let(:primary) { base_rhythms.first }
 	let(:secondaries) { base_rhythms - [primary] }
 
-	subject { Polyrhythm.new(primary, secondaries) }
+	subject {  InevitableCacophony::Polyrhythm.new(primary, secondaries) }
 
 	shared_examples_for 'a 4-3 polyrhythm' do
 
@@ -74,8 +74,8 @@ RSpec.describe Polyrhythm do
 	describe '4-3 without accenting' do
 		let(:base_rhythms) do
 			[
-				Rhythm.new([Rhythm::Beat.new(1, 1, 0)] * 4),
-				Rhythm.new([Rhythm::Beat.new(1, 1, 0)] * 3)
+				InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 4),
+				InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 3)
 			]
 		end
 
@@ -96,16 +96,16 @@ RSpec.describe Polyrhythm do
 	describe '4-3 with accented beats' do
 		let(:base_rhythms) do
 			[
-				Rhythm.new([
-					Rhythm::Beat.new(0, 1, 0),
-					Rhythm::Beat.new(4/6.0, 1, 0),
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(4/6.0, 1, 0)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0)
 				]),
-				Rhythm.new([
-					Rhythm::Beat.new(4/9.0, 1, 0),
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(6/9.0, 1, 0)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(6/9.0, 1, 0)
 				])
 			]
 		end
@@ -122,16 +122,16 @@ RSpec.describe Polyrhythm do
 	describe '4-3 with beats extended through silence of the other rhythm' do
 		let(:base_rhythms) do
 			[
-				Rhythm.new([
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(0, 1, 0),
-					Rhythm::Beat.new(1, 1, 0)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
 				]),
-				Rhythm.new([
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(0, 1, 0),
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(0, 1, 0)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(0, 1, 0)
 				])
 			]
 		end
@@ -179,18 +179,18 @@ RSpec.describe Polyrhythm do
 		end
 		let(:base_rhythms) do
 			[
-				Rhythm.new([
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(1, 1, +1),
-					Rhythm::Beat.new(1, 1, 0),
-					Rhythm::Beat.new(1, 1, +1),
-					Rhythm::Beat.new(1, 1, -1),
-					Rhythm::Beat.new(1, 1, +1)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
 				]),
-				Rhythm.new([
-					Rhythm::Beat.new(1, 1, +1),
-					Rhythm::Beat.new(1, 1, -1),
-					Rhythm::Beat.new(1, 1, +1)
+				InevitableCacophony::Rhythm.new([
+					InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
+					InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
 				])
 			]
 		end

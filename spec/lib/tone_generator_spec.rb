@@ -1,29 +1,29 @@
 require 'spec_helper.rb'
 
-require 'tone_generator'
-require 'phrase'
+require 'inevitable_cacophony/tone_generator'
+require 'inevitable_cacophony/phrase'
 
-RSpec.describe ToneGenerator do
+RSpec.describe InevitableCacophony::ToneGenerator do
 
         # Middle A
         let(:tonic) { 440 }
 
-	subject { ToneGenerator.new(tonic) }
+	subject { InevitableCacophony::ToneGenerator.new(tonic) }
 
 	describe '#phrase_buffer' do
 		let(:amplitude) { 0.8 } # Out of 1
 		let(:timing) { 0.0 }
 		let(:note_length) { 1 }
-		let(:beat) { Rhythm::Beat.new(amplitude, note_length, timing) }
+		let(:beat) { InevitableCacophony::Rhythm::Beat.new(amplitude, note_length, timing) }
 
 		let(:bpm) { 90 }
 		let(:expected_duration) { 2.0/3 } # seconds 
-		let(:score) { Phrase.new(note, tempo: bpm) }
+		let(:score) { InevitableCacophony::Phrase.new(note, tempo: bpm) }
 
 		let(:buffer) { subject.phrase_buffer(score) }
 		let(:samples) { buffer.samples }
 
-		let(:expected_samples) { expected_duration * ToneGenerator::SAMPLE_RATE }
+		let(:expected_samples) { expected_duration * InevitableCacophony::ToneGenerator::SAMPLE_RATE }
 
 		shared_examples_for 'adding any sound' do
 
@@ -33,7 +33,7 @@ RSpec.describe ToneGenerator do
 		end
 
 		context 'adding a rest' do
-			let(:note) { Note.rest(beat) }
+			let(:note) { InevitableCacophony::Note.rest(beat) }
 
 			specify 'creates a buffer of silence' do
 				expect(samples.uniq).to eq([0.0])
@@ -43,7 +43,7 @@ RSpec.describe ToneGenerator do
 		end
 
 		context 'adding a note' do
-			let(:note) { Note.new(ratio, beat) }
+			let(:note) { InevitableCacophony::Note.new(ratio, beat) }
 
 			shared_examples_for 'frequency' do
 
@@ -61,7 +61,8 @@ RSpec.describe ToneGenerator do
 
 					average_time = typical_times.sum / typical_times.length.to_f
 
-					expect(ToneGenerator::SAMPLE_RATE / average_time).to be_within(1).of(frequency * 2)
+					expect(InevitableCacophony::ToneGenerator::SAMPLE_RATE / average_time)
+                                                .to be_within(1).of(frequency * 2)
 				end
 			end
 
@@ -96,14 +97,14 @@ RSpec.describe ToneGenerator do
 						samples.slice_after { |s| !s.zero? }.to_a.last.length
 					end
 
-					let(:normal_leading_silence) { Rhythm::START_DELAY * expected_samples }
+					let(:normal_leading_silence) { InevitableCacophony::Rhythm::START_DELAY * expected_samples }
 
 					specify 'includes silence before the note' do
 						expect(leading_silent_samples).to be_within(10).of(normal_leading_silence)
 					end
 
 					specify 'includes silence after the note' do
-						expected_trailing_silence = Rhythm::AFTER_DELAY * expected_samples
+						expected_trailing_silence = InevitableCacophony::Rhythm::AFTER_DELAY * expected_samples
 						expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
 					end
 

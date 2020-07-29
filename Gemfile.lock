@@ -1,3 +1,10 @@
+PATH
+  remote: .
+  specs:
+    inevitable_cacophony (0.0.0)
+      midilib (~> 2.0.5)
+      wavefile (~> 1.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -27,10 +34,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  midilib
-  pry
-  rspec
-  wavefile
+  inevitable_cacophony!
+  pry (= 0.12.2)
+  rspec (= 3.8.0)
 
 BUNDLED WITH
    2.0.2

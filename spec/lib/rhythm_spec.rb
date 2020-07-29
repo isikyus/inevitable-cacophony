@@ -2,14 +2,15 @@ require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
 # TODO: shouldn't need parser to test things like #canonical
-require 'parser/rhythm_line'
+require 'inevitable_cacophony/parser/rhythm_line'
+require 'inevitable_cacophony/rhythm'
 
-RSpec.describe Rhythm do
+RSpec.describe InevitableCacophony::Rhythm do
 
-	subject { Parser::RhythmLine.new.parse(score) }
+	subject { InevitableCacophony::Parser::RhythmLine.new.parse(score) }
 	let(:canonical_durations) { subject.canonical.map(&:duration) }
 
-	INTER_NOTE_DELAY = Rhythm::START_DELAY + Rhythm::AFTER_DELAY
+	INTER_NOTE_DELAY = InevitableCacophony::Rhythm::START_DELAY + InevitableCacophony::Rhythm::AFTER_DELAY
 	NOTE_LENGTH = 1 - INTER_NOTE_DELAY
 
 	# Allowable error in note durations.
@@ -96,7 +97,7 @@ RSpec.describe Rhythm do
 				specify 'is stretched enough to place those beats earlier' do
 
 					# TODO: assuming particular start/end offsets
-					expect(Rhythm::START_DELAY).to eq 0.3
+					expect(InevitableCacophony::Rhythm::START_DELAY).to eq 0.3
 
 					expect(canonical.length).to eq 30
 
@@ -119,7 +120,7 @@ RSpec.describe Rhythm do
                                 specify 'is stretched enough to place those beats later' do
 
                                         # TODO: assuming particular start/end offsets
-                                        expect(Rhythm::START_DELAY).to eq 0.3
+                                        expect(InevitableCacophony::Rhythm::START_DELAY).to eq 0.3
 
                                         expect(canonical.length).to eq 30
 

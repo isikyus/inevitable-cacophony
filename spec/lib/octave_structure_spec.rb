@@ -1,9 +1,10 @@
 require 'spec_helper.rb'
-require 'octave_structure'
 
-RSpec.describe OctaveStructure do
+require 'inevitable_cacophony/octave_structure'
 
-	subject { OctaveStructure.new(scale_text) }
+RSpec.describe InevitableCacophony::OctaveStructure do
+
+	subject { InevitableCacophony::OctaveStructure.new(scale_text) }
 
 	describe 'parsing octave structures' do
 
