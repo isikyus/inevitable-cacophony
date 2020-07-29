@@ -6,7 +6,7 @@ An attempt to automatically generate music in Dwarf Fortress' generated musical 
 
 ## Installation / Dev Setup
 
-To use, or work on, Inevitable Cacophony you will need some Ruby development tools installed,
+To work on, Inevitable Cacophony you will need some Ruby development tools installed,
 starting with the Ruby language itself. Normally you'd install Ruby using a version manager,
 such as [RVM](https://rvm.io/rvm/basics). (I believe that only works on Unix systems;
 I'm not sure what you'd do on Windows, sorry.)
@@ -24,30 +24,31 @@ If everything's worked, you should be able to run the tests, with:
 
 and view Inevitable Cacophony options, with:
 
-	bundle exec ruby -Ilib cacophony.rb --help
+	bundle exec inevitable_cacophony --help
 
 
 See the next section for further instructions.
 
 ## Usage
 
-All these commands may need `bundle exec` at the start to get them to work.
-They seem to work without it for me, but your Ruby setup might be different.
+Unless you've installed Inevitable Cacophony as a system-wide gem,
+these commands may need `rvm <version> do` and/or `bundle exec`
+at the start to get them to work.
 
 To play a specific rhythm (in the notation used by the game):
 
-	ruby -Ilib cacophony.rb --beat -e '| ! x X x |' | aplay
+	inevitable_cacophony --beat -e '| ! x X x |' | aplay
 
 
 You can also play polyrhythms where each component rhythm is simply | x x ... x |.
 (More complex rhythms are possible but you'll need to write out a full musical form to describe them.)
 
-	ruby -Ilib cacophony.rb --beat --polyrhythm 7:11 | aplay
+	inevitable_cacophony --beat --polyrhythm 7:11 | aplay
 
 
 To generate a tune from a given form description (support is pretty limited so far):
 
-	ruby -Ilib cacophony.rb < form_description.txt | aplay
+	inevitable_cacophony < form_description.txt | aplay
 
 At this stage you will need to type out the game's form description by hand to use as input.
 
@@ -55,7 +56,9 @@ At this stage you will need to type out the game's form description by hand to u
 
 Inevitable Cacophony generates output as uncompressed WAV files.
 The examples above pipe this into `aplay`, but you could also send stdout
-to a file and play it with a tool of your choice
+to a file and play it with a tool of your choice.
+
+MIDI (`-m` option) and Scala tuning files (`-M`) are of course not generated as WAV.
 
 ## References
 
