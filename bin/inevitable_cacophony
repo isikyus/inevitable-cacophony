@@ -1,0 +1,169 @@
+#!/usr/bin/env/ruby
+
+require 'optparse'
+require 'stringio'
+
+require 'inevitable_cacophony/parser/rhythms'
+require 'inevitable_cacophony/octave_structure'
+require 'inevitable_cacophony/midi_generator'
+require 'inevitable_cacophony/tone_generator'
+require 'inevitable_cacophony/phrase'
+
+command = -> {
+	octave = InevitableCacophony::OctaveStructure.new(input)
+
+        3.times.map do
+		chord_notes = []
+                rhythm.each_beat.map do |beat|
+			chords = octave.chords.values
+			if chord_notes.empty?
+				chord_notes = chords.sample(random: rng).note_scalings.dup
+			end
+
+			note = InevitableCacophony::Note.new(chord_notes.shift, beat)
+			InevitableCacophony::Phrase.new(note, tempo: options[:tempo])
+		end
+        end.flatten
+}
+
+render = -> (phrases) {
+        tone = InevitableCacophony::ToneGenerator.new(options[:tonic])
+        phrases.each { |phrase| tone.add_phrase(phrase) }
+
+        # Have to buffer output so wavefile can seek back to the beginning to write format info
+        output_buffer = StringIO.new
+        tone.write(output_buffer)
+        $stdout.write(output_buffer.string)
+}
+
+def input
+	@input ||= $stdin.read
+end
+
+def options
+	@options ||= {
+                tempo: 120, # beats per minute
+                tonic: 440 # Hz; middle A
+	}
+end
+
+def rng
+	@rng ||= Random.new(options[:seed] || Random.new_seed)
+end
+
+def midi_generator
+        @midi_generator ||= begin
+                octave_structure = InevitableCacophony::OctaveStructure.new(input)
+                InevitableCacophony::MidiGenerator.new(octave_structure, options[:tonic])
+        end
+end
+
+def rhythm
+	@rhythm ||= begin
+		all_rhythms = InevitableCacophony::Parser::Rhythms.new.parse(input)
+
+		# InevitableCacophony::Pick the first rhythm mentioned in the file, which should be the one
+		# used by the first section of the piece.
+		rhythm_name = all_rhythms.keys.sort_by { |name| input.index(name.to_s) }.first
+
+		if all_rhythms[rhythm_name]
+			all_rhythms[rhythm_name]
+		else
+
+			# InevitableCacophony::If no rhythms are mentioned, parse any rhythm string we can find in the input.
+			rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
+			InevitableCacophony::Parser::RhythmLine.new.parse(rhythm_score)
+		end
+	end
+end
+
+OptionParser.new do |opts|
+
+	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
+
+	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
+		command = -> {
+			notes = 3.times.map do
+				rhythm.each_beat.map do |beat|
+					InevitableCacophony::Note.new(1, beat)
+				end
+			end.flatten
+
+			[InevitableCacophony::Phrase.new(*notes, tempo: options[:tempo])]
+		}
+	end
+
+	opts.on('-s', '--scale', 'Play a scale in the given style') do
+		command = -> {
+			octave = InevitableCacophony::OctaveStructure.new(input)
+
+			scale = if options[:chromatic]
+					octave.chromatic_scale
+				else
+					octave.scales.values.first
+				end
+
+			rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
+		        notes = rising_and_falling.map do |factor|
+				InevitableCacophony::Note.new(factor, InevitableCacophony::Rhythm::Beat.new(1, 1, 0))
+		        end
+
+			[InevitableCacophony::Phrase.new(*notes, tempo: options[:tempo])]
+		}
+	end
+
+	opts.on('-p', '--polyrhythm RATIO', "Rather than loading rhythm normally, use a polyrhythm in the given ratio (e.g 7:11, 2:3:4). The first number will be 'primary' and determine the tempo.") do |ratio|
+		components = ratio.split(':').map do |length|
+			InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * length.to_i)
+		end
+
+		primary, *secondaries = components
+		@rhythm = InevitableCacophony::Polyrhythm.new(primary, secondaries)
+	end
+
+	opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description from stdin') do |form|
+		@input = form
+	end
+
+	opts.on('--chromatic', 'Use "chromatic" scales (all notes in the form) rather than the named scales typical of the form') do
+		options[:chromatic] = true
+	end
+
+	opts.on('-h', '--help', 'Prints this help') do
+		puts opts
+		exit
+	end
+
+	opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
+		options[:tempo] = tempo.to_i
+	end
+
+	opts.on('-S', '--seed SEED', 'Generate random melodies with the given seed, for repeatable results.') do |seed|
+		int_seed = seed.to_i
+		raise "Expected seed to be a number" unless seed == int_seed.to_s
+
+		options[:seed] = int_seed
+	end
+
+        opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (needs file from -M to play in tune)') do
+                render = -> (phrases) {
+                        phrases.each do |phrase|
+                                midi_generator.add_phrase(phrase)
+                        end
+                        midi_generator.write($stdout)
+                }
+        end
+
+        opts.on('-M', '--midi-tuning', 'Instead of music, generate a Scala (Timidity-compatible) tuning file for use with MIDI output from --midi') do
+                command = -> {
+                        midi_generator.frequency_table
+                }
+                render = -> (frequencies) {
+                        frequencies.table.each do |frequency|
+                                $stdout.puts (frequency * 1000).round
+                        end
+                }
+        end
+end.parse!
+
+render.call(command.call)
