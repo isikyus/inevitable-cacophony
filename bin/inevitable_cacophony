@@ -8,6 +8,7 @@ require 'inevitable_cacophony/octave_structure'
 require 'inevitable_cacophony/midi_generator'
 require 'inevitable_cacophony/tone_generator'
 require 'inevitable_cacophony/phrase'
+require 'inevitable_cacophony/version'
 
 command = -> {
 	octave = InevitableCacophony::OctaveStructure.new(input)
@@ -131,6 +132,11 @@ OptionParser.new do |opts|
 
 	opts.on('-h', '--help', 'Prints this help') do
 		puts opts
+		exit
+	end
+
+	opts.on('-v', '--version', 'Prints this help') do
+		puts "Inevitable Cacophony version #{InevitableCacophony::VERSION}"
 		exit
 	end
 

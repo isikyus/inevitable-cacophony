@@ -1,6 +1,8 @@
+require_relative 'lib/inevitable_cacophony/version'
+
 Gem::Specification.new do |s|
         s.name          = 'inevitable_cacophony'
-        s.version       = '0.0.0'
+        s.version       = InevitableCacophony::VERSION
         s.date          = '2020-07-29'
         s.summary       = 'Generates audio from Dwarf Fortress musical forms'
         s.description   = <<-DESC
