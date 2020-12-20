@@ -64,3 +64,4 @@ MIDI (`-m` option) and Scala tuning files (`-M`) are of course not generated as 
 ## References
 
 https://www.joelstrait.com/digital\_audio\_primer/
+http://www.huygens-fokker.org/scala/scl\_format.html
