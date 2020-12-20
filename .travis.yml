@@ -17,6 +17,7 @@ jobs:
                   env: GEM=gem
 
 before_install:
+        - echo ${GEM}
         - ${GEM} update --system
         - ${GEM} install bundler
 
