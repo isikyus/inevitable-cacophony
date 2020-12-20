@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
                 'source_code_uri'       => 'https://github.com/isikyus/inevitable-cacophony'
         }
         s.license       = 'MIT'
-        s.required_ruby_version = '>= 2.5.3'
+        s.required_ruby_version = '>= 2.0.0'
 
         s.add_runtime_dependency 'midilib', ['~> 2.0.5']
         s.add_runtime_dependency 'wavefile', ['~> 1.0.1']
