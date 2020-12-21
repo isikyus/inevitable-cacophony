@@ -7,16 +7,17 @@ env:
 os:
         - linux
         - osx
-rvm:
-        - system
+#rvm:
+#        - system
 
-jobs:
-        include:
-                - rvm: 2.5.3
-                  os: linux
-                  env: GEM=gem
+#jobs:
+#        include:
+#                - rvm: 2.5.3
+#                  os: linux
+#                  env: GEM=gem
 
 before_install:
+        - rvm use system
         - echo ${GEM}
         - ${GEM} update --system
         - ${GEM} install bundler
