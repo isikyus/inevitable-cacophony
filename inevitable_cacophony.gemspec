@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
         s.license       = 'MIT'
         s.required_ruby_version = '>= 2.0.0'
 
+        s.add_runtime_dependency 'backports', ['~> 3.1']
         s.add_runtime_dependency 'midilib', ['~> 2.0.5']
         s.add_runtime_dependency 'wavefile', ['~> 1.0.1']
 
