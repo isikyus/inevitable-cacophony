@@ -90,7 +90,7 @@ module InevitableCacophony
         divisions = parse_number_word(note_count_word)
         numerator = divisions.to_f
 
-        (0...divisions).map { |index| 2 ** (index/numerator) }
+        (0...divisions).map { |index| 2**(index / numerator) }
       else
         parse_exact_notes(octave_paragraph)
       end
@@ -112,11 +112,11 @@ module InevitableCacophony
 
           case pos
           when 'x'
-                  note_scalings << ratio
+            note_scalings << ratio
           when '-'
-                  # Do nothing; no note here
+            # Do nothing; no note here
           else
-                  raise "Unexpected note position symbol #{pos.inspect}"
+            raise "Unexpected note position symbol #{pos.inspect}"
           end
         end
 
@@ -177,9 +177,9 @@ module InevitableCacophony
 
           case scale_type
           when /thought of as ([a-z]+ )?(disjoint|joined) chords/
-                  scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph, chords)
+            scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph, chords)
           else
-                  raise "Unknown scale type #{scale_type} in #{scale_sentence}"
+            raise "Unknown scale type #{scale_type} in #{scale_sentence}"
           end
         end
       end

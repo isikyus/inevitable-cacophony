@@ -33,7 +33,14 @@ RSpec.describe  InevitableCacophony::Polyrhythm do
       expect(subject.secondaries.first.beats.length).to eq 3
 
       durations = subject.beats.map(&:duration)
-      expect(durations).to eq([1, 1/3.0, 2/3.0, 2/3.0, 1/3.0, 1])
+      expect(durations).to eq([
+        1,
+        1 / 3.0,
+        2 / 3.0,
+        2 / 3.0,
+        1 / 3.0,
+        1
+      ])
     end
 
     describe 'canonical form' do
@@ -98,19 +105,28 @@ RSpec.describe  InevitableCacophony::Polyrhythm do
       [
         InevitableCacophony::Rhythm.new([
           InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0),
+          InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0),
           InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0)
+          InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0)
         ]),
         InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0),
+          InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0),
           InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(6/9.0, 1, 0)
+          InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0)
         ])
       ]
     end
 
-    let(:expected_amplitudes) { [4/9.0, 4/6.0, 1, 1, 6/9.0, 4/6.0].map(&:to_f) }
+    let(:expected_amplitudes) do
+      [
+        4 / 9.0,
+        4 / 6.0,
+        1,
+        1,
+        6 / 9.0,
+        4 / 6.0
+      ].map(&:to_f)
+    end
 
     specify 'correctly sums accented amplitudes' do
       expect(subject.beats.map(&:amplitude)).to eq expected_amplitudes

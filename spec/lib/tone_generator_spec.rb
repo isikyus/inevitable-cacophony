@@ -17,7 +17,7 @@ RSpec.describe InevitableCacophony::ToneGenerator do
     let(:beat) { InevitableCacophony::Rhythm::Beat.new(amplitude, note_length, timing) }
 
     let(:bpm) { 90 }
-    let(:expected_duration) { 2.0/3 } # seconds 
+    let(:expected_duration) { 2.0 / 3 } # seconds
     let(:score) { InevitableCacophony::Phrase.new(note, tempo: bpm) }
 
     let(:buffer) { subject.phrase_buffer(score) }
@@ -71,8 +71,8 @@ RSpec.describe InevitableCacophony::ToneGenerator do
                                 let(:frequency) { tonic }
 
         describe 'with a short beat' do
-          let(:note_length) { 1/2.0 }
-          let(:expected_duration) { 1.0/3.0 } # Half a beat, at 90 BPM 
+          let(:note_length) { 1 / 2.0 }
+          let(:expected_duration) { 1.0 / 3.0 } # Half a beat, at 90 BPM
 
           it_should_behave_like 'adding any sound'
         end

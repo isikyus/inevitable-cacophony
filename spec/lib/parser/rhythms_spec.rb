@@ -36,45 +36,45 @@ RSpec.describe InevitableCacophony::Parser::Rhythms do
 
     let(:bepa) do
       InevitableCacophony::Rhythm.new([
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(1.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-
-        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0)
+
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0)
       ])
     end
 
@@ -131,54 +131,54 @@ RSpec.describe InevitableCacophony::Parser::Rhythms do
       InevitableCacophony::Rhythm.new([
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(6/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
 
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 1.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 1.0),
         InevitableCacophony::Rhythm::Beat.new(1.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(6/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
 
-        InevitableCacophony::Rhythm::Beat.new(6/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/9.0, 1, -1.0),
+        InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, -1.0),
       ]);
     end
 
     let(:amama) do
       InevitableCacophony::Rhythm.new([
         InevitableCacophony::Rhythm::Beat.new(1.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 1.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 1.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
 
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
-        InevitableCacophony::Rhythm::Beat.new(4/6.0, 1, 0.0),
+        InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),
         InevitableCacophony::Rhythm::Beat.new(0.0, 1, 0.0),

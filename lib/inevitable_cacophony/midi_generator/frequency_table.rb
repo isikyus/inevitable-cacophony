@@ -32,13 +32,13 @@ module InevitableCacophony
 
       # 12TET values of those notes.
       STANDARD_MIDI_FREQUENCIES = MIDI_OCTAVE_NOTES.times.map do |index|
-        OctaveStructure::OCTAVE_RATIO ** (index / MIDI_OCTAVE_NOTES.to_f)
+        OctaveStructure::OCTAVE_RATIO**(index / MIDI_OCTAVE_NOTES.to_f)
       end
 
       # Maximum increase/decrease between two frequencies we still treat as
       # "equal". Approximately 1/30th of human Just Noticeable Difference
       # for pitch.
-      FREQUENCY_FUDGE_FACTOR = (1.0/10_000)
+      FREQUENCY_FUDGE_FACTOR = (1.0 / 10_000)
 
       # Create a frequency table with a given structure and tonic.
       #

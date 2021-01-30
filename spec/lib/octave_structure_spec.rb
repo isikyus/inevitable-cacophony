@@ -25,26 +25,26 @@ RSpec.describe InevitableCacophony::OctaveStructure do
       let(:expected_scalings) do
         [
           1,
-          2 ** (1/21.0),
-          2 ** (2/21.0),
-          2 ** (3/21.0),
-          2 ** (4/21.0),
-          2 ** (5/21.0),
-          2 ** (6/21.0),
-          2 ** (7/21.0),
-          2 ** (8/21.0),
-          2 ** (9/21.0),
-          2 ** (10/21.0),
-          2 ** (11/21.0),
-          2 ** (12/21.0),
-          2 ** (13/21.0),
-          2 ** (14/21.0),
-          2 ** (15/21.0),
-          2 ** (16/21.0),
-          2 ** (17/21.0),
-          2 ** (18/21.0),
-          2 ** (19/21.0),
-          2 ** (20/21.0),
+          2**(1 / 21.0),
+          2**(2 / 21.0),
+          2**(3 / 21.0),
+          2**(4 / 21.0),
+          2**(5 / 21.0),
+          2**(6 / 21.0),
+          2**(7 / 21.0),
+          2**(8 / 21.0),
+          2**(9 / 21.0),
+          2**(10 / 21.0),
+          2**(11 / 21.0),
+          2**(12 / 21.0),
+          2**(13 / 21.0),
+          2**(14 / 21.0),
+          2**(15 / 21.0),
+          2**(16 / 21.0),
+          2**(17 / 21.0),
+          2**(18 / 21.0),
+          2**(19 / 21.0),
+          2**(20 / 21.0),
         ]
       end
 
@@ -70,28 +70,28 @@ RSpec.describe InevitableCacophony::OctaveStructure do
       let(:expected_scalings) do
         [
           1,
-          2 ** (2/24.0),
-          2 ** (3/24.0),
-          2 ** (4/24.0),
-          2 ** (5/24.0),
-          2 ** (6/24.0),
+          2**(2 / 24.0),
+          2**(3 / 24.0),
+          2**(4 / 24.0),
+          2**(5 / 24.0),
+          2**(6 / 24.0),
 
-          2 ** (8/24.0),
-          2 ** (9/24.0),
-          2 ** (10/24.0),
+          2**(8 / 24.0),
+          2**(9 / 24.0),
+          2**(10 / 24.0),
 
-          2 ** (12/24.0),
-          2 ** (13/24.0),
-          2 ** (14/24.0),
-          2 ** (15/24.0),
-          2 ** (16/24.0),
+          2**(12 / 24.0),
+          2**(13 / 24.0),
+          2**(14 / 24.0),
+          2**(15 / 24.0),
+          2**(16 / 24.0),
 
-          2 ** (18/24.0),
+          2**(18 / 24.0),
 
-          2 ** (20/24.0),
-          2 ** (21/24.0),
-          2 ** (22/24.0),
-          2 ** (23/24.0)
+          2**(20 / 24.0),
+          2**(21 / 24.0),
+          2**(22 / 24.0),
+          2**(23 / 24.0)
         ]
       end
 
@@ -128,7 +128,7 @@ RSpec.describe InevitableCacophony::OctaveStructure do
 
       specify 'increases in semitone increments through the scale' do
         chromatic_scale.note_scalings.each_cons(2) do |last, current|
-          expect(current/last).to be_within(0.0001).of(2 ** (1/12.0))
+          expect(current / last).to be_within(0.0001).of(2**(1 / 12.0))
         end
       end
 
@@ -145,13 +145,13 @@ RSpec.describe InevitableCacophony::OctaveStructure do
             1,
 
             # Note 0-based indexing; first note is the tonic (tonic * 2**0)
-            2 ** (2/12.0),
-            2 ** (7/12.0)
+            2**(2 / 12.0),
+            2**(7 / 12.0)
           ])
 
           expect(dik_chord.note_scalings).to eq([
-            2 ** (8/12.0),
-            2 ** (9/12.0),
+            2**(8 / 12.0),
+            2**(9 / 12.0),
             2
           ])
         end
@@ -163,16 +163,16 @@ RSpec.describe InevitableCacophony::OctaveStructure do
         specify 'uses the correct notes' do
           expect(ani_scale.note_scalings).to eq([
             1,
-            2 ** (2/12.0),
-            2 ** (7/12.0),
-            2 ** (8/12.0),
-            2 ** (9/12.0),
+            2**(2 / 12.0),
+            2**(7 / 12.0),
+            2**(8 / 12.0),
+            2**(9 / 12.0),
             2
           ])
         end
 
         specify 'excludes the octave when requested' do
-          expect(ani_scale.open.note_scalings.last).to eq(2 ** (9/12.0))
+          expect(ani_scale.open.note_scalings.last).to eq(2**(9 / 12.0))
         end
       end
     end

@@ -15,7 +15,7 @@ RSpec.describe InevitableCacophony::Rhythm do
 
   # Allowable error in note durations.
   # Set by trial and error to get tests to pass
-  LENGTH_DELTA = 2 ** -50
+  LENGTH_DELTA = 2**-50
 
   shared_examples_for 'beats without special timing' do
     describe 'canonical form' do
@@ -36,12 +36,28 @@ RSpec.describe InevitableCacophony::Rhythm do
   describe 'pitch-accented beats' do
     SCORES_TO_BEATS = {
       '| x |' => [1],
-      '| x X |' => [2/3.0, 1],
-      '| x X x ! |' => [4/9.0, 2/3.0, 4/9.0, 1],
-      '| x - x X |' => [2/3.0, 0, 2/3.0, 1],
-      '| x x x |' => [1, 1, 1],
-      '| x X | x ! x |' => [4/9.0, 2/3.0, 4/9.0, 1, 4/9.0],
-      '| x - - x |' => [1, 0, 0, 1],
+      '| x X |' => [2 / 3.0,
+                    1],
+      '| x X x ! |' => [4 / 9.0,
+                        2 / 3.0,
+                        4 / 9.0,
+                        1],
+      '| x - x X |' => [2 / 3.0,
+                        0,
+                        2 / 3.0,
+                        1],
+      '| x x x |' => [1,
+                      1,
+                      1],
+      '| x X | x ! x |' => [4 / 9.0,
+                            2 / 3.0,
+                            4 / 9.0,
+                            1,
+                            4 / 9.0],
+      '| x - - x |' => [1,
+                        0,
+                        0,
+                        1],
     }
 
     SCORES_TO_BEATS.each do |score, beats|
@@ -79,7 +95,14 @@ RSpec.describe InevitableCacophony::Rhythm do
 
     context 'with no special timing marks' do
       let(:score) { '| x - X !' }
-      let(:beats) { [4/9.0, 0, 2/3.0, 1] }
+      let(:beats) do
+        [
+          4 / 9.0,
+          0,
+          2 / 3.0,
+          1
+        ]
+      end
 
       include_examples 'beats without special timing'
     end
