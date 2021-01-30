@@ -113,7 +113,7 @@ OptionParser.new do |opts|
 		}
 	end
 
-	opts.on('-p', '--polyrhythm RATIO', "Rather than loading rhythm normally, use a polyrhythm in the given ratio (e.g 7:11, 2:3:4). The first number will be 'primary' and determine the tempo.") do |ratio|
+	opts.on('-p', '--polyrhythm RATIO', "Rather than loading rhythm normally, use a polyrhythm in the given ratio (e.g 7:11, 2:3:4).") do |ratio|
 		components = ratio.split(':').map do |length|
 			InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * length.to_i)
 		end
@@ -135,12 +135,12 @@ OptionParser.new do |opts|
 		exit
 	end
 
-	opts.on('-v', '--version', 'Prints this help') do
+	opts.on('-v', '--version', 'Show version and exit') do
 		puts "Inevitable Cacophony version #{InevitableCacophony::VERSION}"
 		exit
 	end
 
-	opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
+  opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]}). For polyrhythms, this applies to whatever number is given first: at the same tempo, a 2:3 rhythm will play faster than a 3:2.") do |tempo|
 		options[:tempo] = tempo.to_i
 	end
 
