@@ -31,7 +31,8 @@ render = -> (phrases) {
         tone = InevitableCacophony::ToneGenerator.new(options[:tonic])
         phrases.each { |phrase| tone.add_phrase(phrase) }
 
-        # Have to buffer output so wavefile can seek back to the beginning to write format info
+        # Have to buffer output so wavefile can seek back to the beginning
+        # to write format info
         output_buffer = StringIO.new
         tone.write(output_buffer)
         $stdout.write(output_buffer.string)
@@ -55,7 +56,8 @@ end
 def midi_generator
         @midi_generator ||= begin
           octave_structure = InevitableCacophony::OctaveStructure.new(input)
-          InevitableCacophony::MidiGenerator.new(octave_structure, options[:tonic])
+          InevitableCacophony::MidiGenerator.new(octave_structure,
+                                                 options[:tonic])
         end
 end
 
@@ -63,15 +65,19 @@ def rhythm
   @rhythm ||= begin
     all_rhythms = InevitableCacophony::Parser::Rhythms.new.parse(input)
 
-    # InevitableCacophony::Pick the first rhythm mentioned in the file, which should be the one
-    # used by the first section of the piece.
-    rhythm_name = all_rhythms.keys.sort_by { |name| input.index(name.to_s) }.first
+    # InevitableCacophony::Pick the first rhythm mentioned in the file,
+    # which should be the one used by the first section of the piece.
+    rhythm_name = all_rhythms
+      .keys
+      .sort_by { |name| input.index(name.to_s) }
+      .first
 
     if all_rhythms[rhythm_name]
       all_rhythms[rhythm_name]
     else
 
-      # InevitableCacophony::If no rhythms are mentioned, parse any rhythm string we can find in the input.
+      # If no rhythms are mentioned,
+      # parse any rhythm string we can find in the input.
       rhythm_score = input.match(/(\|( |\`)((-|x|X|!)( |\`|\'))+)+\|/).to_s
       InevitableCacophony::Parser::RhythmLine.new.parse(rhythm_score)
     end
@@ -104,29 +110,41 @@ OptionParser.new do |opts|
           octave.scales.values.first
         end
 
-      rising_and_falling = scale.open.note_scalings + scale.note_scalings.reverse
+      rising_and_falling = scale.open.note_scalings +
+        scale.note_scalings.reverse
       notes = rising_and_falling.map do |factor|
-        InevitableCacophony::Note.new(factor, InevitableCacophony::Rhythm::Beat.new(1, 1, 0))
+        InevitableCacophony::Note.new(
+          factor,
+          InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
+        )
       end
 
       [InevitableCacophony::Phrase.new(*notes, tempo: options[:tempo])]
     }
   end
 
-  opts.on('-p', '--polyrhythm RATIO', "Rather than loading rhythm normally, use a polyrhythm in the given ratio (e.g 7:11, 2:3:4). The first number will be 'primary' and determine the tempo.") do |ratio|
+  opts.on('-p', '--polyrhythm RATIO',
+          'Rather than loading rhythm normally, use a polyrhythm in the ' \
+          "given ratio (e.g 7:11, 2:3:4). The first number will be 'primary' " \
+          'and determine the tempo.') do |ratio|
     components = ratio.split(':').map do |length|
-      InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * length.to_i)
+      InevitableCacophony::Rhythm.new(
+        [InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * length.to_i
+      )
     end
 
     primary, *secondaries = components
     @rhythm = InevitableCacophony::Polyrhythm.new(primary, secondaries)
   end
 
-  opts.on('-e', '--eval FORM', 'Parse FORM rather than reading a form description from stdin') do |form|
+  opts.on('-e', '--eval FORM',
+          'Parse FORM rather than reading a form description ' \
+          'from stdin') do |form|
     @input = form
   end
 
-  opts.on('--chromatic', 'Use "chromatic" scales (all notes in the form) rather than the named scales typical of the form') do
+  opts.on('--chromatic', 'Use "chromatic" scales (all notes in the form) ' \
+          'rather than the named scales typical of the form') do
     options[:chromatic] = true
   end
 
@@ -140,18 +158,24 @@ OptionParser.new do |opts|
     exit
   end
 
-  opts.on('-t', '--tempo TEMPO', "Play at the given tempo in beats per minute (default #{options[:tempo]})") do |tempo|
+  opts.on('-t', '--tempo TEMPO',
+          'Play at the given tempo in beats per ' \
+          "minute (default #{options[:tempo]})") do |tempo|
     options[:tempo] = tempo.to_i
   end
 
-  opts.on('-S', '--seed SEED', 'Generate random melodies with the given seed, for repeatable results.') do |seed|
+  opts.on('-S', '--seed SEED',
+          'Generate random melodies with the given seed, ' \
+          'for repeatable results.') do |seed|
     int_seed = seed.to_i
     raise "Expected seed to be a number" unless seed == int_seed.to_s
 
     options[:seed] = int_seed
   end
 
-  opts.on('-m', '--midi', 'Generate output in MIDI rather than WAV format (needs file from -M to play in tune)') do
+  opts.on('-m', '--midi',
+          'Generate output in MIDI rather than WAV format ' \
+          '(needs file from -M to play in tune)') do
     render = -> (phrases) {
       phrases.each do |phrase|
               midi_generator.add_phrase(phrase)
@@ -160,7 +184,9 @@ OptionParser.new do |opts|
     }
   end
 
-  opts.on('-M', '--midi-tuning', 'Instead of music, generate a Scala (Timidity-compatible) tuning file for use with MIDI output from --midi') do
+  opts.on('-M', '--midi-tuning',
+          'Instead of music, generate a Scala (Timidity-compatible) ' \
+          'tuning file for use with MIDI output from --midi') do
     command = -> {
       midi_generator.frequency_table
     }

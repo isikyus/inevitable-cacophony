@@ -10,7 +10,8 @@ RSpec.describe InevitableCacophony::Rhythm do
   subject { InevitableCacophony::Parser::RhythmLine.new.parse(score) }
   let(:canonical_durations) { subject.canonical.map(&:duration) }
 
-  INTER_NOTE_DELAY = InevitableCacophony::Rhythm::START_DELAY + InevitableCacophony::Rhythm::AFTER_DELAY
+  INTER_NOTE_DELAY = InevitableCacophony::Rhythm::START_DELAY +
+    InevitableCacophony::Rhythm::AFTER_DELAY
   NOTE_LENGTH = 1 - INTER_NOTE_DELAY
 
   # Allowable error in note durations.
@@ -69,15 +70,14 @@ RSpec.describe InevitableCacophony::Rhythm do
           expect(subject.beats.map(&:amplitude)).to eq beats
         end
 
-        # Separate odd and even canonical since the even-indexed ones are spacing between notes.
+        # Even-indexed canonical beats are silence between notes.
         let(:canonical) do
-          odd_beats, even_beats = subject.canonical.
-                                          each_with_index.
-                                          group_by { |_beat, index| index.odd? }.
-                                          values_at(true, false).
-
-                                          # Remove the indexes again.
-                                          map { |values| values.map(&:first) }
+          odd_beats, even_beats = subject
+            .canonical
+            .each_with_index
+            .group_by { |_beat, index| index.odd? }
+            .values_at(true, false)
+            .map { |values| values.map(&:first) } # Remove with_index indexes
 
           {
             spacing: even_beats,
@@ -124,8 +124,16 @@ RSpec.describe InevitableCacophony::Rhythm do
 
           expect(canonical.length).to eq 30
 
-          # Should sound on the first/30th, seventh (10 * (1 - 0.3)) and 20th ticks of the 30.
-          expect(canonical).to eq ([1.0] + ([nil] * 6) + [1.0] + ([nil] * 12) + [1.0] + ([nil] * 9))
+          # Should sound on the first/30th, seventh (10 * (1 - 0.3))
+          # and 20th ticks of the 30.
+          expect(canonical).to eq(
+            [1.0] +
+            ([nil] * 6) +
+            [1.0] +
+            ([nil] * 12) +
+            [1.0] +
+            ([nil] * 9)
+          )
         end
       end
     end
@@ -147,8 +155,16 @@ RSpec.describe InevitableCacophony::Rhythm do
 
           expect(canonical.length).to eq 30
 
-          # Should sound on the first/30th, 13th (10 * 1.3) and 20th ticks of the 30.
-          expect(canonical).to eq ([1.0] + ([nil] * 12) + [1.0] + ([nil] * 6) + [1.0] + ([nil] * 9))
+          # Should sound on the first/30th, 13th (10 * 1.3)
+          # and 20th ticks of the 30.
+          expect(canonical).to eq(
+            [1.0] +
+            ([nil] * 12) +
+            [1.0] +
+            ([nil] * 6) +
+            [1.0] +
+            ([nil] * 9)
+          )
         end
       end
     end

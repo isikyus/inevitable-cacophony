@@ -34,7 +34,8 @@ module InevitableCacophony
       SIMPLE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/
       COMPOSITE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is made from [-a-z ]+ patterns: (?<patterns>[^.]+)(\.|$)/
 
-      # "the <rhythm>". Used to match individual components in COMPOSITE_RHYTHM_SENTENCE
+      # "the <rhythm>".
+      # Used to match individual components in COMPOSITE_RHYTHM_SENTENCE
       THE_RHYTHM = /the (?<rhythm_name>[[:alpha:]]+)( \((?<reference_comment>[^)]+)\))?/
       IS_PRIMARY_COMMENT = 'considered the primary'
 
@@ -64,11 +65,14 @@ module InevitableCacophony
 
         rhythms = {}
 
-        # Find the rhythm description and the following paragraph with the score.
-        parser.sections.each_cons(2) do |rhythm, score|
+        # Find the rhythm description and the following paragraph
+        # with the score.
+        parser
+          .sections.each_cons(2) do |rhythm, score|
           match = SIMPLE_RHYTHM_SENTENCE.match(rhythm)
 
-          # Make sure we're actually dealing with a rhythm, not some other form element.
+          # Make sure we're actually dealing with a rhythm,
+          # not some other form element.
           next unless match
 
           rhythms[match[:name].to_sym] = RhythmLine.parse(score)
@@ -78,48 +82,68 @@ module InevitableCacophony
       end
 
       # @param parser [Parser::SectionedText]
-      # @param base_rhythms [Hash{Symbol,Rhythm}] Simpler rhythms that can be used by the composite forms we're parsing.
+      # @param base_rhythms [Hash{Symbol,Rhythm}] Simpler rhythms that can be
+      #                     used by the composite forms we're parsing.
       # @return [Hash{Symbol,Rhythm}]
       def parse_composite_rhythms(parser, base_rhythms)
 
         composite_rhythms = {}
-        parser.find_all_paragraphs(COMPOSITE_RHYTHM_SENTENCE).each do |paragraph|
+        parser
+          .find_all_paragraphs(COMPOSITE_RHYTHM_SENTENCE)
+          .each do |paragraph|
 
           # TODO: write something that handles named matches a bit better
-          intro_sentence = paragraph.find(COMPOSITE_RHYTHM_SENTENCE).match(COMPOSITE_RHYTHM_SENTENCE)
+          intro_sentence = paragraph
+            .find(COMPOSITE_RHYTHM_SENTENCE)
+            .match(COMPOSITE_RHYTHM_SENTENCE)
           polyrhythm_name = intro_sentence[:name].to_sym
-          primary, *secondaries = parse_polyrhythm_components(intro_sentence[:patterns], base_rhythms)
+          primary, *secondaries = parse_polyrhythm_components(
+            intro_sentence[:patterns],
+            base_rhythms
+          )
 
-          combination_type = paragraph.find(COMBINATION_TYPE_SENTENCE).match(COMBINATION_TYPE_SENTENCE)[:type_summary]
+          combination_type = paragraph
+            .find(COMBINATION_TYPE_SENTENCE)
+            .match(COMBINATION_TYPE_SENTENCE)[:type_summary]
 
           unless combination_type == POLYRHYTHM_TYPE_SUMMARY
-            raise UnrecognisedFormSyntax.new("Unrecognised polyrhythm type #{combination_type}")
+            raise UnrecognisedFormSyntax.new(
+              "Unrecognised polyrhythm type #{combination_type}"
+            )
           end
 
-          composite_rhythms[polyrhythm_name] = Polyrhythm.new(primary, secondaries)
+          composite_rhythms[polyrhythm_name] =
+            Polyrhythm.new(primary, secondaries)
         end
 
         composite_rhythms
       end
 
-      # @param reference_string [String] The list of rhythms used, like "the anto (considered the primary), the tak, ..."
+      # @param reference_string [String] The list of rhythms used,
+      #         like "the anto (considered the primary), the tak, ..."
       # @param base_rhythms [Hash{Symbol, Rhythm}]
-      # @return [Array<Rhythm>] The matched rhythms, with the primary one as first element/.
+      # @return [Array<Rhythm>] The matched rhythms,
+      #         with the primary one as first element.
       def parse_polyrhythm_components(reference_string, base_rhythms)
         primary = nil
         secondaries = []
 
-        rhythms_with_comments = reference_string.scan(THE_RHYTHM).map do |rhythm_name, comment|
+        rhythms_with_comments = reference_string
+          .scan(THE_RHYTHM)
+          .map do |rhythm_name, comment|
           component = base_rhythms[rhythm_name.to_sym]
           raise(UnknownBaseRhythm.new(rhythm_name)) unless component
 
           [component, comment]
         end
 
-        primary_rhythms = rhythms_with_comments.select { |_, comment| comment == IS_PRIMARY_COMMENT }
+        primary_rhythms = rhythms_with_comments
+          .select { |_, comment| comment == IS_PRIMARY_COMMENT }
 
         if primary_rhythms.length != 1
-          raise "Unexpected number of primary rhythms in #{primary_rhythms.inspect}; expected exactly 1"
+          raise 'Unexpected number of primary rhythms in ' \
+                "#{primary_rhythms.inspect}; expected exactly 1 \
+                    "
         end
         primary = primary_rhythms.first.first
 
@@ -130,7 +154,8 @@ module InevitableCacophony
           raise "Unrecognised rhythm comment(s) #{remaining_comments.inspect}"
         end
 
-        secondaries = remaining_rhythms.select {|_, comment| comment.nil? }.map(&:first)
+        secondaries = remaining_rhythms
+          .select {|_, comment| comment.nil? }.map(&:first)
         [primary, *secondaries]
       end
     end

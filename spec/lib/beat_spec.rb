@@ -4,17 +4,16 @@ require 'inevitable_cacophony/rhythm'
 
 RSpec.describe InevitableCacophony::Rhythm::Beat do
 
-  let(:total_delay) do
-    InevitableCacophony::Rhythm::AFTER_DELAY +
-      InevitableCacophony::Rhythm::START_DELAY
-  end
+  let(:start_delay) { InevitableCacophony::Rhythm::START_DELAY }
+  let(:after_delay) { InevitableCacophony::Rhythm::AFTER_DELAY }
+  let(:total_delay) { after_delay + start_delay }
 
   context 'without special timing' do
     subject(:beat) { InevitableCacophony::Rhythm::Beat.new(1, 2, 0) }
 
     specify 'multiplies delays by duration' do
-      expect(subject.start_delay).to eq InevitableCacophony::Rhythm::START_DELAY * 2
-      expect(subject.after_delay).to eq InevitableCacophony::Rhythm::AFTER_DELAY * 2
+      expect(subject.start_delay).to eq start_delay * 2
+      expect(subject.after_delay).to eq after_delay * 2
     end
 
     specify 'keeps total duration unchanged' do

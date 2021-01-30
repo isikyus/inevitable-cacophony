@@ -1,5 +1,6 @@
 # Like array equality, but accepts anything within a certain delta.
-# Used to diff the arrays of floating-point values that come up a lot in our tests.
+# Used to diff the arrays of floating-point values that come up a
+# lot in our tests.
 
 RSpec::Matchers.define :eq_array_with_delta do |delta, expected| 
   match do |actual|

@@ -76,7 +76,8 @@ module InevitableCacophony
           tonic_offset = index - MIDI_TONIC
           octave_offset, note = tonic_offset.divmod(octave_breakdown.length)
 
-          bottom_of_octave = tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
+          bottom_of_octave =
+            tonic * OctaveStructure::OCTAVE_RATIO**octave_offset
           bottom_of_octave * octave_breakdown[note]
         end
       end
@@ -98,7 +99,8 @@ module InevitableCacophony
 
         while (next_frequency = frequencies_to_cover.shift)
 
-          # Skip ahead (padding slots with 12TET frequencies from low to high) until:
+          # Skip ahead, padding slots with 12TET frequencies from low to high,
+          # until:
           #
           # * the next 12TET frequency would be sharper, or
           # * any more padding will leave us without enough space.

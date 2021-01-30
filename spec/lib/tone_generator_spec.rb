@@ -14,7 +14,9 @@ RSpec.describe InevitableCacophony::ToneGenerator do
     let(:amplitude) { 0.8 } # Out of 1
     let(:timing) { 0.0 }
     let(:note_length) { 1 }
-    let(:beat) { InevitableCacophony::Rhythm::Beat.new(amplitude, note_length, timing) }
+    let(:beat) do
+      InevitableCacophony::Rhythm::Beat.new(amplitude, note_length, timing)
+    end
 
     let(:bpm) { 90 }
     let(:expected_duration) { 2.0 / 3 } # seconds
@@ -23,7 +25,9 @@ RSpec.describe InevitableCacophony::ToneGenerator do
     let(:buffer) { subject.phrase_buffer(score) }
     let(:samples) { buffer.samples }
 
-    let(:expected_samples) { expected_duration * InevitableCacophony::ToneGenerator::SAMPLE_RATE }
+    let(:expected_samples) do
+      expected_duration * InevitableCacophony::ToneGenerator::SAMPLE_RATE
+    end
 
     shared_examples_for 'adding any sound' do
 
@@ -49,12 +53,14 @@ RSpec.describe InevitableCacophony::ToneGenerator do
 
         specify 'is correctly converted to cycle time' do
           # Count the number of fully-positive and fully-negative half-waves,
-          # and divide by duration to get the frequency.
-          # This should be less sensitive to rounding errors than counting peaks or troughs.
-          half_waves = samples.slice_when { |was, is| was.positive? != is.positive? }
+          # and divide by duration to get the frequency. This should be less
+          # sensitive to rounding errors than counting peaks or troughs.
+          half_waves = samples.slice_when do |was, is|
+            was.positive? != is.positive?
+          end
 
-          # Take the middle 50% of the array to exclude outliers (e.g. silence before
-          # and after the note)
+          # Take the middle 50% of the array to exclude outliers
+          # (e.g. silence before and after the note)
           half_wave_times = half_waves.map(&:length)
           quarter = half_wave_times.length / 4
           typical_times = half_wave_times[quarter..-quarter]
@@ -62,7 +68,7 @@ RSpec.describe InevitableCacophony::ToneGenerator do
           average_time = typical_times.sum / typical_times.length.to_f
 
           expect(InevitableCacophony::ToneGenerator::SAMPLE_RATE / average_time)
-                                                .to be_within(1).of(frequency * 2)
+            .to be_within(1).of(frequency * 2)
         end
       end
 
@@ -96,16 +102,23 @@ RSpec.describe InevitableCacophony::ToneGenerator do
           let(:trailing_silent_samples) do
             samples.slice_after { |s| !s.zero? }.to_a.last.length
           end
-
-          let(:normal_leading_silence) { InevitableCacophony::Rhythm::START_DELAY * expected_samples }
+          let(:normal_leading_silence) do
+            InevitableCacophony::Rhythm::START_DELAY * expected_samples
+          end
 
           specify 'includes silence before the note' do
-            expect(leading_silent_samples).to be_within(10).of(normal_leading_silence)
+            expect(leading_silent_samples)
+              .to be_within(10)
+              .of(normal_leading_silence)
           end
 
           specify 'includes silence after the note' do
-            expected_trailing_silence = InevitableCacophony::Rhythm::AFTER_DELAY * expected_samples
-            expect(trailing_silent_samples).to be_within(10).of(expected_trailing_silence)
+            expected_trailing_silence =
+              InevitableCacophony::Rhythm::AFTER_DELAY * expected_samples
+
+            expect(trailing_silent_samples)
+              .to be_within(10)
+              .of(expected_trailing_silence)
           end
 
           context 'with an early beat' do
@@ -123,7 +136,9 @@ RSpec.describe InevitableCacophony::ToneGenerator do
             let(:timing) { 1.0 }
 
             specify 'increases lead-in' do
-              expect(leading_silent_samples).to be_within(10).of(normal_leading_silence * 2)
+              expect(leading_silent_samples)
+                .to be_within(10)
+                .of(normal_leading_silence * 2)
             end
 
             it_should_behave_like 'adding any sound'

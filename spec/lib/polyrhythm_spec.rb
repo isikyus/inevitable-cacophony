@@ -3,7 +3,7 @@ require 'support/eq_array_with_delta'
 
 require 'inevitable_cacophony/polyrhythm'
 
-RSpec.describe  InevitableCacophony::Polyrhythm do
+RSpec.describe InevitableCacophony::Polyrhythm do
   let(:primary) { base_rhythms.first }
   let(:secondaries) { base_rhythms - [primary] }
 
@@ -23,7 +23,8 @@ RSpec.describe  InevitableCacophony::Polyrhythm do
       expect(subject.secondaries.length).to eq 1
 
       scaled_secondary = subject.secondaries.first
-      expect(scaled_secondary.beats.sum(&:timing)).to eq subject.primary.beats.sum(&:timing)
+      expect(scaled_secondary.beats.sum(&:timing))
+        .to eq subject.primary.beats.sum(&:timing)
     end
 
     specify 'defines its own beats that combine the two rhythms' do
@@ -81,8 +82,12 @@ RSpec.describe  InevitableCacophony::Polyrhythm do
   describe '4-3 without accenting' do
     let(:base_rhythms) do
       [
-        InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 4),
-        InevitableCacophony::Rhythm.new([InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 3)
+        InevitableCacophony::Rhythm.new(
+          [InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 4
+        ),
+        InevitableCacophony::Rhythm.new(
+          [InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 3
+        )
       ]
     end
 
@@ -161,8 +166,8 @@ RSpec.describe  InevitableCacophony::Polyrhythm do
         # interrupt.
         nil,
 
-        # 0 here because the sounding first beat wouldn't sound beyond this point
-        # in either rhythm played alone.
+        # 0 here because the sounding first beat wouldn't sound beyond this
+        # point in either rhythm played alone.
         0, nil,
         0.5, nil,
 

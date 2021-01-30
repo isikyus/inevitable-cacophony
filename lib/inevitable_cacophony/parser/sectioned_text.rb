@@ -13,7 +13,8 @@ module InevitableCacophony
       SENTENCE_DELIMITER = /\.\s+/
 
       # @param description [String] The description to parse
-      # @param delimiter [String,Regex] The delimiter between string sections. Defaults to splitting by paragraphs.
+      # @param delimiter [String,Regex] The delimiter between string sections.
+      #                   Defaults to splitting by paragraphs.
       def initialize(description, delimiter=PARAGRAPH_DELIMITER)
         @sections = description.split(delimiter).map(&:strip)
       end
@@ -32,7 +33,8 @@ module InevitableCacophony
       # @param key [Regex]
       # @return [Array<String>]
       def find_all(key)
-        @sections.select { |s| key.match?(s) } || raise("No match for #{key.inspect} in #{@sections.inspect}")
+        @sections.select { |s| key.match?(s) } ||
+          raise("No match for #{key.inspect} in #{@sections.inspect}")
       end
 
       # Find a paragraph within the description, and break it up into sentences.

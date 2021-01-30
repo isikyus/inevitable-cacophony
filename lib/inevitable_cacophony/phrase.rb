@@ -4,7 +4,8 @@
 module InevitableCacophony
   class Phrase
 
-    # @param notes [Array<Note>] The notes to play (what you'd write on the bar lines, mostly)
+    # @param notes [Array<Note>] The notes to play
+    #              (what you'd write on the bar lines, mostly)
     # @param tempo [Numeric] Tempo in beats per minute.
     def initialize(*notes, tempo: raise)
       @tempo = tempo

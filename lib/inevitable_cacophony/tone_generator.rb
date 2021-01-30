@@ -18,7 +18,10 @@ module InevitableCacophony
     # @param phrase [Phrase]
     def phrase_buffer(phrase)
       samples = phrase.notes.map { |note| note_samples(note, phrase.tempo) }
-            WaveFile::Buffer.new(samples.flatten, WaveFile::Format.new(:mono, :float, SAMPLE_RATE))
+      WaveFile::Buffer.new(
+        samples.flatten,
+        WaveFile::Format.new(:mono, :float, SAMPLE_RATE)
+      )
     end
 
     def add_phrase(phrase)
@@ -26,7 +29,10 @@ module InevitableCacophony
     end
 
     def write(io)
-      WaveFile::Writer.new(io, WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)) do |writer|
+        WaveFile::Writer.new(
+          io,
+          WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)
+        ) do |writer|
         @phrases.each do |phrase|
           writer.write(phrase)
         end
@@ -53,7 +59,8 @@ module InevitableCacophony
 
       start_delay = note.start_delay * samples_per_beat
       after_delay = note.after_delay * samples_per_beat
-      note_length = (note.duration * samples_per_beat) - start_delay - after_delay
+      note_length = (note.duration * samples_per_beat) -
+        start_delay - after_delay
 
       samples << ([0.0] * start_delay)
 

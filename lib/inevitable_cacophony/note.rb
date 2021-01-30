@@ -7,7 +7,8 @@ module InevitableCacophony
   class Note < Struct.new(:ratio, :beat)
 
     # @param ratio [Numeric] Note frequency, as a multiple of the tonic.
-    # @param amplitude [Rhythm::Beat] A Beat object defining amplitude and timing
+    # @param amplitude [Rhythm::Beat] A Beat object defining
+    #                   amplitude and timing
     def initialize(ratio, beat)
       super(ratio, beat)
     end

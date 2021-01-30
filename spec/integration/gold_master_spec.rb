@@ -4,7 +4,10 @@ require 'open3'
 RSpec.describe 'Inevitable Cacophony' do
 
   def generate_with_args(*args)
-    data, error, status = Open3.capture3('bundle', 'exec', 'inevitable_cacophony', *args)
+    data, error, status = Open3.capture3('bundle',
+                                         'exec',
+                                         'inevitable_cacophony',
+                                         *args)
     expect(error).to be_empty
     expect(status).to eq 0
 
@@ -58,7 +61,9 @@ RSpec.describe 'Inevitable Cacophony' do
 
       context 'in a chromatic scale' do
         let(:extra_options) { %w[ --chromatic ] }
-        let(:fixture_file) { 'spec/fixtures/bride-of-trumpets_chromatic-scale.wav' }
+        let(:fixture_file) do
+          'spec/fixtures/bride-of-trumpets_chromatic-scale.wav'
+        end
 
         specify 'works' do
           expect(generated_data).to eq known_data
@@ -66,7 +71,9 @@ RSpec.describe 'Inevitable Cacophony' do
 
         context 'when reading from stdin' do
           let(:generated_data) do
-            generate_with_args('-s', '--chromatic', stdin_data: form_description)
+            generate_with_args('-s',
+                               '--chromatic',
+                               stdin_data: form_description)
           end
  
           specify 'works' do
@@ -114,7 +121,9 @@ RSpec.describe 'Inevitable Cacophony' do
       let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
       let(:form_description) { File.open(description_file) { |f| f.read } }
       let(:random_seed) { 314159 }
-      let(:fixture_file) { 'spec/fixtures/cebela_and_two_three__seed-314159.wav' }
+      let(:fixture_file) do
+        'spec/fixtures/cebela_and_two_three__seed-314159.wav'
+      end
 
       let(:generated_data) do
         generate_with_args('--seed', random_seed.to_s, '-e', form_description)

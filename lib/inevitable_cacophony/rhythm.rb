@@ -12,12 +12,15 @@ module InevitableCacophony
     AFTER_DELAY = (0.3).rationalize
 
     # Amplitude -- how loud the beat is, on a scale from silent to MAX VOLUME.
-    # Duration -- how long it is, in arbitrary beat units (think metronome ticks)
-    # Timing -- how early or late the beat is, relative to the same metaphorical metronome.
+    # Duration -- how long it is, in arbitrary beat units
+    #   (think metronome ticks)
+    # Timing -- how early or late the beat is,
+    #   relative to the same metaphorical metronome.
     class Beat < Struct.new(:amplitude, :duration, :timing)
 
-      # How much earlier or later than normal this beat's time slice should start,
-      # accounting for the standard start/end delays, timing, and duration.
+      # How much earlier or later than normal this beat's time slice
+      # should start, accounting for the standard start/end delays,
+      # timing, and duration.
       # Negative numbers start earlier, positive ones later.
       #
       # @return [Float]
@@ -56,19 +59,21 @@ module InevitableCacophony
         @start_and_after_delays ||= begin
 
           # Positive values from 0 to 1.
-          # Higher numbers mean move more of this offset to the other side of the note
+          # Higher numbers mean move more of this offset to
+          # the other side of the note
           # (e.g. start earlier for start offset).
           start_offset = -[timing, 0].min
           end_offset = [timing, 0].max
 
-          # This is basically matrix multiplication; multiply [START_DELAY, END_DELAY]
+          # This is basically matrix multiplication;
+          # multiply [START_DELAY, END_DELAY]
           # by [
           #  (1 - start_offset)  end_offset
           #  start_offset    (1 - end_offset)
           # ]
           [
             ((1 - start_offset) * START_DELAY) + (end_offset * AFTER_DELAY),
-            (start_offset * START_DELAY) +       ((1 - end_offset) * AFTER_DELAY)
+            (start_offset * START_DELAY) + ((1 - end_offset) * AFTER_DELAY)
           ]
         end
       end
@@ -89,10 +94,11 @@ module InevitableCacophony
       each_beat.sum(&:duration)
     end
 
-    # @return [Array<Numeric,NilClass>] An array where a[i] is the amplitude of the beat at time-step i
+    # @return [Array<Numeric,NilClass>] An array where a[i] is
+    #             the amplitude of the beat at time-step i
     #             (rests are 0), or nil if no beat is played then.
-    #             This will be as long as necessary to represent the rhythm accurately,
-    #             including early and late beats.
+    #             This will be as long as necessary to represent
+    #             the rhythm accurately, including early and late beats.
     def canonical
       if duration != duration.to_i
         raise "Cannot yet canonicalise rhythms with non-integer length"

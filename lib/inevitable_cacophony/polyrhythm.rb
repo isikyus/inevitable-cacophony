@@ -26,7 +26,8 @@ module InevitableCacophony
 
     attr_accessor :primary, :secondaries
 
-    # @return [Array<Rhythm>] All the component rhythms that make up this polyrhythm
+    # @return [Array<Rhythm>] All the component rhythms
+    #         that make up this polyrhythm
     def components
       [primary, *secondaries]
     end
@@ -65,7 +66,8 @@ module InevitableCacophony
       [].tap do |beats|
         amplitude = canonical.shift || 0
 
-        duration = 1 # to account for the first timeslot that we just shifted off.
+        # Start at 1 to account for the first timeslot that we just shifted off.
+        duration = 1
         canonical.each do |this_beat|
           if this_beat.nil?
             duration += 1
@@ -95,7 +97,7 @@ module InevitableCacophony
         stretch_factor = common_multiple / component.length
 
         unless stretch_factor == stretch_factor.to_i
-          raise "Expected dividing LCM of lengths by one length to be an integer."
+          raise "LCM of lengths should have been a multiple of one length."
         end
 
         space_between_beats = stretch_factor - 1
@@ -108,10 +110,13 @@ module InevitableCacophony
     # calculate the beat that should now start/stop/continue playing.
     #
     # @param sounding [Set{Integer}] The channels with a beat currently playing.
-    # @param current_channel_state [Array<Float>] The beat each channel has at this tick.
-    #             (+nil+) means continuing an earlier beat.
-    # @return [Array<[Float, NilClass],Set{Integer}] A two-element array like +[beat, sounding]+,
-    #     where +beat+ is the amplitude to play now (+nil+ to hold last note; 0 to stop),
+    # @param current_channel_state [Array<Float>]
+    #           The beat each channel has at this tick.
+    #           (+nil+) means continuing an earlier beat.
+    # @return [Array<[Float, NilClass],Set{Integer}]
+    #         A two-element array like +[beat, sounding]+,
+    #         where +beat+ is the amplitude to play now
+    #         (+nil+ to hold last note; 0 to stop),
     #     and +sounding+ is the Set of channels still playing.
     def update_sounding_beats(sounding, current_channel_states)
 
@@ -145,7 +150,8 @@ module InevitableCacophony
     # @param condition The object we're looking for in the array
     # @return Array<Integer> indices into `array` matching the conditions.
     #
-    # Source: steenslag at Stack Overflow (https://stackoverflow.com/a/13660352/10955118); CC-BY-SA
+    # Source: steenslag at Stack Overflow
+    # (https://stackoverflow.com/a/13660352/10955118); CC-BY-SA
     def indices_of(array, condition=nil, &block)
       block ||= condition.method(:==)
 
@@ -154,7 +160,8 @@ module InevitableCacophony
       end
     end
 
-    # Scales each beat in the given list so the list has the given total duration.
+    # Scales each beat in the given list so
+    # the list has the given total duration.
     #
     # @param beats [Array<Beat>]
     # @param duration [Float]

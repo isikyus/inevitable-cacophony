@@ -13,8 +13,9 @@ module InevitableCacophony
     # TODO: call this something more useful
     class NoteSequence
 
-      # @param note_scalings [Array<Float>] The frequencies of each note in the scale,
-      #                                     as multiples of the tonic.
+      # @param note_scalings [Array<Float>]
+      #   The frequencies of each note in the scale,
+      #   as multiples of the tonic.
       def initialize(note_scalings)
         @note_scalings = note_scalings
       end
@@ -32,8 +33,10 @@ module InevitableCacophony
     # As above, but also tracks the chords that make up the scale.
     class Scale < NoteSequence
 
-      # @param chords [Array<Chord>] The chords that make up the scale, in order.
-      # @param note_scalings [Array<Fixnum>] Specific note scalings to use; for internal use.
+      # @param chords [Array<Chord>]
+      #        The chords that make up the scale, in order.
+      # @param note_scalings [Array<Fixnum>]
+      #        Specific note scalings to use; for internal use.
       def initialize(chords, note_scalings=nil)
         @chords = chords
         super(note_scalings || chords.map(&:note_scalings).flatten)
@@ -60,7 +63,8 @@ module InevitableCacophony
     # Regular expressions used in parsing
     OCTAVE_STRUCTURE_SENTENCE = /Scales are constructed/
 
-    # @param scale_text [String] Dwarf Fortress musical form description including scale information.
+    # @param scale_text [String] Dwarf Fortress musical form description
+    #                   including scale information.
     # TODO: Allow contructing these without parsing text
     def initialize(scale_text)
       description = Parser::SectionedText.new(scale_text)
@@ -74,7 +78,7 @@ module InevitableCacophony
     attr_reader :chords, :scales
 
     # @return [Scale] A scale including all available notes in the octave.
-    #                   (As the chromatic scale does for well-tempered Western instruments)
+    #                 (As the chromatic scale does for pianos etc.)
     def chromatic_scale
       Scale.new([], @octave_divisions + [2])
     end
@@ -126,19 +130,23 @@ module InevitableCacophony
       end
     end
 
-    # @param description [Parser::SectionedText] The description text from which to extract chord data.
+    # @param description [Parser::SectionedText]
+    #        The description text from which to extract chord data.
     def parse_chords(description)
 
       # TODO: extract to constant
       chord_paragraph_regex = /The ([^ ]+) [a-z]*chord is/
 
       {}.tap do |chords|
-        chord_paragraphs = description.find_all_paragraphs(chord_paragraph_regex)
+        chord_paragraphs =
+          description.find_all_paragraphs(chord_paragraph_regex)
 
         chord_paragraphs.each do |paragraph|
           degrees_sentence = paragraph.find(chord_paragraph_regex)
 
-          name, degrees = degrees_sentence.match(/The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/).captures
+          name, degrees = degrees_sentence.match(
+            /The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/
+          ).captures
           chords[name.to_sym] = parse_chord(degrees)
         end
       end
@@ -151,7 +159,8 @@ module InevitableCacophony
       chord_notes = ordinals.map do |degree_ordinal|
         # degree_ordinal is like "4th",
         # or may be like "13th (completing the octave)"
-        # in which case it's not in our list of notes, but always has a factor of 2
+        # in which case it's not in our list of notes,
+        # but always has a factor of 2
         # (the tonic, an octave higher)
 
         if degree_ordinal.include?('(completing the octave)')
@@ -171,23 +180,31 @@ module InevitableCacophony
       scale_topic_regex = /The [^ ]+ [^ ]+ scale is/
 
       {}.tap do |scales|
-        description.find_all_paragraphs(scale_topic_regex).each do |scale_paragraph|
-          scale_sentence = scale_paragraph.find(scale_topic_regex)
-          name, scale_type = scale_sentence.match(/The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/).captures
+        description
+          .find_all_paragraphs(scale_topic_regex)
+          .each do |scale_paragraph|
+            scale_sentence = scale_paragraph.find(scale_topic_regex)
+            name, scale_type = scale_sentence.match(
+              /The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
+            ).captures
 
-          case scale_type
-          when /thought of as ([a-z]+ )?(disjoint|joined) chords/
-            scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph, chords)
-          else
-            raise "Unknown scale type #{scale_type} in #{scale_sentence}"
+            case scale_type
+            when /thought of as ([a-z]+ )?(disjoint|joined) chords/
+              scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph,
+                                                                chords)
+            else
+              raise "Unknown scale type #{scale_type} in #{scale_sentence}"
+            end
           end
-        end
       end
     end
 
     def parse_disjoint_chords_scale(scale_paragraph, chords)
       chords_sentence = scale_paragraph.find(/These chords are/)
-      chord_list = chords_sentence.match(/These chords are named ([^.]+)\.?/).captures.first
+      chord_list = chords_sentence
+        .match(/These chords are named ([^.]+)\.?/)
+        .captures
+        .first
       chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
 
       Scale.new(chords.values_at(*chord_names))

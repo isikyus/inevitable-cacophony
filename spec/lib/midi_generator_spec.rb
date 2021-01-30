@@ -14,17 +14,24 @@ RSpec.describe InevitableCacophony::MidiGenerator do
   # Middle A - 440 Hertz
   let(:tonic) { 440.0 }
 
+  let(:midi_tonic) do
+    InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC
+  end
+
   let(:octave_structure) do
     InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
     Scales are constructed from seven notes spaced evenly throughout the octave.
     (This guarantees our notes don't line up with 12TET)
 
-    The test hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+    The test hexatonic scale is thought of as two disjoint chords spanning no
+    particular interval.
     These chords are named alpha and beta.
 
-    The alpha trichord is the 1st, the 2nd, and the 4th degrees of the seven-note octave scale.
+    The alpha trichord is the 1st, the 2nd, and the 4th degrees of the
+    seven-note octave scale.
 
-    The beta trichord is the 5th, the 6th, and the 8th (completing the octave) degrees of the seven-note octave scale.
+    The beta trichord is the 5th, the 6th, and the 8th (completing the octave)
+    degrees of the seven-note octave scale.
     OCTAVE
   end
 
@@ -144,12 +151,15 @@ RSpec.describe InevitableCacophony::MidiGenerator do
     shared_examples_for 'scale mapping' do
       specify 'assigns MIDI notes that match the frequency table' do
         midi_frequencies.each_with_index do |frequency, index|
-          expect(frequency).to be_within(0.01).of(tonic * phrase.notes[index].frequency)
+          expect(frequency)
+            .to be_within(0.01)
+            .of(tonic * phrase.notes[index].frequency)
         end
       end
 
       specify 'uses distinct MIDI notes for different frequencies' do
-        expect(midi_frequencies.to_set).to eq phrase.notes.map { |n| tonic * n.frequency }.to_set
+        expect(midi_frequencies.to_set)
+          .to eq(phrase.notes.map { |n| tonic * n.frequency }.to_set)
       end
     end
 
@@ -159,7 +169,8 @@ RSpec.describe InevitableCacophony::MidiGenerator do
       context 'with notes at the edges of MIDI range' do
         let(:phrase) do
           InevitableCacophony::Phrase.new(
-             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**5, beats[0]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**5,
+                                           beats[0]),
 
              # Scale note 5 (6th degree of the octave/7;
              # 1.64 times the tonic) in the 4th octave is
@@ -167,16 +178,16 @@ RSpec.describe InevitableCacophony::MidiGenerator do
              # less than MIDI's note 127 (G9).
              #
              # This is somewhere between 12TET's F9 and F#9
-             InevitableCacophony::Note.new(scale.note_scalings[4] * 2**4, beats[1]),
+             InevitableCacophony::Note.new(scale.note_scalings[4] * 2**4,
+                                           beats[1]),
              tempo: 120
           )
         end
 
         specify 'preserves relative position in the octave' do
-          expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - (5 * 12))
+          expect(note_ons[0].note).to eq(midi_tonic - (5 * 12))
 
-          note_below_4_in_octave_9 =
-            InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + (5 * 12) - 4
+          note_below_4_in_octave_9 = midi_tonic + (5 * 12) - 4
 
           expect(note_ons[1].note).to be_between(
             note_below_4_in_octave_9,
@@ -185,22 +196,31 @@ RSpec.describe InevitableCacophony::MidiGenerator do
         end
 
         specify 'assigns MIDI notes that match the frequency table' do
-          expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
-          expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+          expect(midi_frequencies[0])
+            .to be_within(0.01)
+            .of(tonic * phrase.notes[0].frequency)
+
+          expect(midi_frequencies[1])
+            .to be_within(0.01)
+            .of(tonic * phrase.notes[1].frequency)
         end
       end
 
       context "with notes outside of MIDI's range" do
         let(:phrase) do
           InevitableCacophony::Phrase.new(
-             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**6, beats[0]),
-             InevitableCacophony::Note.new(scale.note_scalings[0] * 2**6, beats[1]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**6,
+                                           beats[0]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] * 2**6,
+                                           beats[1]),
              tempo: 120
           )
         end
 
         specify 'fails cleanly' do
-          expect { track }.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
+          expect do
+            track
+          end.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
         end
       end
     end
@@ -208,14 +228,18 @@ RSpec.describe InevitableCacophony::MidiGenerator do
     context 'with more notes per octave than 12TET' do
        let(:octave_structure) do
         InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
-        Scales are constructed from twenty-one notes spaced evenly throughout the octave.
+        Scales are constructed from twenty-one notes spaced evenly throughout
+        the octave.
 
-        The test hexatonic scale is thought of as two disjoint chords spanning no particular interval.
+        The test hexatonic scale is thought of as two disjoint chords spanning
+        no particular interval.
         These chords are named alpha and beta.
 
-        The alpha trichord is the 1st, the 5th, and the 9th degrees of the twenty-one-note octave scale.
+        The alpha trichord is the 1st, the 5th, and the 9th degrees of the
+        twenty-one-note octave scale.
 
-        The beta trichord is the 11th, the 16th, and the 21st (completing the octave) degrees of the twenty-one-note octave scale.
+        The beta trichord is the 11th, the 16th, and the 21st
+        (completing the octave) degrees of the twenty-one-note octave scale.
         OCTAVE
       end
 
@@ -224,20 +248,27 @@ RSpec.describe InevitableCacophony::MidiGenerator do
       context 'with notes at the edges of MIDI range' do
         let(:phrase) do
           InevitableCacophony::Phrase.new(
-             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**2, beats[0]),
-             InevitableCacophony::Note.new(scale.note_scalings[0] * 2**2, beats[1]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**2,
+                                           beats[0]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] * 2**2,
+                                           beats[1]),
              tempo: 120
           )
         end
 
         specify 'uses nonstandard octave size to keep notes distinct' do
-          expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - (2 * 21))
-          expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + (2 * 21))
+          expect(note_ons[0].note).to eq(midi_tonic - (2 * 21))
+          expect(note_ons[1].note).to eq(midi_tonic + (2 * 21))
         end
 
         specify 'assigns MIDI notes that match the frequency table' do
-          expect(midi_frequencies[0]).to be_within(0.01).of(tonic * phrase.notes[0].frequency)
-          expect(midi_frequencies[1]).to be_within(0.01).of(tonic * phrase.notes[1].frequency)
+          expect(midi_frequencies[0])
+            .to be_within(0.01)
+            .of(tonic * phrase.notes[0].frequency)
+
+          expect(midi_frequencies[1])
+            .to be_within(0.01)
+            .of(tonic * phrase.notes[1].frequency)
         end
       end
 
@@ -245,14 +276,18 @@ RSpec.describe InevitableCacophony::MidiGenerator do
       context "with notes outside of MIDI's range" do
         let(:phrase) do
           InevitableCacophony::Phrase.new(
-             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**4, beats[0]),
-             InevitableCacophony::Note.new(scale.note_scalings[-1] * 2**4, beats[1]),
+             InevitableCacophony::Note.new(scale.note_scalings[0] / 2**4,
+                                           beats[0]),
+             InevitableCacophony::Note.new(scale.note_scalings[-1] * 2**4,
+                                           beats[1]),
              tempo: 120
           )
         end
 
         specify 'fails cleanly' do
-          expect { track }.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
+          expect do
+            track
+          end.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
         end
       end
     end
@@ -260,23 +295,27 @@ RSpec.describe InevitableCacophony::MidiGenerator do
     context 'with exactly a 12-tone scale' do
        let(:octave_structure) do
         InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
-        Scales are constructed from twelve notes spaced evenly throughout the octave.
+        Scales are constructed from twelve notes spaced evenly throughout the
+        octave.
 
-        The test amajorishtonic scale is thought of as two disjoint chords spanning no particular interval.
+        The test amajorishtonic scale is thought of as two disjoint chords
+        spanning no particular interval.
         These chords are named alpha and beta.
 
-        The alpha pentachord is the 1st, the 3rd, the 5th, and the 6th degrees of the twelve-note octave scale.
+        The alpha pentachord is the 1st, the 3rd, the 5th, and the 6th degrees
+        of the twelve-note octave scale.
 
-        The beta tetrachord is the 8th, the 10th, the 12th, and the 13th (completing the octave) degrees of the twelve-note octave scale.
+        The beta tetrachord is the 8th, the 10th, the 12th, and the 13th
+        (completing the octave) degrees of the twelve-note octave scale.
         OCTAVE
       end
 
       specify 'assigns the correct MIDI notes' do
-        expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
-        expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 1)
-        expect(note_ons[2].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
-        expect(note_ons[3].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 2)
-        expect(note_ons[4].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 4)
+        expect(note_ons[0].note).to eq(midi_tonic - 3)
+        expect(note_ons[1].note).to eq(midi_tonic - 1)
+        expect(note_ons[2].note).to eq(midi_tonic + 0)
+        expect(note_ons[3].note).to eq(midi_tonic + 2)
+        expect(note_ons[4].note).to eq(midi_tonic + 4)
       end
     end
 
@@ -294,11 +333,11 @@ RSpec.describe InevitableCacophony::MidiGenerator do
       include_examples 'scale mapping'
 
       specify 'assigns matching MIDI notes where possible' do
-        expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
-        #expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 1.5)
-        expect(note_ons[2].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
-        #expect(note_ons[3].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 1.5)
-        expect(note_ons[4].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 3)
+        expect(note_ons[0].note).to eq(midi_tonic - 3)
+        #expect(note_ons[1].note).to eq(midi_tonic - 1.5)
+        expect(note_ons[2].note).to eq(midi_tonic + 0)
+        #expect(note_ons[3].note).to eq(midi_tonic + 1.5)
+        expect(note_ons[4].note).to eq(midi_tonic + 3)
       end
     end
   end
