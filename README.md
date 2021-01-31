@@ -30,7 +30,7 @@ To generate a tune from a given form description (support is pretty limited so f
 
 At this stage you will need to type out the game's form description by hand to use as input.
 
-See `inevitable_cacophony --help` for other options.
+See `inevitable_cacophony --help` for other options and features.
 
 ### Output Format
 
@@ -50,7 +50,7 @@ I'm not sure what you'd do on Windows, sorry.)
 Once you have RVM installed, running `rvm use` will read the `.ruby_version` file,
 and enable the correct Ruby in your shell (or tell you how to install it, if needed).
 
-You will then need to install the Ruby "gems" Cacophony depends on, which is done through
+You will then need to install the Ruby gems Cacophony depends on, which is done through
 [Bundler](https://bundler.io/#getting-started). Once you have Bundler installed,
 running `bundle install` will install all the necessary dependencies.
 
