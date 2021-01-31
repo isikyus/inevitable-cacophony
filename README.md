@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/isikyus/inevitable-cacophony.svg?branch=master)](https://travis-ci.com/isikyus/inevitable-cacophony)
 [![Maintainability](https://api.codeclimate.com/v1/badges/61518f6cf2152aa336d9/maintainability)](https://codeclimate.com/github/isikyus/inevitable-cacophony/maintainability)
 
-An attempt to automatically generate music in Dwarf Fortress' generated musical styles.
+An attempt to automatically generate music in [Dwarf Fortress'][adams] generated musical styles.
 
 ## Usage
 
@@ -62,7 +62,22 @@ and run Inevitable Cacophony with:
 
 	bundle exec inevitable_cacophony [args]
 
-## References
+## Acknowledgements and References
 
-https://www.joelstrait.com/digital\_audio\_primer/
-http://www.huygens-fokker.org/scala/scl\_format.html
+Everything in Inevitable Cacophony is motivated by the impressively
+thorough musical-form generation of Tarn and Zach Adams'
+[Dwarf Fortress][adams].
+
+More personally, I'm indebted to Laurence Walker (Ohokwy) and Toby Walker (Wonkyth) for
+letting me pick their brains on music theory.
+
+I've also consulted various pages on music theory and file formats,
+including but not limited to:
+
+* ["Digital Audio Primer", Joel Strait][strait], documentation for the
+  WaveFile gem
+* ["Scala scale file format", Manuel op de Cool][de_cool]
+
+[adams]: http://www.bay12games.com/dwarves/
+[strait]: https://www.joelstrait.com/digital\_audio\_primer/
+[de_cool]: http://www.huygens-fokker.org/scala/scl\_format.html
