@@ -17,7 +17,8 @@ Gem::Specification.new do |s|
         s.executables   << 'inevitable_cacophony'
         s.homepage      = 'https://github.com/isikyus/inevitable-cacophony'
         s.metadata      = {
-                'source_code_uri'       => 'https://github.com/isikyus/inevitable-cacophony'
+                'source_code_uri'       => 'https://github.com/isikyus/inevitable-cacophony',
+                'changelog_uri'         => 'https://github.com/isikyus/inevitable-cacophony/tree/master/CHANGELOG.md'
         }
         s.license       = 'MIT'
         s.required_ruby_version = '>= 2.5.3'
