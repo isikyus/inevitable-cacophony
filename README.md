@@ -79,5 +79,5 @@ including but not limited to:
 * ["Scala scale file format", Manuel op de Cool][de_cool]
 
 [adams]: http://www.bay12games.com/dwarves/
-[strait]: https://www.joelstrait.com/digital\_audio\_primer/
-[de_cool]: http://www.huygens-fokker.org/scala/scl\_format.html
+[strait]: https://www.joelstrait.com/digital_audio_primer/
+[de_cool]: http://www.huygens-fokker.org/scala/scl_format.html
