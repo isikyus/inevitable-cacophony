@@ -9,24 +9,24 @@ An attempt to automatically generate music in [Dwarf Fortress'][adams] generated
 
 Installation:
 
-  gem install inevitable_cacophony
+    gem install inevitable_cacophony
 
 Then run Inevitable Cacophony through the executable (there isn't a stable
 Ruby API yet).
 To play a specific rhythm (in the notation Dwarf Fortress uses):
 
-	inevitable_cacophony --beat -e '| ! x X x |' > rhythm.wav
+    inevitable_cacophony --beat -e '| ! x X x |' > rhythm.wav
 
 
 You can also play polyrhythms where each component rhythm is simply | x x ... x |.
 (More complex rhythms are possible but you'll need to write out a full musical form to describe them.)
 
-	inevitable_cacophony --beat --polyrhythm 7:11 > polyrhythm.wav
+    inevitable_cacophony --beat --polyrhythm 7:11 > polyrhythm.wav
 
 
 To generate a tune from a given form description (support is pretty limited so far):
 
-	inevitable_cacophony < form_description.txt > form.wav
+    inevitable_cacophony < form_description.txt > form.wav
 
 At this stage you will need to type out the game's form description by hand to use as input.
 
@@ -56,11 +56,11 @@ running `bundle install` will install all the necessary dependencies.
 
 If everything's worked, you should be able to run the tests, with:
 
-	bundle exec rspec
+    bundle exec rspec
 
 and run Inevitable Cacophony with:
 
-	bundle exec inevitable_cacophony [args]
+    bundle exec inevitable_cacophony [args]
 
 ## Acknowledgements and References
 
