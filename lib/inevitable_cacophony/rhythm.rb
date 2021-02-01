@@ -1,3 +1,5 @@
+require 'backports/2.4.0/enumerable/sum'
+
 # A rhythm, represented as a sequence of beats of varying length and volume.
 # Beats may be "early" or "late", but internally this is represented by
 # adjusting the durations of surrounding beats.

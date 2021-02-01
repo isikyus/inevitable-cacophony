@@ -1,3 +1,5 @@
+require 'backports/2.4.0/regexp/match'
+
 # Splits text into a sequence of delimited sections,
 # and knows how to find the one you want.
 #

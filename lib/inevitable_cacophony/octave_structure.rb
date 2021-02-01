@@ -1,5 +1,6 @@
 # Represents and parses Dwarf Fortress scale descriptions
 
+require 'backports/2.5.0/string/delete_prefix'
 require 'inevitable_cacophony/parser/sectioned_text'
 
 module InevitableCacophony
