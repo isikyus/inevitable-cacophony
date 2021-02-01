@@ -1,21 +1,21 @@
 require 'spec_helper'
 
-require 'midi_generator'
-require 'phrase'
-require 'note'
-require 'rhythm'
-require 'octave_structure'
+require 'inevitable_cacophony/midi_generator'
+require 'inevitable_cacophony/phrase'
+require 'inevitable_cacophony/note'
+require 'inevitable_cacophony/rhythm'
+require 'inevitable_cacophony/octave_structure'
 
-RSpec.describe MidiGenerator do
+RSpec.describe InevitableCacophony::MidiGenerator do
         subject(:midi_generator) do
-                MidiGenerator.new(octave_structure, tonic)
+                InevitableCacophony::MidiGenerator.new(octave_structure, tonic)
         end
 
         # Middle A - 440 Hertz
         let(:tonic) { 440.0 }
 
         let(:octave_structure) do
-                OctaveStructure.new(<<-OCTAVE)
+                InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
                 Scales are constructed from seven notes spaced evenly throughout the octave.
                 (This guarantees our notes don't line up with 12TET)
 
@@ -33,18 +33,18 @@ RSpec.describe MidiGenerator do
         end
 
         let(:beats) do
-                [Rhythm::Beat.new(1, 1, 0)] * 5
+                [InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * 5
         end
 
         let(:phrase) do
-                Phrase.new(
+                InevitableCacophony::Phrase.new(
                         *[
                                 # First two notes are in the previous octave
-                                Note.new(scale.note_scalings[-2] / 2, beats[0]),
-                                Note.new(scale.note_scalings[-1] / 2, beats[1]),
-                                Note.new(scale.note_scalings[0], beats[2]),
-                                Note.new(scale.note_scalings[1], beats[3]),
-                                Note.new(scale.note_scalings[2], beats[4])
+                                InevitableCacophony::Note.new(scale.note_scalings[-2] / 2, beats[0]),
+                                InevitableCacophony::Note.new(scale.note_scalings[-1] / 2, beats[1]),
+                                InevitableCacophony::Note.new(scale.note_scalings[0], beats[2]),
+                                InevitableCacophony::Note.new(scale.note_scalings[1], beats[3]),
+                                InevitableCacophony::Note.new(scale.note_scalings[2], beats[4])
                         ],
                         tempo: 120
                 )
@@ -58,16 +58,16 @@ RSpec.describe MidiGenerator do
         context 'with a variety of note durations' do
                 let(:beats) do
                         [
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(1, 2, 0),
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(1, 0.5, 0),
-                                Rhythm::Beat.new(1, 1, 0)
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 2, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 0.5, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
                         ]
                 end
 
                 specify 'preserves them' do
-                        # Note duration is time before the note-*off* event
+                        # InevitableCacophony::Note duration is time before the note-*off* event
                         note_offs = track.events.select { |e| e.is_a?(MIDI::NoteOff) }
 
                         # Assume the first note has the correct duration,
@@ -82,11 +82,11 @@ RSpec.describe MidiGenerator do
         context 'with early and late beats' do
                 let(:beats) do
                         [
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(1, 1, -1),
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(1, 1, +1)
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
                         ]
                 end
 
@@ -112,11 +112,11 @@ RSpec.describe MidiGenerator do
         context 'with varying amplitude' do
                 let(:beats) do
                         [
-                                Rhythm::Beat.new(1, 1, 0),
-                                Rhythm::Beat.new(0.5, 1, 0),
-                                Rhythm::Beat.new(0.25, 1, 0),
-                                Rhythm::Beat.new(0, 1, 0),
-                                Rhythm::Beat.new(1, 1, 0)
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(0.5, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(0.25, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+                                InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
                         ]
                 end
 
@@ -158,8 +158,8 @@ RSpec.describe MidiGenerator do
 
                         context 'with notes at the edges of MIDI range' do
                                 let(:phrase) do
-                                        Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**5, beats[0]),
+                                        InevitableCacophony::Phrase.new(
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] / 2**5, beats[0]),
 
                                                  # Scale note 5 (6th degree of the octave/7;
                                                  # 1.64 times the tonic) in the 4th octave is
@@ -167,15 +167,16 @@ RSpec.describe MidiGenerator do
                                                  # less than MIDI's note 127 (G9).
                                                  #
                                                  # This is somewhere between 12TET's F9 and F#9
-                                                 Note.new(scale.note_scalings[4] * 2**4, beats[1]),
+                                                 InevitableCacophony::Note.new(scale.note_scalings[4] * 2**4, beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
                                 specify 'preserves relative position in the octave' do
-                                        expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - (5 * 12))
+                                        expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - (5 * 12))
 
-                                        note_below_4_in_octave_9 = MidiGenerator::FrequencyTable::MIDI_TONIC + (5 * 12) - 4
+                                        note_below_4_in_octave_9 =
+                                                InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + (5 * 12) - 4
 
                                         expect(note_ons[1].note).to be_between(
                                                 note_below_4_in_octave_9,
@@ -191,22 +192,22 @@ RSpec.describe MidiGenerator do
 
                         context "with notes outside of MIDI's range" do
                                 let(:phrase) do
-                                        Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**6, beats[0]),
-                                                 Note.new(scale.note_scalings[0] * 2**6, beats[1]),
+                                        InevitableCacophony::Phrase.new(
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] / 2**6, beats[0]),
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] * 2**6, beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
                                 specify 'fails cleanly' do
-                                        expect { track }.to raise_error(MidiGenerator::FrequencyTable::OutOfRange)
+                                        expect { track }.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
                                 end
                         end
                 end
 
                 context 'with more notes per octave than 12TET' do
                          let(:octave_structure) do
-                                OctaveStructure.new(<<-OCTAVE)
+                                InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
                                 Scales are constructed from twenty-one notes spaced evenly throughout the octave.
 
                                 The test hexatonic scale is thought of as two disjoint chords spanning no particular interval.
@@ -222,16 +223,16 @@ RSpec.describe MidiGenerator do
 
                         context 'with notes at the edges of MIDI range' do
                                 let(:phrase) do
-                                        Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**2, beats[0]),
-                                                 Note.new(scale.note_scalings[0] * 2**2, beats[1]),
+                                        InevitableCacophony::Phrase.new(
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] / 2**2, beats[0]),
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] * 2**2, beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
                                 specify 'uses nonstandard octave size to keep notes distinct' do
-                                        expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - (2 * 21))
-                                        expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + (2 * 21))
+                                        expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - (2 * 21))
+                                        expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + (2 * 21))
                                 end
 
                                 specify 'assigns MIDI notes that match the frequency table' do
@@ -243,22 +244,22 @@ RSpec.describe MidiGenerator do
 
                         context "with notes outside of MIDI's range" do
                                 let(:phrase) do
-                                        Phrase.new(
-                                                 Note.new(scale.note_scalings[0] / 2**4, beats[0]),
-                                                 Note.new(scale.note_scalings[-1] * 2**4, beats[1]),
+                                        InevitableCacophony::Phrase.new(
+                                                 InevitableCacophony::Note.new(scale.note_scalings[0] / 2**4, beats[0]),
+                                                 InevitableCacophony::Note.new(scale.note_scalings[-1] * 2**4, beats[1]),
                                                  tempo: 120
                                         )
                                 end
 
                                 specify 'fails cleanly' do
-                                        expect { track }.to raise_error(MidiGenerator::FrequencyTable::OutOfRange)
+                                        expect { track }.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
                                 end
                         end
                 end
 
                 context 'with exactly a 12-tone scale' do
                          let(:octave_structure) do
-                                OctaveStructure.new(<<-OCTAVE)
+                                InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
                                 Scales are constructed from twelve notes spaced evenly throughout the octave.
 
                                 The test amajorishtonic scale is thought of as two disjoint chords spanning no particular interval.
@@ -271,17 +272,17 @@ RSpec.describe MidiGenerator do
                         end
 
                         specify 'assigns the correct MIDI notes' do
-                                expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
-                                expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 1)
-                                expect(note_ons[2].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
-                                expect(note_ons[3].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 2)
-                                expect(note_ons[4].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 4)
+                                expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
+                                expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 1)
+                                expect(note_ons[2].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
+                                expect(note_ons[3].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 2)
+                                expect(note_ons[4].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 4)
                         end
                 end
 
                 context 'with a scale that is a subset of 12TET' do
                         let(:octave_structure) do
-                                OctaveStructure.new(<<-OCTAVE)
+                                InevitableCacophony::OctaveStructure.new(<<-OCTAVE)
 				Scales are constructed from nine notes dividing the octave.
 				In quartertones, their spacing is roughly 1--x--x--x--x--x--x--x--0,
 				where 1 is the tonic, 0 marks the octave, and x marks other notes.
@@ -293,11 +294,11 @@ RSpec.describe MidiGenerator do
                         include_examples 'scale mapping'
 
                         specify 'assigns matching MIDI notes where possible' do
-                                expect(note_ons[0].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
-                                #expect(note_ons[1].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC - 1.5)
-                                expect(note_ons[2].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
-                                #expect(note_ons[3].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 1.5)
-                                expect(note_ons[4].note).to eq(MidiGenerator::FrequencyTable::MIDI_TONIC + 3)
+                                expect(note_ons[0].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 3)
+                                #expect(note_ons[1].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC - 1.5)
+                                expect(note_ons[2].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 0)
+                                #expect(note_ons[3].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 1.5)
+                                expect(note_ons[4].note).to eq(InevitableCacophony::MidiGenerator::FrequencyTable::MIDI_TONIC + 3)
                         end
                 end
         end
