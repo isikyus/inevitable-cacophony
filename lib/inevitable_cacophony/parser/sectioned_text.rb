@@ -21,6 +21,12 @@ module InevitableCacophony
 
       attr_accessor :sections
 
+      # Same as #sections, but normalises all whitespace within each section
+      # to single spaces.
+      def paragraphs
+        sections.map { |s| s.gsub(/\s+/, ' ') }
+      end
+
       # Find a section (paragraph, sentence, etc.) of the description
       # matching a given regular expression.
       # @param key [Regex]
@@ -31,10 +37,12 @@ module InevitableCacophony
 
       # Find all sections matching a given key
       # @param key [Regex]
+      # @param sections [Array<String>] Sections to search
+      #                 default #sections, but could also be #paragraphs.
       # @return [Array<String>]
-      def find_all(key)
-        @sections.select { |s| key.match?(s) } ||
-          raise("No match for #{key.inspect} in #{@sections.inspect}")
+      def find_all(key, context=sections)
+        context.select { |s| key.match?(s) } ||
+          raise("No match for #{key.inspect} in #{context.inspect}")
       end
 
       # Find a paragraph within the description, and break it up into sentences.
@@ -42,20 +50,22 @@ module InevitableCacophony
       # @return [SectionedText] The paragraph, split into sentences.
       def find_paragraph(key)
         find_all_paragraphs(key).first
-        find_all_paragraphs(key).first
       end
 
       # As above but finds all matching paragraphs.
       # @param key [Regex]
       # @return [Array<SectionedText>]
       def find_all_paragraphs(key)
-        find_all(key).map do |string|
-          SectionedText.new(string, SENTENCE_DELIMITER)
+        find_all(key, paragraphs).map do |string|
+          SectionedText.new(
+            string.gsub(/\s+/, ' '),
+            SENTENCE_DELIMITER
+          )
         end
       end
 
       def inspect
-        "<SectionedText: #{@sections.inspect}>"
+        "<SectionedText: #{sections.inspect}>"
       end
     end
   end

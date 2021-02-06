@@ -67,8 +67,7 @@ module InevitableCacophony
 
         # Find the rhythm description and the following paragraph
         # with the score.
-        parser
-          .sections.each_cons(2) do |rhythm, score|
+        parser.paragraphs.each_cons(2) do |rhythm, score|
           match = SIMPLE_RHYTHM_SENTENCE.match(rhythm)
 
           # Make sure we're actually dealing with a rhythm,
