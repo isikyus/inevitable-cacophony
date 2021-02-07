@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'open3'
 
 RSpec.describe 'Inevitable Cacophony' do
-
   def generate_with_args(*args)
     data, error, status = Open3.capture3('bundle',
                                          'exec',
@@ -15,7 +16,7 @@ RSpec.describe 'Inevitable Cacophony' do
   end
 
   describe 'generating known files' do
-    let(:known_data) { File.open(fixture_file).read }
+    let(:known_data) { File.open(fixture_file, &:read) }
 
     context 'from given beats' do
       let(:generated_data) do
@@ -54,7 +55,7 @@ RSpec.describe 'Inevitable Cacophony' do
 
     context 'from a given octave structure' do
       let(:description_file) { 'spec/fixtures/bride-of-trumpets-scale.txt' }
-      let(:form_description) { File.open(description_file) { |f| f.read } }
+      let(:form_description) { File.open(description_file, &:read) }
       let(:generated_data) do
         generate_with_args('-s', *extra_options, '-e', form_description)
       end
@@ -75,7 +76,7 @@ RSpec.describe 'Inevitable Cacophony' do
                                '--chromatic',
                                stdin_data: form_description)
           end
- 
+
           specify 'works' do
             expect(generated_data).to eq known_data
           end
@@ -119,8 +120,8 @@ RSpec.describe 'Inevitable Cacophony' do
 
     context 'with a specified rhythm' do
       let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
-      let(:form_description) { File.open(description_file) { |f| f.read } }
-      let(:random_seed) { 314159 }
+      let(:form_description) { File.open(description_file, &:read) }
+      let(:random_seed) { 3_14159 }
       let(:fixture_file) do
         'spec/fixtures/cebela_and_two_three__seed-314159.wav'
       end

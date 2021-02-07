@@ -1,10 +1,10 @@
-# Represents and parses Dwarf Fortress scale descriptions
+# frozen_string_literal: true
 
 require 'inevitable_cacophony/parser/sectioned_text'
 
 module InevitableCacophony
+  # Represents and parses Dwarf Fortress scale descriptions
   class OctaveStructure
-
     # Frequency scaling for a difference of one whole octave
     OCTAVE_RATIO = 2
 
@@ -12,7 +12,6 @@ module InevitableCacophony
     # or the notes of a scale.
     # TODO: call this something more useful
     class NoteSequence
-
       # @param note_scalings [Array<Float>]
       #   The frequencies of each note in the scale,
       #   as multiples of the tonic.
@@ -32,12 +31,11 @@ module InevitableCacophony
 
     # As above, but also tracks the chords that make up the scale.
     class Scale < NoteSequence
-
       # @param chords [Array<Chord>]
       #        The chords that make up the scale, in order.
       # @param note_scalings [Array<Fixnum>]
       #        Specific note scalings to use; for internal use.
-      def initialize(chords, note_scalings=nil)
+      def initialize(chords, note_scalings = nil)
         @chords = chords
         super(note_scalings || chords.map(&:note_scalings).flatten)
       end
@@ -61,7 +59,7 @@ module InevitableCacophony
     end
 
     # Regular expressions used in parsing
-    OCTAVE_STRUCTURE_SENTENCE = /Scales are constructed/
+    OCTAVE_STRUCTURE_SENTENCE = /Scales are constructed/.freeze
 
     # @param scale_text [String] Dwarf Fortress musical form description
     #                   including scale information.
@@ -87,7 +85,9 @@ module InevitableCacophony
 
     def parse_octave_structure(octave_paragraph)
       octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
-      note_count_match = octave_sentence.match(/Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/)
+      note_count_match = octave_sentence.match(
+        /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
+      )
 
       if note_count_match
         note_count_word = note_count_match.captures.first
@@ -102,38 +102,37 @@ module InevitableCacophony
 
     def parse_exact_notes(octave_paragraph)
       exact_spacing_sentence = octave_paragraph.find(/their spacing is roughly/)
-      spacing_match = exact_spacing_sentence.match(/In quartertones, their spacing is roughly 1((-|x){23})0/)
+      spacing_match = exact_spacing_sentence.match(
+        /In quartertones, their spacing is roughly 1((-|x){23})0/
+      )
 
-      if spacing_match
-        # Always include the tonic
-        note_scalings = [1]
+      raise 'Cannot parse octave text' unless spacing_match
 
-        note_positions = spacing_match.captures.first
-        step_size = 2**(1.0 / note_positions.length.succ)
-        ratio = 1
-        note_positions.each_char do |pos|
-          ratio *= step_size
+      # Always include the tonic
+      note_scalings = [1]
 
-          case pos
-          when 'x'
-            note_scalings << ratio
-          when '-'
-            # Do nothing; no note here
-          else
-            raise "Unexpected note position symbol #{pos.inspect}"
-          end
+      note_positions = spacing_match.captures.first
+      step_size = 2**(1.0 / note_positions.length.succ)
+      ratio = 1
+      note_positions.each_char do |pos|
+        ratio *= step_size
+
+        case pos
+        when 'x'
+          note_scalings << ratio
+        when '-'
+          # Do nothing; no note here
+        else
+          raise "Unexpected note position symbol #{pos.inspect}"
         end
-
-        note_scalings
-      else
-        raise "Cannot parse octave text"
       end
+
+      note_scalings
     end
 
     # @param description [Parser::SectionedText]
     #        The description text from which to extract chord data.
     def parse_chords(description)
-
       # TODO: extract to constant
       chord_paragraph_regex = /The ([^ ]+) [a-z]*chord is/
 
@@ -202,13 +201,35 @@ module InevitableCacophony
     def parse_disjoint_chords_scale(scale_paragraph, chords)
       chords_sentence = scale_paragraph.find(/These chords are/)
       chord_list = chords_sentence
-        .match(/These chords are named ([^.]+)\.?/)
-        .captures
-        .first
+                   .match(/These chords are named ([^.]+)\.?/)
+                   .captures
+                   .first
       chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
 
       Scale.new(chords.values_at(*chord_names))
     end
+
+    WORDS_TO_NUMBERS = {
+      'one' => 1,
+      'two' => 2,
+      'three' => 3,
+      'four' => 4,
+      'five' => 5,
+      'six' => 6,
+      'seven' => 7,
+      'eight' => 8,
+      'nine' => 9,
+      'ten' => 10,
+      'eleven' => 11,
+      'twelve' => 12,
+      'thirteen' => 13,
+      'fourteen' => 14,
+      'fifteen' => 15,
+      'sixteen' => 16,
+      'seventeen' => 17,
+      'eighteen' => 18,
+      'nineteen' => 19
+    }.freeze
 
     # Convert a number word to text -- rough approximation for now.
     # TODO: Rails or something may do this.
@@ -216,32 +237,10 @@ module InevitableCacophony
     # @param word [String]
     # @return [Fixnum]
     def parse_number_word(word)
-      words_to_numbers = {
-        'one' => 1,
-        'two' => 2,
-        'three' => 3,
-        'four' => 4,
-        'five' => 5,
-        'six' => 6,
-        'seven' => 7,
-        'eight' => 8,
-        'nine' => 9,
-        'ten' => 10,
-        'eleven' => 11,
-        'twelve' => 12,
-        'thirteen' => 13,
-        'fourteen' => 14,
-        'fifteen' => 15,
-        'sixteen' => 16,
-        'seventeen' => 17,
-        'eighteen' => 18,
-        'nineteen' => 19,
-      }
-
-      if words_to_numbers[word]
-        words_to_numbers[word]
+      if WORDS_TO_NUMBERS[word]
+        WORDS_TO_NUMBERS[word]
       elsif word.start_with?('twenty-')
-        words_to_numbers[word.delete_prefix('twenty-')] + 20
+        WORDS_TO_NUMBERS[word.delete_prefix('twenty-')] + 20
       else
         "Unsupported number name #{word}"
       end

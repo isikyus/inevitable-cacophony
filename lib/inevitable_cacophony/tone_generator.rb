@@ -1,14 +1,14 @@
-# Converts note information into raw WAV file data
-# Based on examples in {http://wavefilegem.com/examples}
+# frozen_string_literal: true
 
 require 'wavefile'
 
 require 'inevitable_cacophony/note'
 
 module InevitableCacophony
+  # Converts note information into raw WAV file data
+  # Based on examples in {http://wavefilegem.com/examples}
   class ToneGenerator
-
-    SAMPLE_RATE = 44100 # Hertz
+    SAMPLE_RATE = 44_100 # Hertz
 
     # One full revolution of a circle (or one full cycle of a sine wave)
     TAU = Math::PI * 2
@@ -18,10 +18,8 @@ module InevitableCacophony
     # @param phrase [Phrase]
     def phrase_buffer(phrase)
       samples = phrase.notes.map { |note| note_samples(note, phrase.tempo) }
-      WaveFile::Buffer.new(
-        samples.flatten,
-        WaveFile::Format.new(:mono, :float, SAMPLE_RATE)
-      )
+      format = WaveFile::Format.new(:mono, :float, SAMPLE_RATE)
+      WaveFile::Buffer.new(samples.flatten, format)
     end
 
     def add_phrase(phrase)
@@ -29,13 +27,9 @@ module InevitableCacophony
     end
 
     def write(io)
-        WaveFile::Writer.new(
-          io,
-          WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)
-        ) do |writer|
-        @phrases.each do |phrase|
-          writer.write(phrase)
-        end
+      format = WaveFile::Format.new(:mono, :pcm_16, SAMPLE_RATE)
+      WaveFile::Writer.new(io, format) do |writer|
+        @phrases.each { |phrase| writer.write(phrase) }
       end
     end
 
@@ -60,11 +54,11 @@ module InevitableCacophony
       start_delay = note.start_delay * samples_per_beat
       after_delay = note.after_delay * samples_per_beat
       note_length = (note.duration * samples_per_beat) -
-        start_delay - after_delay
+                    start_delay - after_delay
 
       samples << ([0.0] * start_delay)
 
-      samples << note_length.to_i.times.map do |index|
+      samples << Array.new(note_length.to_i) do |index|
         wave_fraction = index / samples_per_wave.to_f
         note.beat.amplitude * Math.sin(wave_fraction * TAU)
       end

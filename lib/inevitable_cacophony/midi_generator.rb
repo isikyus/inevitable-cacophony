@@ -1,6 +1,4 @@
-# Converts Inevitable Cacophony internal note representation
-# into MIDI messages usable by an external synthesizer.
-# Based on examples in the `midilib` gem.
+# frozen_string_literal: true
 
 require 'midilib/sequence'
 require 'midilib/consts'
@@ -8,8 +6,10 @@ require 'midilib/consts'
 require 'inevitable_cacophony/midi_generator/frequency_table'
 
 module InevitableCacophony
+  # Converts Inevitable Cacophony internal note representation
+  # into MIDI messages usable by an external synthesizer.
+  # Based on examples in the `midilib` gem.
   class MidiGenerator
-
     # Set up a MIDI generator for a specific octave structure and tonic
     # We need to know the octave structure because it determines
     # how we allocate MIDI note indices to frequencies.
@@ -26,7 +26,7 @@ module InevitableCacophony
     end
 
     # @return [Midi::Track] Notes to be output to MIDI; mainly for testing.
-    def notes_track(sequence=build_sequence)
+    def notes_track(sequence = build_sequence)
       build_notes_track(sequence, @phrases)
     end
 

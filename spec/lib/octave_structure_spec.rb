@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'spec_helper.rb'
 
 require 'inevitable_cacophony/octave_structure'
 
 RSpec.describe InevitableCacophony::OctaveStructure do
-
   subject { InevitableCacophony::OctaveStructure.new(scale_text) }
 
   describe 'parsing octave structures' do
@@ -48,21 +49,20 @@ RSpec.describe InevitableCacophony::OctaveStructure do
           2**(17 / 21.0),
           2**(18 / 21.0),
           2**(19 / 21.0),
-          2**(20 / 21.0),
+          2**(20 / 21.0)
         ]
       end
 
       specify 'parses them correctly' do
         scalings = subject
-          .chromatic_scale
-          .open
-          .note_scalings
+                   .chromatic_scale
+                   .open
+                   .note_scalings
 
         scalings.each_with_index do |scaling, index|
-            expect(scaling)
-              .to be_within(0.0001)
-              .of(expected_scalings[index])
-          end
+          expect(scaling).to be_within(0.0001)
+                         .of(expected_scalings[index])
+        end
       end
     end
 
@@ -108,9 +108,9 @@ RSpec.describe InevitableCacophony::OctaveStructure do
 
       specify 'parses them correctly' do
         scalings = subject
-          .chromatic_scale
-          .open
-          .note_scalings
+                   .chromatic_scale
+                   .open
+                   .note_scalings
         scalings.each_with_index do |scaling, index|
           expect(scaling).to be_within(0.0001).of(expected_scalings[index])
         end

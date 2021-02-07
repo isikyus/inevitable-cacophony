@@ -1,48 +1,51 @@
-# Knows how to parse the rhythm-description paragraphs
-# of a Dwarf Fortress musical form
+# frozen_string_literal: true
 
 require 'inevitable_cacophony/parser/sectioned_text'
 require 'inevitable_cacophony/parser/rhythm_line'
 require 'inevitable_cacophony/polyrhythm'
 
 module InevitableCacophony
+  # Knows how to parse the rhythm-description paragraphs
+  # of a Dwarf Fortress musical form
   module Parser
-
+    # Error parsing a musical form
     # TODO: maybe move errors elsewhere
     class Error < StandardError
     end
 
+    # A polyrhythm or polymeter defnition is referencing another rhythm
+    # that doesn't exist.
     class UnknownBaseRhythm < Error
       def initialize(base)
         @base = base
-
         super("Could not find base rhythm #{base} for polyrhythm")
       end
 
       attr_accessor :base
     end
 
+    # Unable to parse form description
     class UnrecognisedFormSyntax < Error
     end
 
     # For all the Americans out there, following Webster rather than Johnson :-)
+    # {@see UnrecognisedFormSyntax}
     UnrecognizedFormSyntax = UnrecognisedFormSyntax
 
+    # Knows how to parse rhythm descriptions
     class Rhythms
-
       # Regular expressions used in parsing
-      SIMPLE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/
-      COMPOSITE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is made from [-a-z ]+ patterns: (?<patterns>[^.]+)(\.|$)/
+      SIMPLE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/.freeze
+      COMPOSITE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is made from [-a-z ]+ patterns: (?<patterns>[^.]+)(\.|$)/.freeze
 
       # "the <rhythm>".
       # Used to match individual components in COMPOSITE_RHYTHM_SENTENCE
-      THE_RHYTHM = /the (?<rhythm_name>[[:alpha:]]+)( \((?<reference_comment>[^)]+)\))?/
+      THE_RHYTHM = /the (?<rhythm_name>[[:alpha:]]+)( \((?<reference_comment>[^)]+)\))?/.freeze
       IS_PRIMARY_COMMENT = 'considered the primary'
 
       # Used to recognise how multiple rhythms are to be combined
-      COMBINATION_TYPE_SENTENCE = /The patterns are to be played (?<type_summary>[^.,]+), [^.]+\./
+      COMBINATION_TYPE_SENTENCE = /The patterns are to be played (?<type_summary>[^.,]+), [^.]+\./.freeze
       POLYRHYTHM_TYPE_SUMMARY = 'over the same period of time'
-
 
       # Parses the rhythms from the given form text.
       #
@@ -62,7 +65,6 @@ module InevitableCacophony
       # @param parser [Parser::SectionedText]
       # @return [Hash{Symbol,Rhythm}]
       def parse_simple_rhythms(parser)
-
         rhythms = {}
 
         # Find the rhythm description and the following paragraph
@@ -85,7 +87,6 @@ module InevitableCacophony
       #                     used by the composite forms we're parsing.
       # @return [Hash{Symbol,Rhythm}]
       def parse_composite_rhythms(parser, base_rhythms)
-
         composite_rhythms = {}
         parser
           .find_all_paragraphs(COMPOSITE_RHYTHM_SENTENCE)
@@ -93,8 +94,8 @@ module InevitableCacophony
 
           # TODO: write something that handles named matches a bit better
           intro_sentence = paragraph
-            .find(COMPOSITE_RHYTHM_SENTENCE)
-            .match(COMPOSITE_RHYTHM_SENTENCE)
+                           .find(COMPOSITE_RHYTHM_SENTENCE)
+                           .match(COMPOSITE_RHYTHM_SENTENCE)
           polyrhythm_name = intro_sentence[:name].to_sym
           primary, *secondaries = parse_polyrhythm_components(
             intro_sentence[:patterns],
@@ -102,13 +103,12 @@ module InevitableCacophony
           )
 
           combination_type = paragraph
-            .find(COMBINATION_TYPE_SENTENCE)
-            .match(COMBINATION_TYPE_SENTENCE)[:type_summary]
+                             .find(COMBINATION_TYPE_SENTENCE)
+                             .match(COMBINATION_TYPE_SENTENCE)[:type_summary]
 
           unless combination_type == POLYRHYTHM_TYPE_SUMMARY
-            raise UnrecognisedFormSyntax.new(
-              "Unrecognised polyrhythm type #{combination_type}"
-            )
+            raise UnrecognisedFormSyntax,
+                  "Unrecognised polyrhythm type #{combination_type}"
           end
 
           composite_rhythms[polyrhythm_name] =
@@ -124,25 +124,23 @@ module InevitableCacophony
       # @return [Array<Rhythm>] The matched rhythms,
       #         with the primary one as first element.
       def parse_polyrhythm_components(reference_string, base_rhythms)
-        primary = nil
-        secondaries = []
-
         rhythms_with_comments = reference_string
-          .scan(THE_RHYTHM)
-          .map do |rhythm_name, comment|
+                                .scan(THE_RHYTHM)
+                                .map do |rhythm_name, comment|
           component = base_rhythms[rhythm_name.to_sym]
-          raise(UnknownBaseRhythm.new(rhythm_name)) unless component
+          raise UnknownBaseRhythm.new, rhythm_name unless component
 
           [component, comment]
         end
 
-        primary_rhythms = rhythms_with_comments
-          .select { |_, comment| comment == IS_PRIMARY_COMMENT }
+        primary_rhythms = rhythms_with_comments.select do |_, comment|
+          comment == IS_PRIMARY_COMMENT
+        end
 
         if primary_rhythms.length != 1
-          raise 'Unexpected number of primary rhythms in ' \
-                "#{primary_rhythms.inspect}; expected exactly 1 \
-                    "
+          raise Error,
+                'Unexpected number of primary rhythms in ' \
+                "#{primary_rhythms.inspect}; expected exactly 1."
         end
         primary = primary_rhythms.first.first
 
@@ -150,11 +148,13 @@ module InevitableCacophony
         remaining_comments = remaining_rhythms.map(&:last).compact.uniq
 
         if remaining_comments.any?
-          raise "Unrecognised rhythm comment(s) #{remaining_comments.inspect}"
+          raise Error,
+                "Unrecognised rhythm comment(s) #{remaining_comments.inspect}"
         end
 
         secondaries = remaining_rhythms
-          .select {|_, comment| comment.nil? }.map(&:first)
+                      .select { |_, comment| comment.nil? }
+                      .map(&:first)
         [primary, *secondaries]
       end
     end

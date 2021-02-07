@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
@@ -6,12 +8,11 @@ require 'inevitable_cacophony/parser/rhythm_line'
 require 'inevitable_cacophony/rhythm'
 
 RSpec.describe InevitableCacophony::Rhythm do
-
   subject { InevitableCacophony::Parser::RhythmLine.new.parse(score) }
   let(:canonical_durations) { subject.canonical.map(&:duration) }
 
   INTER_NOTE_DELAY = InevitableCacophony::Rhythm::START_DELAY +
-    InevitableCacophony::Rhythm::AFTER_DELAY
+                     InevitableCacophony::Rhythm::AFTER_DELAY
   NOTE_LENGTH = 1 - INTER_NOTE_DELAY
 
   # Allowable error in note durations.
@@ -58,8 +59,8 @@ RSpec.describe InevitableCacophony::Rhythm do
       '| x - - x |' => [1,
                         0,
                         0,
-                        1],
-    }
+                        1]
+    }.freeze
 
     SCORES_TO_BEATS.each do |score, beats|
       context "parsing #{score}" do
@@ -73,11 +74,12 @@ RSpec.describe InevitableCacophony::Rhythm do
         # Even-indexed canonical beats are silence between notes.
         let(:canonical) do
           odd_beats, even_beats = subject
-            .canonical
-            .each_with_index
-            .group_by { |_beat, index| index.odd? }
-            .values_at(true, false)
-            .map { |values| values.map(&:first) } # Remove with_index indexes
+                                  .canonical
+                                  .each_with_index
+                                  .group_by { |_beat, index| index.odd? }
+                                  .values_at(true, false)
+                                  .map { |values| values.map(&:first) }
+                                  # ^ Remove with_index indexes
 
           {
             spacing: even_beats,

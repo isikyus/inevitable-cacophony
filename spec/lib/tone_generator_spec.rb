@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 require 'spec_helper.rb'
 
 require 'inevitable_cacophony/tone_generator'
 require 'inevitable_cacophony/phrase'
 
 RSpec.describe InevitableCacophony::ToneGenerator do
-
   # Middle A
   let(:tonic) { 440 }
 
@@ -30,7 +31,6 @@ RSpec.describe InevitableCacophony::ToneGenerator do
     end
 
     shared_examples_for 'adding any sound' do
-
       specify 'uses the correct duration' do
         expect(samples.length).to be_within(0.1).of(expected_samples)
       end
@@ -50,7 +50,6 @@ RSpec.describe InevitableCacophony::ToneGenerator do
       let(:note) { InevitableCacophony::Note.new(ratio, beat) }
 
       shared_examples_for 'frequency' do
-
         specify 'is correctly converted to cycle time' do
           # Count the number of fully-positive and fully-negative half-waves,
           # and divide by duration to get the frequency. This should be less
@@ -74,7 +73,7 @@ RSpec.describe InevitableCacophony::ToneGenerator do
 
       context 'with a standard frequency (middle A)' do
         let(:ratio) { 1 }
-                                let(:frequency) { tonic }
+        let(:frequency) { tonic }
 
         describe 'with a short beat' do
           let(:note_length) { 1 / 2.0 }
@@ -143,11 +142,9 @@ RSpec.describe InevitableCacophony::ToneGenerator do
 
             it_should_behave_like 'adding any sound'
           end
-
         end
 
         it_should_behave_like 'frequency'
-
         it_should_behave_like 'adding any sound'
       end
 

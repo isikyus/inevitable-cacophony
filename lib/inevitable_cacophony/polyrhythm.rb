@@ -1,12 +1,12 @@
-# Represents a rhythm that combines two or more simpler rhythms.
+# frozen_string_literal: true
 
 require 'set'
 
 require 'inevitable_cacophony/rhythm'
 
 module InevitableCacophony
+  # Represents a rhythm that combines two or more simpler rhythms.
   class Polyrhythm < Rhythm
-
     # Creates a new polyrhythm by combining two simpler component rhythms.
     # It will have the same duration as the primary rhythm, but include
     # beats from both it and all the secondaries.
@@ -35,7 +35,6 @@ module InevitableCacophony
     # Calculates the canonical form by combining the two component rhythms.
     # @return [Array<Float>]
     def canonical
-
       sounding = Set.new
       first, *rest = aligned_components
       unnormalised = first.zip(*rest).map do |beats_at_tick|
@@ -48,12 +47,11 @@ module InevitableCacophony
       unnormalised.map { |b| b && b / max_amplitude }
     end
 
-    def == other
+    def ==(other)
       self.class == other.class &&
-        self.primary == other.primary &&
-        self.secondaries == other.secondaries
+        primary == other.primary &&
+        secondaries == other.secondaries
     end
-
 
     private
 
@@ -66,7 +64,7 @@ module InevitableCacophony
       [].tap do |beats|
         amplitude = canonical.shift || 0
 
-        # Start at 1 to account for the first timeslot that we just shifted off.
+        # Start at 1 to account for the timeslot that we just shifted off.
         duration = 1
         canonical.each do |this_beat|
           if this_beat.nil?
@@ -84,7 +82,7 @@ module InevitableCacophony
       end
     end
 
-    # Returns the "canonical" forms of the component rhythms, but stretched
+    # Returns the 'canonical' forms of the component rhythms, but stretched
     # all to the same length, so corresponding beats in each rhythm have the
     # same index.
     # @return [Array<Array<Float, NilClass>>]
@@ -97,19 +95,22 @@ module InevitableCacophony
         stretch_factor = common_multiple / component.length
 
         unless stretch_factor == stretch_factor.to_i
-          raise "LCM of lengths should have been a multiple of one length."
+          raise 'LCM of lengths should have been a multiple of one length.'
         end
 
         space_between_beats = stretch_factor - 1
 
-        component.map { |beat| [beat] + Array.new(space_between_beats) }.flatten
+        component
+          .map { |beat| [beat] + Array.new(space_between_beats) }
+          .flatten
       end
     end
 
     # Given several channels and the set of beats currently playing,
     # calculate the beat that should now start/stop/continue playing.
     #
-    # @param sounding [Set{Integer}] The channels with a beat currently playing.
+    # @param sounding [Set{Integer}] The channels with a beat currently
+    #                 playing.
     # @param current_channel_state [Array<Float>]
     #           The beat each channel has at this tick.
     #           (+nil+) means continuing an earlier beat.
@@ -119,11 +120,10 @@ module InevitableCacophony
     #         (+nil+ to hold last note; 0 to stop),
     #     and +sounding+ is the Set of channels still playing.
     def update_sounding_beats(sounding, current_channel_states)
-
       beat = nil
 
       # If we're starting new beats, they interrupt whatever came before.
-      new_beats = indices_of(current_channel_states) { |b| b && b > 0 }
+      new_beats = indices_of(current_channel_states) { |b| b&.positive? }
       if new_beats.any?
         sounding = new_beats.to_set
         beat = current_channel_states.compact.sum
@@ -134,9 +134,7 @@ module InevitableCacophony
         finished_beats = indices_of(current_channel_states, 0)
         sounding.subtract(finished_beats)
 
-        if finished_beats.any? && sounding.empty?
-          beat = 0
-        end
+        beat = 0 if finished_beats.any? && sounding.empty?
       end
 
       [beat, sounding]
@@ -152,7 +150,7 @@ module InevitableCacophony
     #
     # Source: steenslag at Stack Overflow
     # (https://stackoverflow.com/a/13660352/10955118); CC-BY-SA
-    def indices_of(array, condition=nil, &block)
+    def indices_of(array, condition = nil, &block)
       block ||= condition.method(:==)
 
       array.each_index.select do |index|

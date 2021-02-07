@@ -1,17 +1,17 @@
-# A frequency table maps Dwarf fortress notes (specific frequencies) to
-# MIDI indices for use in MIDI indexes.
-#
-# Where possible we use the standard MIDI values for DF notes; where that
-# won't work, we try to keep as close to the MIDI structure as the DF scale
-# system will allow.
+# frozen_string_literal: true
 
 # Using for OctaveStructure::OCTAVE_RATIO; may be better to just use +2+.
 require 'inevitable_cacophony/octave_structure'
 
 module InevitableCacophony
   class MidiGenerator
+    # A frequency table maps Dwarf fortress notes (specific frequencies) to
+    # MIDI indices for use in MIDI indexes.
+    #
+    # Where possible we use the standard MIDI values for DF notes; where that
+    # won't work, we try to keep as close to the MIDI structure as the DF scale
+    # system will allow.
     class FrequencyTable
-
       # Raised when there is no MIDI index available for
       # a note we're trying to output
       class OutOfRange < StandardError
@@ -22,7 +22,7 @@ module InevitableCacophony
       end
 
       # Range of allowed MIDI 1 indices.
-      MIDI_RANGE = 0..127
+      MIDI_RANGE = (0..127).freeze
 
       # Middle A in MIDI
       MIDI_TONIC = 69
@@ -31,9 +31,9 @@ module InevitableCacophony
       MIDI_OCTAVE_NOTES = 12
 
       # 12TET values of those notes.
-      STANDARD_MIDI_FREQUENCIES = MIDI_OCTAVE_NOTES.times.map do |index|
+      STANDARD_MIDI_FREQUENCIES = Array.new(MIDI_OCTAVE_NOTES) do |index|
         OctaveStructure::OCTAVE_RATIO**(index / MIDI_OCTAVE_NOTES.to_f)
-      end
+      end.freeze
 
       # Maximum increase/decrease between two frequencies we still treat as
       # "equal". Approximately 1/30th of human Just Noticeable Difference
@@ -58,12 +58,7 @@ module InevitableCacophony
       def index_for_ratio(ratio)
         # TODO: not reliable for approximate matching
         frequency = @tonic * ratio
-
-        if (match = table.index(frequency))
-          match
-        else
-          raise OutOfRange.new(frequency, table)
-        end
+        table.index(frequency) || raise(OutOfRange.new(frequency, table))
       end
 
       private
@@ -119,9 +114,9 @@ module InevitableCacophony
       end
 
       # Like < but considers values within FREQUENCY_FUDGE_FACTOR equal
-      def sounds_flatter?(a, b)
-        threshold = b * (1 - FREQUENCY_FUDGE_FACTOR)
-        a < threshold
+      def sounds_flatter?(freq1, freq2)
+        threshold = freq2 * (1 - FREQUENCY_FUDGE_FACTOR)
+        freq1 < threshold
       end
     end
   end

@@ -1,11 +1,11 @@
-# Represents a single note of a tune
+# frozen_string_literal: true
 
 # TODO: only for Beat class
 require 'inevitable_cacophony/rhythm'
 
 module InevitableCacophony
-  class Note < Struct.new(:ratio, :beat)
-
+  # Represents a single note of a tune
+  Note = Struct.new(:ratio, :beat) do
     # @param ratio [Numeric] Note frequency, as a multiple of the tonic.
     # @param amplitude [Rhythm::Beat] A Beat object defining
     #                   amplitude and timing
@@ -16,7 +16,6 @@ module InevitableCacophony
     # Create a rest for the duration of the given beat.
     # @param beat [Beat]
     def self.rest(beat)
-
       # Can't set ratio to 0 as it causes divide-by-zero errors
       new(1, Rhythm::Beat.new(0, beat.duration, beat.timing))
     end
@@ -34,7 +33,7 @@ module InevitableCacophony
     end
 
     def frequency
-     ratio
+      ratio
     end
   end
 end

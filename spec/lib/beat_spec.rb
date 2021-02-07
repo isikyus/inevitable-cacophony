@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'spec_helper.rb'
 
 require 'inevitable_cacophony/rhythm'
 
 RSpec.describe InevitableCacophony::Rhythm::Beat do
-
   let(:start_delay) { InevitableCacophony::Rhythm::START_DELAY }
   let(:after_delay) { InevitableCacophony::Rhythm::AFTER_DELAY }
   let(:total_delay) { after_delay + start_delay }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper.rb'
 require 'support/eq_array_with_delta'
 
@@ -7,10 +9,9 @@ RSpec.describe InevitableCacophony::Polyrhythm do
   let(:primary) { base_rhythms.first }
   let(:secondaries) { base_rhythms - [primary] }
 
-  subject {  InevitableCacophony::Polyrhythm.new(primary, secondaries) }
+  subject { InevitableCacophony::Polyrhythm.new(primary, secondaries) }
 
   shared_examples_for 'a 4-3 polyrhythm' do
-
     specify 'retains the primary rhythm' do
       expect(subject.primary).to eq primary
     end
@@ -28,20 +29,21 @@ RSpec.describe InevitableCacophony::Polyrhythm do
     end
 
     specify 'defines its own beats that combine the two rhythms' do
-
       # This test only works for a 4:3 ratio, for now.
       expect(subject.primary.beats.length).to eq 4
       expect(subject.secondaries.first.beats.length).to eq 3
 
       durations = subject.beats.map(&:duration)
-      expect(durations).to eq([
-        1,
-        1 / 3.0,
-        2 / 3.0,
-        2 / 3.0,
-        1 / 3.0,
-        1
-      ])
+      expect(durations).to eq(
+        [
+          1,
+          1 / 3.0,
+          2 / 3.0,
+          2 / 3.0,
+          1 / 3.0,
+          1
+        ]
+      )
     end
 
     describe 'canonical form' do
@@ -67,13 +69,13 @@ RSpec.describe InevitableCacophony::Polyrhythm do
         expect(canonical[9]).not_to be_nil
         expect(canonical[10]).to be_nil
         expect(canonical[11]).to be_nil
-                        end
+      end
 
       specify 'uses expected amplitudes' do
         # Fetch only beats that existed in the parent rhythms
-        parent_beats = canonical.
-          values_at(0, 3, 4, 6, 8, 9).
-          map { |b| b.nil? ? 0 : b }
+        parent_beats = canonical
+                       .values_at(0, 3, 4, 6, 8, 9)
+                       .map { |b| b.nil? ? 0 : b }
         expect(parent_beats).to eq expected_amplitudes
       end
     end
@@ -108,17 +110,21 @@ RSpec.describe InevitableCacophony::Polyrhythm do
   describe '4-3 with accented beats' do
     let(:base_rhythms) do
       [
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0)
-        ]),
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0)
-        ])
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(4 / 6.0, 1, 0)
+          ]
+        ),
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(4 / 9.0, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(6 / 9.0, 1, 0)
+          ]
+        )
       ]
     end
 
@@ -143,17 +149,21 @@ RSpec.describe InevitableCacophony::Polyrhythm do
   describe '4-3 with beats extended through silence of the other rhythm' do
     let(:base_rhythms) do
       [
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
-        ]),
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(0, 1, 0)
-        ])
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0)
+          ]
+        ),
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(0, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(0, 1, 0)
+          ]
+        )
       ]
     end
 
@@ -194,25 +204,29 @@ RSpec.describe InevitableCacophony::Polyrhythm do
   describe 'with timing adjustments' do
     let(:scores) do
       [
-        %q{| x x'x x'`x x' |},
-        %q{| x'`x x'|}
+        "| x x'x x'`x x' |",
+        "| x'`x x'|"
       ]
     end
     let(:base_rhythms) do
       [
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
-        ]),
-        InevitableCacophony::Rhythm.new([
-          InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
-          InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
-        ])
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, 0),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
+          ]
+        ),
+        InevitableCacophony::Rhythm.new(
+          [
+            InevitableCacophony::Rhythm::Beat.new(1, 1, +1),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, -1),
+            InevitableCacophony::Rhythm::Beat.new(1, 1, +1)
+          ]
+        )
       ]
     end
 
@@ -235,11 +249,14 @@ RSpec.describe InevitableCacophony::Polyrhythm do
       expect(subject.duration).to be_within(LENGTH_DELTA).of 6.0
 
       durations = subject.beats.map(&:duration)
-      expect(durations).to eq_array_with_delta(LENGTH_DELTA, [
-        0.6, 0.7, 0.1,
-        0.6, 1.3, 0.4,
-        0.9, 0.7, 0.7
-      ])
+      expect(durations).to eq_array_with_delta(
+        LENGTH_DELTA,
+        [
+          0.6, 0.7, 0.1,
+          0.6, 1.3, 0.4,
+          0.9, 0.7, 0.7
+        ]
+      )
     end
 
     specify 'does not use timing offsets' do
@@ -247,16 +264,18 @@ RSpec.describe InevitableCacophony::Polyrhythm do
     end
 
     specify 'sums amplitudes only when beats are actually combined' do
-      expect(subject.beats.map(&:amplitude)).to eq([
-        1, 1,
-        1,
+      expect(subject.beats.map(&:amplitude)).to eq(
+        [
+          1, 1,
+          1,
 
-        1, 1,
-        1,
+          1, 1,
+          1,
 
-        1, 1,
-        1
-      ])
+          1, 1,
+          1
+        ]
+      )
     end
   end
 end

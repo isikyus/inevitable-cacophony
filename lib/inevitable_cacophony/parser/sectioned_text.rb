@@ -1,21 +1,21 @@
-# Splits text into a sequence of delimited sections,
-# and knows how to find the one you want.
-#
-# Used to parse complex paragraph structures without
-# having to handle every single paragraph type,
-# and without crashing if an expected type is missing.
+# frozen_string_literal: true
 
 module InevitableCacophony
   module Parser
+    # Splits text into a sequence of delimited sections,
+    # and knows how to find the one you want.
+    #
+    # Used to parse complex paragraph structures without
+    # having to handle every single paragraph type,
+    # and without crashing if an expected type is missing.
     class SectionedText
-
       PARAGRAPH_DELIMITER = "\n\n"
-      SENTENCE_DELIMITER = /\.\s+/
+      SENTENCE_DELIMITER = /\.\s+/.freeze
 
       # @param description [String] The description to parse
       # @param delimiter [String,Regex] The delimiter between string sections.
       #                   Defaults to splitting by paragraphs.
-      def initialize(description, delimiter=PARAGRAPH_DELIMITER)
+      def initialize(description, delimiter = PARAGRAPH_DELIMITER)
         @sections = description.split(delimiter).map(&:strip)
       end
 
@@ -40,7 +40,7 @@ module InevitableCacophony
       # @param sections [Array<String>] Sections to search
       #                 default #sections, but could also be #paragraphs.
       # @return [Array<String>]
-      def find_all(key, context=sections)
+      def find_all(key, context = sections)
         context.select { |s| key.match?(s) } ||
           raise("No match for #{key.inspect} in #{context.inspect}")
       end
