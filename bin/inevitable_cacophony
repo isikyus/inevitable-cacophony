@@ -1,5 +1,7 @@
 #!/usr/bin/env/ruby
 
+# frozen_string_literal: true
+
 require 'optparse'
 require 'stringio'
 
@@ -10,10 +12,10 @@ require 'inevitable_cacophony/tone_generator'
 require 'inevitable_cacophony/phrase'
 require 'inevitable_cacophony/version'
 
-command = -> {
+command = lambda {
   octave = InevitableCacophony::OctaveStructure.new(input)
 
-  3.times.map do
+  Array.new(3) do
     chord_notes = []
     rhythm.each_beat.map do |beat|
       chords = octave.chords.values
@@ -27,15 +29,15 @@ command = -> {
   end.flatten
 }
 
-render = -> (phrases) {
-        tone = InevitableCacophony::ToneGenerator.new(options[:tonic])
-        phrases.each { |phrase| tone.add_phrase(phrase) }
+render = lambda { |phrases|
+  tone = InevitableCacophony::ToneGenerator.new(options[:tonic])
+  phrases.each { |phrase| tone.add_phrase(phrase) }
 
-        # Have to buffer output so wavefile can seek back to the beginning
-        # to write format info
-        output_buffer = StringIO.new
-        tone.write(output_buffer)
-        $stdout.write(output_buffer.string)
+  # Have to buffer output so wavefile can seek back to the beginning
+  # to write format info
+  output_buffer = StringIO.new
+  tone.write(output_buffer)
+  $stdout.write(output_buffer.string)
 }
 
 def input
@@ -54,11 +56,11 @@ def rng
 end
 
 def midi_generator
-        @midi_generator ||= begin
-          octave_structure = InevitableCacophony::OctaveStructure.new(input)
-          InevitableCacophony::MidiGenerator.new(octave_structure,
-                                                 options[:tonic])
-        end
+  @midi_generator ||= begin
+    octave_structure = InevitableCacophony::OctaveStructure.new(input)
+    InevitableCacophony::MidiGenerator.new(octave_structure,
+                                           options[:tonic])
+  end
 end
 
 def rhythm
@@ -68,9 +70,8 @@ def rhythm
     # InevitableCacophony::Pick the first rhythm mentioned in the file,
     # which should be the one used by the first section of the piece.
     rhythm_name = all_rhythms
-      .keys
-      .sort_by { |name| input.index(name.to_s) }
-      .first
+                  .keys
+                  .min_by { |name| input.index(name.to_s) }
 
     if all_rhythms[rhythm_name]
       all_rhythms[rhythm_name]
@@ -85,12 +86,11 @@ def rhythm
 end
 
 OptionParser.new do |opts|
-
   opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
 
   opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
-    command = -> {
-      notes = 3.times.map do
+    command = lambda {
+      notes = Array.new(3) do
         rhythm.each_beat.map do |beat|
           InevitableCacophony::Note.new(1, beat)
         end
@@ -101,17 +101,17 @@ OptionParser.new do |opts|
   end
 
   opts.on('-s', '--scale', 'Play a scale in the given style') do
-    command = -> {
+    command = lambda {
       octave = InevitableCacophony::OctaveStructure.new(input)
 
       scale = if options[:chromatic]
-          octave.chromatic_scale
-        else
-          octave.scales.values.first
-        end
+                octave.chromatic_scale
+              else
+                octave.scales.values.first
+              end
 
       rising_and_falling = scale.open.note_scalings +
-        scale.note_scalings.reverse
+                           scale.note_scalings.reverse
       notes = rising_and_falling.map do |factor|
         InevitableCacophony::Note.new(
           factor,
@@ -125,7 +125,7 @@ OptionParser.new do |opts|
 
   opts.on('-p', '--polyrhythm RATIO',
           'Rather than loading rhythm normally, use a polyrhythm in the ' \
-          "given ratio (e.g 7:11, 2:3:4).") do |ratio|
+          'given ratio (e.g 7:11, 2:3:4).') do |ratio|
     components = ratio.split(':').map do |length|
       InevitableCacophony::Rhythm.new(
         [InevitableCacophony::Rhythm::Beat.new(1, 1, 0)] * length.to_i
@@ -142,7 +142,8 @@ OptionParser.new do |opts|
     @input = form
   end
 
-  opts.on('--chromatic', 'Use "chromatic" scales (all notes in the form) ' \
+  opts.on('--chromatic',
+          "Use 'chromatic' scales (all notes in the form) " \
           'rather than the named scales typical of the form') do
     options[:chromatic] = true
   end
@@ -171,7 +172,7 @@ OptionParser.new do |opts|
           'Generate random melodies with the given seed, ' \
           'for repeatable results.') do |seed|
     int_seed = seed.to_i
-    raise "Expected seed to be a number" unless seed == int_seed.to_s
+    raise 'Expected seed to be a number' unless seed == int_seed.to_s
 
     options[:seed] = int_seed
   end
@@ -179,9 +180,9 @@ OptionParser.new do |opts|
   opts.on('-m', '--midi',
           'Generate output in MIDI rather than WAV format ' \
           '(needs file from -M to play in tune)') do
-    render = -> (phrases) {
+    render = lambda { |phrases|
       phrases.each do |phrase|
-              midi_generator.add_phrase(phrase)
+        midi_generator.add_phrase(phrase)
       end
       midi_generator.write($stdout)
     }
@@ -190,12 +191,12 @@ OptionParser.new do |opts|
   opts.on('-M', '--midi-tuning',
           'Instead of music, generate a Scala (Timidity-compatible) ' \
           'tuning file for use with MIDI output from --midi') do
-    command = -> {
+    command = lambda {
       midi_generator.frequency_table
     }
-    render = -> (frequencies) {
+    render = lambda { |frequencies|
       frequencies.table.each do |frequency|
-              $stdout.puts (frequency * 1000).round
+        $stdout.puts((frequency * 1000).round)
       end
     }
   end

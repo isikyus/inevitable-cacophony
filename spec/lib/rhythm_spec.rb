@@ -73,13 +73,15 @@ RSpec.describe InevitableCacophony::Rhythm do
 
         # Even-indexed canonical beats are silence between notes.
         let(:canonical) do
-          odd_beats, even_beats = subject
-                                  .canonical
-                                  .each_with_index
-                                  .group_by { |_beat, index| index.odd? }
-                                  .values_at(true, false)
+          odd_and_even_beats = subject
+                               .canonical
+                               .each_with_index
+                               .group_by { |_beat, index| index.odd? }
+                               .values_at(true, false)
+
+          # Remove with_index indexes
+          odd_beats, even_beats = odd_and_even_beats
                                   .map { |values| values.map(&:first) }
-                                  # ^ Remove with_index indexes
 
           {
             spacing: even_beats,
@@ -120,7 +122,6 @@ RSpec.describe InevitableCacophony::Rhythm do
         let(:canonical) { subject.canonical }
 
         specify 'is stretched enough to place those beats earlier' do
-
           # TODO: assuming particular start/end offsets
           expect(InevitableCacophony::Rhythm::START_DELAY).to eq 0.3
 
@@ -151,7 +152,6 @@ RSpec.describe InevitableCacophony::Rhythm do
         let(:canonical) { subject.canonical }
 
         specify 'is stretched enough to place those beats later' do
-
           # TODO: assuming particular start/end offsets
           expect(InevitableCacophony::Rhythm::START_DELAY).to eq 0.3
 

@@ -8,7 +8,6 @@ RSpec.describe InevitableCacophony::OctaveStructure do
   subject { InevitableCacophony::OctaveStructure.new(scale_text) }
 
   describe 'parsing octave structures' do
-
     context 'with numbers higher than twenty' do
       let(:scale_text) do
         <<-SCALE
@@ -60,8 +59,9 @@ RSpec.describe InevitableCacophony::OctaveStructure do
                    .note_scalings
 
         scalings.each_with_index do |scaling, index|
-          expect(scaling).to be_within(0.0001)
-                         .of(expected_scalings[index])
+          expect(scaling)
+            .to be_within(0.0001)
+            .of(expected_scalings[index])
         end
       end
     end
@@ -163,19 +163,22 @@ RSpec.describe InevitableCacophony::OctaveStructure do
         let(:dik_chord) { subject.chords[:dik] }
 
         specify 'uses the correct notes' do
-          expect(ilpi_chord.note_scalings).to eq([
-            1,
+          expect(ilpi_chord.note_scalings).to eq(
+            [
+              1,
+              # Note 0-based indexing; first note is the tonic (tonic * 2**0)
+              2**(2 / 12.0),
+              2**(7 / 12.0)
+            ]
+          )
 
-            # Note 0-based indexing; first note is the tonic (tonic * 2**0)
-            2**(2 / 12.0),
-            2**(7 / 12.0)
-          ])
-
-          expect(dik_chord.note_scalings).to eq([
-            2**(8 / 12.0),
-            2**(9 / 12.0),
-            2
-          ])
+          expect(dik_chord.note_scalings).to eq(
+            [
+              2**(8 / 12.0),
+              2**(9 / 12.0),
+              2
+            ]
+          )
         end
       end
 
@@ -183,14 +186,16 @@ RSpec.describe InevitableCacophony::OctaveStructure do
         let(:ani_scale) { subject.scales[:ani] }
 
         specify 'uses the correct notes' do
-          expect(ani_scale.note_scalings).to eq([
-            1,
-            2**(2 / 12.0),
-            2**(7 / 12.0),
-            2**(8 / 12.0),
-            2**(9 / 12.0),
-            2
-          ])
+          expect(ani_scale.note_scalings).to eq(
+            [
+              1,
+              2**(2 / 12.0),
+              2**(7 / 12.0),
+              2**(8 / 12.0),
+              2**(9 / 12.0),
+              2
+            ]
+          )
         end
 
         specify 'excludes the octave when requested' do

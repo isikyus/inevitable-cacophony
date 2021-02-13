@@ -117,12 +117,9 @@ module InevitableCacophony
       note_positions.each_char do |pos|
         ratio *= step_size
 
-        case pos
-        when 'x'
+        if pos == 'x'
           note_scalings << ratio
-        when '-'
-          # Do nothing; no note here
-        else
+        elsif pos != '-'
           raise "Unexpected note position symbol #{pos.inspect}"
         end
       end
