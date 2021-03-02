@@ -147,6 +147,10 @@ RSpec.describe InevitableCacophony::MidiGenerator do
       note_ons.map { |n| midi_generator.frequency_table.table[n.note] }
     end
 
+    let(:out_of_range) do
+      InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange
+    end
+
     shared_examples_for 'scale mapping' do
       specify 'assigns MIDI notes that match the frequency table' do
         midi_frequencies.each_with_index do |frequency, index|
@@ -226,7 +230,7 @@ RSpec.describe InevitableCacophony::MidiGenerator do
         specify 'fails cleanly' do
           expect do
             track
-          end.to raise_error(InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange)
+          end.to raise_error(out_of_range)
         end
       end
     end
@@ -290,12 +294,7 @@ RSpec.describe InevitableCacophony::MidiGenerator do
         end
 
         specify 'fails cleanly' do
-          out_of_range =
-            InevitableCacophony::MidiGenerator::FrequencyTable::OutOfRange
-
-          expect do
-            track
-          end.to raise_error(out_of_range)
+          expect { track }.to raise_error(out_of_range)
         end
       end
     end
