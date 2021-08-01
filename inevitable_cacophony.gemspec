@@ -22,6 +22,10 @@ Gem::Specification.new do |s|
         s.license       = 'MIT'
         s.required_ruby_version = '>= 2.5.3'
 
+        # Gems for parsing
+        s.add_runtime_dependency 'nokogiri', ['~> 1.11.7']
+
+        # Gems for musical output
         s.add_runtime_dependency 'midilib', ['~> 2.0.5']
         s.add_runtime_dependency 'wavefile', ['~> 1.0.1']
 
