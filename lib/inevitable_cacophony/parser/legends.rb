@@ -37,8 +37,9 @@ module InevitableCacophony
       # other extraneious whitespace.
       def unescape_newlines(text)
         text
-          .gsub(/\[B\]/, "\n\n")
-          .gsub(/ +$/, '')
+          .split('[B]')
+          .map { |s| s.chomp('  ') }
+          .join("\n\n")
       end
     end
   end
