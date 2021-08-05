@@ -10,7 +10,7 @@ module InevitableCacophony
       # @param xml [String] Legends file XML
       def parse(xml)
         legends = Nokogiri::XML(xml)
-        
+
         forms = []
         legends.css('df_world musical_forms musical_form').each do |form|
           id, form_text = parse_form(form)
