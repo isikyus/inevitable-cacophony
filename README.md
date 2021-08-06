@@ -26,7 +26,7 @@ You can also play polyrhythms where each component rhythm is simply | x x ... x 
 
 To generate a tune from a given form description (support is pretty limited so far):
 
-    inevitable_cacophony < form_description.txt > form.wav
+    inevitable_cacophony form_description.txt > form.wav
 
 At this stage you will need to type out the game's form description by hand to use as input.
 
@@ -60,7 +60,7 @@ If everything's worked, you should be able to run the tests, with:
 
 and run Inevitable Cacophony with:
 
-    bundle exec inevitable_cacophony [args]
+    bundle exec inevitable_cacophony [options] [filename]
 
 ## Acknowledgements and References
 

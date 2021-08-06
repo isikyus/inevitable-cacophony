@@ -73,6 +73,16 @@ RSpec.describe 'Inevitable Cacophony' do
 						expect(generated_data).to eq known_data
 					end
 				end
+
+        context 'when reading a named file' do
+          let(:generated_data) do
+            generate_with_args('-s', '--chromatic', description_file)
+          end
+
+          specify 'works' do
+            expect(generated_data).to eq known_data
+          end
+        end
 			end
 
 			context 'in a normal scale for the form' do

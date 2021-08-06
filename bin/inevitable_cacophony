@@ -38,7 +38,13 @@ render = -> (phrases) {
 }
 
 def input
-	@input ||= $stdin.read
+  @input ||= if ARGV.empty?
+                $stdin.read
+             elsif ARGV.length == 1
+               File.read(ARGV[0])
+             else
+               raise "Call with at most one non-option argument. TODO: get usage message"
+             end
 end
 
 def options
@@ -79,8 +85,7 @@ def rhythm
 end
 
 OptionParser.new do |opts|
-
-	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
+	opts.banner = 'Usage: ruby -Ilib cacophony.rb [options] [file]'
 
 	opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
 		command = -> {
