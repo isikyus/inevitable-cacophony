@@ -279,7 +279,7 @@ RSpec.describe InevitableCacophony::OctaveStructure do
         end
       end
 
-      pending 'assembling scales' do
+      describe 'assembling scales' do
         let(:aratha_scale) { subject.scales[:aratha] }
 
         specify 'transposes the second chord up when assembling the scale' do
@@ -287,10 +287,10 @@ RSpec.describe InevitableCacophony::OctaveStructure do
           expect(aratha_scale.note_scalings[1]).to be_within(0.0001).of(1 * perfect_fourth**(1/7.0))
           expect(aratha_scale.note_scalings[2]).to be_within(0.0001).of(1 * perfect_fourth)
 
-          expect(aratha_scale.note_scalings[0]).to be_within(0.0001).of(2 / perfect_fourth)
-          expect(aratha_scale.note_scalings[1]).to be_within(0.0001).of((2 / perfect_fourth) * perfect_fourth**(2/7.0))
-          expect(aratha_scale.note_scalings[1]).to be_within(0.0001).of((2 / perfect_fourth) * perfect_fourth**(7/7.0))
-          expect(aratha_scale.note_scalings[2]).to be_within(0.0001).of(2)
+          expect(aratha_scale.note_scalings[3]).to be_within(0.0001).of(2 / perfect_fourth)
+          expect(aratha_scale.note_scalings[4]).to be_within(0.0001).of((2 / perfect_fourth) * perfect_fourth**(2/7.0))
+          expect(aratha_scale.note_scalings[5]).to be_within(0.0001).of((2 / perfect_fourth) * perfect_fourth**(6/7.0))
+          expect(aratha_scale.note_scalings[6]).to be_within(0.0001).of(2)
         end
       end
     end

@@ -26,6 +26,17 @@ module InevitableCacophony
       def length
         note_scalings.length
       end
+
+      # Returns a new note sequence transposed up or down by the given ratio
+      def transpose(ratio)
+        self.class.new(transposed_notes(ratio))
+      end
+
+      private
+
+      def transposed_notes(ratio)
+        @note_scalings.map { |ns| ns * ratio }
+      end
     end
 
     class Chord < NoteSequence
@@ -40,6 +51,13 @@ module InevitableCacophony
       def initialize(chords, note_scalings = nil)
         @chords = chords
         super(note_scalings || chords.map(&:note_scalings).flatten)
+      end
+
+      def transpose(ratio)
+        Scale.new(
+          chords.map { |ch| ch.transpose(ratio) },
+          transposed_notes(ratio)
+        )
       end
 
       # Convert this scale to an "open" one -- i.e. one not including
@@ -214,7 +232,7 @@ module InevitableCacophony
     # @param description [Parser::SectionedText]
     # @param chords [Hash{Symbol,Chord}]
     def parse_scales(description, chords)
-      scale_topic_regex = /The [^ ]+ [^ ]+ scale is/
+      scale_topic_regex = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
 
       {}.tap do |scales|
         description
@@ -222,12 +240,14 @@ module InevitableCacophony
           .each do |scale_paragraph|
             scale_sentence = scale_paragraph.find(scale_topic_regex)
             name, scale_type = scale_sentence.match(
-              /The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
+              /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
             ).captures
             case scale_type
             when /thought of as ([a-z]+ )?(disjoint|joined) chords spanning/
               scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph,
                                                                 chords)
+            when /thought of as two disjoint chords drawn from the fundamental division of the perfect fourth/
+              scales[name.to_sym] = parse_perfect_fourth_scale(scale_paragraph, chords)
             else
               raise "Unknown scale type #{scale_type} in #{scale_sentence}"
             end
@@ -244,6 +264,19 @@ module InevitableCacophony
       chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
 
       Scale.new(chords.values_at(*chord_names))
+    end
+
+    def parse_perfect_fourth_scale(scale_paragraph, chords)
+      chords_sentence = scale_paragraph.find(/These chords are/)
+      chord_list = chords_sentence
+                   .match(/These chords are named ([^.]+)\.?/)
+                   .captures
+                   .first
+      chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
+
+      raise 'Expect only two chords in a perfect-fourth-based scale' unless chord_names.length == 2
+      low_fourth, high_fourth = chords.values_at(*chord_names)
+      Scale.new([low_fourth, high_fourth.transpose(OCTAVE_RATIO / PERFECT_FOURTH)])
     end
 
     WORDS_TO_NUMBERS = {
