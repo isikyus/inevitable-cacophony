@@ -8,6 +8,8 @@ module InevitableCacophony
     # Frequency scaling for a difference of one whole octave
     OCTAVE_RATIO = 2
 
+    PERFECT_FOURTH = 4/3.0
+
     # Represent a sequence of notes from an octave -- either a chord,
     # or the notes of a scale.
     # TODO: call this something more useful
@@ -59,7 +61,7 @@ module InevitableCacophony
     end
 
     # Regular expressions used in parsing
-    OCTAVE_STRUCTURE_SENTENCE = /Scales are constructed/.freeze
+    OCTAVE_STRUCTURE_SENTENCE = /Scales are (constructed|conceived)/.freeze
 
     # @param scale_text [String] Dwarf Fortress musical form description
     #                   including scale information.
@@ -85,18 +87,49 @@ module InevitableCacophony
 
     def parse_octave_structure(octave_paragraph)
       octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
-      note_count_match = octave_sentence.match(
-        /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
-      )
+      construction_type = octave_sentence.match(OCTAVE_STRUCTURE_SENTENCE).captures.first
 
-      if note_count_match
-        note_count_word = note_count_match.captures.first
-        divisions = parse_number_word(note_count_word)
-        numerator = divisions.to_f
+      if construction_type == 'conceived'
+        note_count_match = octave_sentence.match(
+          /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
+        )
 
-        (0...divisions).map { |index| 2**(index / numerator) }
+        if note_count_match
+          note_count_word = note_count_match.captures.first
+          divisions = parse_number_word(note_count_word)
+
+          # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
+          # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
+          # perfect fourth above the tonic).
+          divisions -= 1
+          numerator = (divisions).to_f
+
+          fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
+          [
+            fourth_structure,
+            PERFECT_FOURTH,
+            fourth_structure.map { |ratio| (OCTAVE_RATIO / PERFECT_FOURTH) * ratio }
+          ].flatten
+        else
+          raise 'Unrecognised way to conceive a scale.'
+        end
+
+      elsif construction_type == 'constructed'
+        note_count_match = octave_sentence.match(
+          /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
+        )
+
+        if note_count_match
+          note_count_word = note_count_match.captures.first
+          divisions = parse_number_word(note_count_word)
+          numerator = divisions.to_f
+
+          (0...divisions).map { |index| 2**(index / numerator) }
+        else
+          parse_exact_notes(octave_paragraph)
+        end
       else
-        parse_exact_notes(octave_paragraph)
+        raise "Don't know what it means for a scale to be '#{construction_type}'"
       end
     end
 
@@ -140,15 +173,23 @@ module InevitableCacophony
         chord_paragraphs.each do |paragraph|
           degrees_sentence = paragraph.find(chord_paragraph_regex)
 
-          name, degrees = degrees_sentence.match(
-            /The ([^ ]+) [a-z]*chord is the (.*) degrees of the .* scale/
+          name, degrees, _division_text = degrees_sentence.match(
+            /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
           ).captures
+          
+          # We don't actually care whether it's a division of the fourth or the octave at this point, because
+          # the (say) 8 degrees of the perfect fourth division are the same as the first half of the
+          # two-perfect-fourth scale.
+          #division = (division_text == 'fundamental perfect fourth division') ? :fourth : :octave
           chords[name.to_sym] = parse_chord(degrees)
         end
       end
     end
 
     # @param degrees[String] The list of degrees used by this particular scale
+    # @param division[Symbol] What the degrees are degrees of:
+    #                         :fourth for the fundamental perfect fourth division, or
+    #                         :octave for the usual division of the octave
     def parse_chord(degrees)
       ordinals = degrees.split(/(?:,| and) the/)
 
@@ -183,9 +224,8 @@ module InevitableCacophony
             name, scale_type = scale_sentence.match(
               /The ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
             ).captures
-
             case scale_type
-            when /thought of as ([a-z]+ )?(disjoint|joined) chords/
+            when /thought of as ([a-z]+ )?(disjoint|joined) chords spanning/
               scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph,
                                                                 chords)
             else
