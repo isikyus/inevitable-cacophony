@@ -51,12 +51,10 @@ module InevitableCacophony
 
       def parse_perfect_fourth_division(octave_sentence)
         note_count_match = octave_sentence.match(PERFECT_FOURTH_STRUCTURE)
-        if note_count_match
-          note_count_word = note_count_match.captures.first
-          [:perfect_fourth_division, parse_number_word(note_count_word)]
-        else
-          raise 'Unrecognised way to conceive a scale.'
-        end
+        raise 'Unrecognised way to conceive a scale.' unless note_count_match
+
+        note_count_word = note_count_match.captures.first
+        [:perfect_fourth_division, parse_number_word(note_count_word)]
       end
 
       def parse_exact_notes(octave_paragraph)
