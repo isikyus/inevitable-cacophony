@@ -132,13 +132,16 @@ module InevitableCacophony
     end
 
     def perfect_fourth_division(notes_per_fourth)
-      # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
-      # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
-      # perfect fourth above the tonic).
+      # Unlike the octave-based divisions, I _believe_ divisions of the perfect
+      # fourth include the perfect fourth as the last division (otherwise you'd
+      # be missing that really-good-sounding perfect fourth above the tonic).
       divisions = notes_per_fourth - 1
       numerator = divisions.to_f
 
-      fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
+      fourth_structure = (0...divisions).map do |index|
+        PERFECT_FOURTH**(index / numerator)
+      end
+
       [
         fourth_structure,
         PERFECT_FOURTH,

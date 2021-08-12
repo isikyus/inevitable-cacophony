@@ -8,18 +8,18 @@ module InevitableCacophony
     # scale construction, scales, and chords
     class ScaleDescription
       # Regular expressions used in parsing
-      OCTAVE_STRUCTURE_SENTENCE = /Scales are (constructed|conceived)/.freeze
+      OCTAVE_STRUCTURE = /Scales are (constructed|conceived)/.freeze
       PERFECT_FOURTH_STRUCTURE =
-          /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
+        /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
       EVENLY_SPACED_STRUCTURE =
-          /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
+        /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
 
       CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
 
       # @param scale_text [String]
       def parse(scale_text)
         description = Parser::SectionedText.new(scale_text)
-        octave_description = description.find_paragraph(OCTAVE_STRUCTURE_SENTENCE)
+        octave_description = description.find_paragraph(OCTAVE_STRUCTURE)
 
         {
           octave_divisions: parse_octave_divisions(octave_description),
@@ -31,8 +31,8 @@ module InevitableCacophony
       private
 
       def parse_octave_divisions(octave_paragraph)
-        octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
-        construction_type = octave_sentence.match(OCTAVE_STRUCTURE_SENTENCE).captures.first
+        octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE)
+        construction_type = octave_sentence.match(OCTAVE_STRUCTURE).captures.first
 
         if construction_type == 'conceived'
           parse_perfect_fourth_division(octave_sentence)
@@ -129,7 +129,8 @@ module InevitableCacophony
       end
 
       SCALE_TOPIC_REGEX = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
-      SCALE_TYPE_SENTENCE = /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
+      SCALE_TYPE =
+        /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
 
       # @param description [Parser::SectionedText]
       def parse_scales(description)
@@ -139,7 +140,7 @@ module InevitableCacophony
             .each do |scale_paragraph|
               # TODO: don't need both regexp lookups here
               scale_sentence = scale_paragraph.find(SCALE_TOPIC_REGEX)
-              name, scale_type = scale_sentence.match(SCALE_TYPE_SENTENCE).captures
+              name, scale_type = scale_sentence.match(SCALE_TYPE).captures
 
               scales[name.to_sym] = parse_scale(scale_type, scale_paragraph)
             end
