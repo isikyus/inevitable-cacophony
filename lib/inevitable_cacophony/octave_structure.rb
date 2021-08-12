@@ -45,6 +45,16 @@ module InevitableCacophony
 
     # As above, but also tracks the chords that make up the scale.
     class Scale < NoteSequence
+      # Build a scale from two chords based on a perfect-fourth division.
+      # This requires a different method because the second chord of a
+      # perfect-fourth scale is implicitly transposed up a perfect fourth.
+      #
+      # @param low_fourth [Chord]
+      # @param high_fourth [Chord]
+      def self.fourth_division(low_fourth, high_fourth)
+        new([low_fourth, high_fourth.transpose(OCTAVE_RATIO / PERFECT_FOURTH)])
+      end
+
       # @param chords [Array<Chord>]
       #        The chords that make up the scale, in order.
       # @param note_scalings [Array<Fixnum>]
@@ -107,19 +117,7 @@ module InevitableCacophony
       # TODO: consider destructuring, and/or maybe union types.
       case type
       when :perfect_fourth_division
-
-        # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
-        # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
-        # perfect fourth above the tonic).
-        divisions = data - 1
-        numerator = divisions.to_f
-
-        fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
-        [
-          fourth_structure,
-          PERFECT_FOURTH,
-          fourth_structure.map { |ratio| (OCTAVE_RATIO / PERFECT_FOURTH) * ratio }
-        ].flatten
+        perfect_fourth_division(data)
 
       when :evenly_spaced
         divisions = data
@@ -127,20 +125,42 @@ module InevitableCacophony
         (0...divisions).map { |index| 2**(index / numerator) }
 
       when :specific_quartertones
-        quartertones = data
-
-        # Always include the tonic
-        note_scalings = [1]
-        step_size = 2**(1.0 / quartertones.length.succ)
-        ratio = 1
-        quartertones.each do |pos|
-          ratio *= step_size
-          note_scalings << ratio if pos
-        end
-        note_scalings
+        selected_divisions(data)
       else
         raise "Unknown octave division type #{type}"
       end
+    end
+
+    def perfect_fourth_division(notes_per_fourth)
+      # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
+      # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
+      # perfect fourth above the tonic).
+      divisions = notes_per_fourth - 1
+      numerator = divisions.to_f
+
+      fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
+      [
+        fourth_structure,
+        PERFECT_FOURTH,
+        fourth_structure.map { |ratio| (OCTAVE_RATIO / PERFECT_FOURTH) * ratio }
+      ].flatten
+    end
+
+    # @param divisions [Array<TrueClass,FalseClass>] Which specific quartertones
+    #         (or other points on an equal division; this method doesn't care
+    #         how long the array is) make up the scale. Only entries with 'true'
+    #         will become notes in the scale; the rest are left out but still
+    #         count for the spacing of the used entries.
+    def selected_divisions(divisions)
+      # Always include the tonic
+      note_scalings = [1]
+      step_size = 2**(1.0 / divisions.length.succ)
+      ratio = 1
+      divisions.each do |pos|
+        ratio *= step_size
+        note_scalings << ratio if pos
+      end
+      note_scalings
     end
 
     # @param chord_data [Hash{Symbol,Array<Integer>}
@@ -158,15 +178,13 @@ module InevitableCacophony
     # @param chords [Hash{Symbol,Chord}]
     def build_scales(scale_data, chords)
       scale_data.transform_values do |type, chords_used|
+        scale_chords = chords.values_at(*chords_used)
+
         case type
         when :disjoint
-          Scale.new(chords.values_at(*chords_used))
-
+          Scale.new(scale_chords)
         when :fourth_division
-          raise 'Expect only two chords in a perfect-fourth-based scale' unless chords_used.length == 2
-          low_fourth, high_fourth = chords.values_at(*chords_used)
-          Scale.new([low_fourth, high_fourth.transpose(OCTAVE_RATIO / PERFECT_FOURTH)])
-
+          Scale.fourth_division(*scale_chords)
         else
           raise "Unknown scale type #{type}"
         end
