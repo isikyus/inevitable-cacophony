@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'inevitable_cacophony/parser/sectioned_text'
+require 'inevitable_cacophony/parser/scale_description'
 
 module InevitableCacophony
-  # Represents and parses Dwarf Fortress scale descriptions
+  # Represents Dwarf Fortress scales, and the chords and understanding
+  # of octaves used to build them.
   class OctaveStructure
     # Frequency scaling for a difference of one whole octave
     OCTAVE_RATIO = 2
@@ -78,19 +79,16 @@ module InevitableCacophony
       end
     end
 
-    # Regular expressions used in parsing
-    OCTAVE_STRUCTURE_SENTENCE = /Scales are (constructed|conceived)/.freeze
-
     # @param scale_text [String] Dwarf Fortress musical form description
     #                   including scale information.
     # TODO: Allow contructing these without parsing text
     def initialize(scale_text)
-      description = Parser::SectionedText.new(scale_text)
-      octave_description = description.find_paragraph(OCTAVE_STRUCTURE_SENTENCE)
-      @octave_divisions = parse_octave_structure(octave_description)
+      parser = Parser::ScaleDescription.new
+      scale_data = parser.parse(scale_text)
+      @octave_divisions = build_octave_structure(scale_data[:octave_divisions])
 
-      @chords = parse_chords(description)
-      @scales = parse_scales(description, chords)
+      @chords = build_chords(scale_data[:chords], @octave_divisions)
+      @scales = build_scales(scale_data[:scales], @chords)
     end
 
     attr_reader :chords, :scales
@@ -103,216 +101,75 @@ module InevitableCacophony
 
     private
 
-    def parse_octave_structure(octave_paragraph)
-      octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE_SENTENCE)
-      construction_type = octave_sentence.match(OCTAVE_STRUCTURE_SENTENCE).captures.first
+    def build_octave_structure(octave_divisions)
+      type, data = octave_divisions
 
-      if construction_type == 'conceived'
-        note_count_match = octave_sentence.match(
-          /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
-        )
+      # TODO: consider destructuring, and/or maybe union types.
+      case type
+      when :perfect_fourth_division
 
-        if note_count_match
-          note_count_word = note_count_match.captures.first
-          divisions = parse_number_word(note_count_word)
+        # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
+        # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
+        # perfect fourth above the tonic).
+        divisions = data - 1
+        numerator = divisions.to_f
 
-          # Unlike the octave-based divisions, I _believe_ divisions of the perfect fourth include
-          # the perfect fourth as the last division (otherwise you'd be missing that really-good-sounding
-          # perfect fourth above the tonic).
-          divisions -= 1
-          numerator = (divisions).to_f
+        fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
+        [
+          fourth_structure,
+          PERFECT_FOURTH,
+          fourth_structure.map { |ratio| (OCTAVE_RATIO / PERFECT_FOURTH) * ratio }
+        ].flatten
 
-          fourth_structure = (0...divisions).map { |index| PERFECT_FOURTH**(index / numerator) }
-          [
-            fourth_structure,
-            PERFECT_FOURTH,
-            fourth_structure.map { |ratio| (OCTAVE_RATIO / PERFECT_FOURTH) * ratio }
-          ].flatten
-        else
-          raise 'Unrecognised way to conceive a scale.'
+      when :evenly_spaced
+        divisions = data
+        numerator = divisions.to_f
+        (0...divisions).map { |index| 2**(index / numerator) }
+
+      when :specific_quartertones
+        quartertones = data
+
+        # Always include the tonic
+        note_scalings = [1]
+        step_size = 2**(1.0 / quartertones.length.succ)
+        ratio = 1
+        quartertones.each do |pos|
+          ratio *= step_size
+          note_scalings << ratio if pos
         end
-
-      elsif construction_type == 'constructed'
-        note_count_match = octave_sentence.match(
-          /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
-        )
-
-        if note_count_match
-          note_count_word = note_count_match.captures.first
-          divisions = parse_number_word(note_count_word)
-          numerator = divisions.to_f
-
-          (0...divisions).map { |index| 2**(index / numerator) }
-        else
-          parse_exact_notes(octave_paragraph)
-        end
+        note_scalings
       else
-        raise "Don't know what it means for a scale to be '#{construction_type}'"
+        raise "Unknown octave division type #{type}"
       end
     end
 
-    def parse_exact_notes(octave_paragraph)
-      exact_spacing_sentence = octave_paragraph.find(/their spacing is roughly/)
-      spacing_match = exact_spacing_sentence.match(
-        /In quartertones, their spacing is roughly 1((-|x){23})0/
-      )
-
-      raise 'Cannot parse octave text' unless spacing_match
-
-      # Always include the tonic
-      note_scalings = [1]
-
-      note_positions = spacing_match.captures.first
-      step_size = 2**(1.0 / note_positions.length.succ)
-      ratio = 1
-      note_positions.each_char do |pos|
-        ratio *= step_size
-
-        if pos == 'x'
-          note_scalings << ratio
-        elsif pos != '-'
-          raise "Unexpected note position symbol #{pos.inspect}"
+    # @param chord_data [Hash{Symbol,Array<Integer>}
+    # @param octave_divisions [OctaveStructure]
+    def build_chords(chord_data, octave_divisions)
+      chord_data.transform_values do |degrees|
+        chord_notes = degrees.map do |d|
+          d == :octave ? 2 : octave_divisions[d]
         end
-      end
-
-      note_scalings
-    end
-
-    # @param description [Parser::SectionedText]
-    #        The description text from which to extract chord data.
-    def parse_chords(description)
-      # TODO: extract to constant
-      chord_paragraph_regex = /The ([^ ]+) [a-z]*chord is/
-
-      {}.tap do |chords|
-        chord_paragraphs =
-          description.find_all_paragraphs(chord_paragraph_regex)
-
-        chord_paragraphs.each do |paragraph|
-          degrees_sentence = paragraph.find(chord_paragraph_regex)
-
-          name, degrees, _division_text = degrees_sentence.match(
-            /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
-          ).captures
-          
-          # We don't actually care whether it's a division of the fourth or the octave at this point, because
-          # the (say) 8 degrees of the perfect fourth division are the same as the first half of the
-          # two-perfect-fourth scale.
-          #division = (division_text == 'fundamental perfect fourth division') ? :fourth : :octave
-          chords[name.to_sym] = parse_chord(degrees)
-        end
+        Chord.new(chord_notes)
       end
     end
 
-    # @param degrees[String] The list of degrees used by this particular scale
-    # @param division[Symbol] What the degrees are degrees of:
-    #                         :fourth for the fundamental perfect fourth division, or
-    #                         :octave for the usual division of the octave
-    def parse_chord(degrees)
-      ordinals = degrees.split(/(?:,| and) the/)
-
-      chord_notes = ordinals.map do |degree_ordinal|
-        # degree_ordinal is like "4th",
-        # or may be like "13th (completing the octave)"
-        # in which case it's not in our list of notes,
-        # but always has a factor of 2
-        # (the tonic, an octave higher)
-
-        if degree_ordinal.include?('(completing the octave)')
-          2
-        else
-          index = degree_ordinal.strip.to_i
-          @octave_divisions[index - 1]
-        end
-      end
-
-      Chord.new(chord_notes)
-    end
-
-    # @param description [Parser::SectionedText]
+    # @param scale_data [Hash{Symbol,Array[Symbol]}]
     # @param chords [Hash{Symbol,Chord}]
-    def parse_scales(description, chords)
-      scale_topic_regex = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
+    def build_scales(scale_data, chords)
+      scale_data.transform_values do |type, chords_used|
+        case type
+        when :disjoint
+          Scale.new(chords.values_at(*chords_used))
 
-      {}.tap do |scales|
-        description
-          .find_all_paragraphs(scale_topic_regex)
-          .each do |scale_paragraph|
-            scale_sentence = scale_paragraph.find(scale_topic_regex)
-            name, scale_type = scale_sentence.match(
-              /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
-            ).captures
-            case scale_type
-            when /thought of as ([a-z]+ )?(disjoint|joined) chords spanning/
-              scales[name.to_sym] = parse_disjoint_chords_scale(scale_paragraph,
-                                                                chords)
-            when /thought of as two disjoint chords drawn from the fundamental division of the perfect fourth/
-              scales[name.to_sym] = parse_perfect_fourth_scale(scale_paragraph, chords)
-            else
-              raise "Unknown scale type #{scale_type} in #{scale_sentence}"
-            end
-          end
-      end
-    end
+        when :fourth_division
+          raise 'Expect only two chords in a perfect-fourth-based scale' unless chords_used.length == 2
+          low_fourth, high_fourth = chords.values_at(*chords_used)
+          Scale.new([low_fourth, high_fourth.transpose(OCTAVE_RATIO / PERFECT_FOURTH)])
 
-    def parse_disjoint_chords_scale(scale_paragraph, chords)
-      chords_sentence = scale_paragraph.find(/These chords are/)
-      chord_list = chords_sentence
-                   .match(/These chords are named ([^.]+)\.?/)
-                   .captures
-                   .first
-      chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
-
-      Scale.new(chords.values_at(*chord_names))
-    end
-
-    def parse_perfect_fourth_scale(scale_paragraph, chords)
-      chords_sentence = scale_paragraph.find(/These chords are/)
-      chord_list = chords_sentence
-                   .match(/These chords are named ([^.]+)\.?/)
-                   .captures
-                   .first
-      chord_names = chord_list.split(/,|and/).map(&:strip).map(&:to_sym)
-
-      raise 'Expect only two chords in a perfect-fourth-based scale' unless chord_names.length == 2
-      low_fourth, high_fourth = chords.values_at(*chord_names)
-      Scale.new([low_fourth, high_fourth.transpose(OCTAVE_RATIO / PERFECT_FOURTH)])
-    end
-
-    WORDS_TO_NUMBERS = {
-      'one' => 1,
-      'two' => 2,
-      'three' => 3,
-      'four' => 4,
-      'five' => 5,
-      'six' => 6,
-      'seven' => 7,
-      'eight' => 8,
-      'nine' => 9,
-      'ten' => 10,
-      'eleven' => 11,
-      'twelve' => 12,
-      'thirteen' => 13,
-      'fourteen' => 14,
-      'fifteen' => 15,
-      'sixteen' => 16,
-      'seventeen' => 17,
-      'eighteen' => 18,
-      'nineteen' => 19
-    }.freeze
-
-    # Convert a number word to text -- rough approximation for now.
-    # TODO: Rails or something may do this.
-    #
-    # @param word [String]
-    # @return [Fixnum]
-    def parse_number_word(word)
-      if WORDS_TO_NUMBERS[word]
-        WORDS_TO_NUMBERS[word]
-      elsif word.start_with?('twenty-')
-        WORDS_TO_NUMBERS[word.delete_prefix('twenty-')] + 20
-      else
-        "Unsupported number name #{word}"
+        else
+          raise "Unknown scale type #{type}"
+        end
       end
     end
   end
