@@ -9,7 +9,7 @@ module InevitableCacophony
     # Frequency scaling for a difference of one whole octave
     OCTAVE_RATIO = 2
 
-    PERFECT_FOURTH = 4/3.0
+    PERFECT_FOURTH = 4 / 3.0
 
     # Represent a sequence of notes from an octave -- either a chord,
     # or the notes of a scale.
