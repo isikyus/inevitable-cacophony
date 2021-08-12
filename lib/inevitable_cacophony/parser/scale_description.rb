@@ -35,14 +35,7 @@ module InevitableCacophony
         construction_type = octave_sentence.match(OCTAVE_STRUCTURE_SENTENCE).captures.first
 
         if construction_type == 'conceived'
-          note_count_match = octave_sentence.match(PERFECT_FOURTH_STRUCTURE)
-          if note_count_match
-            note_count_word = note_count_match.captures.first
-            [:perfect_fourth_division, parse_number_word(note_count_word)]
-          else
-            raise 'Unrecognised way to conceive a scale.'
-          end
-
+          parse_perfect_fourth_division(octave_sentence)
         elsif construction_type == 'constructed'
           note_count_match = octave_sentence.match(EVENLY_SPACED_STRUCTURE)
           if note_count_match
@@ -53,6 +46,16 @@ module InevitableCacophony
           end
         else
           raise "Don't know what it means for a scale to be '#{construction_type}'"
+        end
+      end
+
+      def parse_perfect_fourth_division(octave_sentence)
+        note_count_match = octave_sentence.match(PERFECT_FOURTH_STRUCTURE)
+        if note_count_match
+          note_count_word = note_count_match.captures.first
+          [:perfect_fourth_division, parse_number_word(note_count_word)]
+        else
+          raise 'Unrecognised way to conceive a scale.'
         end
       end
 
@@ -86,47 +89,42 @@ module InevitableCacophony
       # @param description [Parser::SectionedText]
       #        The description text from which to extract chord data.
       def parse_chords(description)
-        {}.tap do |chords|
-          chord_paragraphs =
-            description.find_all_paragraphs(CHORD_PARAGRAPH_REGEXP)
+        chord_paragraphs =
+          description.find_all_paragraphs(CHORD_PARAGRAPH_REGEXP)
 
-          chord_paragraphs.each do |paragraph|
-            degrees_sentence = paragraph.find(CHORD_PARAGRAPH_REGEXP)
-
-            name, degrees, _division_text = degrees_sentence.match(
-              /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
-            ).captures
-
-            # We don't actually care whether it's a division of the fourth or the octave at this point, because
-            # the (say) 8 degrees of the perfect fourth division are the same as the first half of the
-            # two-perfect-fourth scale.
-            #division = (division_text == 'fundamental perfect fourth division') ? :fourth : :octave
-            chords[name.to_sym] = parse_chord(degrees)
-          end
-        end
+        Hash[
+          chord_paragraphs.map(&method(:parse_chord))
+        ]
       end
 
-      # @param degrees[String] The list of degrees used by this particular scale
-      # @param division[Symbol] What the degrees are degrees of:
-      #                         :fourth for the fundamental perfect fourth division, or
-      #                         :octave for the usual division of the octave
-      def parse_chord(degrees)
-        ordinals = degrees.split(/(?:,| and) the/)
+      # @param paragraph[String] The description of this particular chord
+      def parse_chord(paragraph)
+        degrees_sentence = paragraph.find(CHORD_PARAGRAPH_REGEXP)
+        name, degrees, _division_text = degrees_sentence.match(
+          /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
+        ).captures
 
-        chord_notes = ordinals.map do |ordinal|
-          # ordinal is like "4th",
-          # or may be like "13th (completing the octave)"
-          # in which case it's not in our list of notes,
-          # but always has a factor of 2
-          # (the tonic, an octave higher)
+        chord = degrees
+          .split(/(?:,| and) the/)
+          .map(&method(:parse_chord_ordinal))
 
-          # TODO: Can I avoid the special case here?
-          if ordinal.include?('(completing the octave)')
-            :octave
-          else
-            # Convert to 0-based indexing for use by code
-            ordinal.strip.to_i - 1
-          end
+        [name.to_sym, chord]
+      end
+
+      # Recognise an ordinal like "4th" or "13th, completing the octave".
+      # Normal ordinals are just a number, but the one that completes the
+      # octave gets special handling as it might not exist in the
+      # octave-structure object — we return it as the symbol :octave instead.
+      #
+      # @param ordinal [String]
+      # @return [Integer,Symbol]
+      def parse_chord_ordinal(ordinal)
+        # TODO: Can I avoid the special case here?
+        if ordinal.include?('(completing the octave)')
+          :octave
+        else
+          # Convert to 0-based indexing for use by code
+          ordinal.strip.to_i - 1
         end
       end
 
@@ -143,15 +141,21 @@ module InevitableCacophony
               scale_sentence = scale_paragraph.find(SCALE_TOPIC_REGEX)
               name, scale_type = scale_sentence.match(SCALE_TYPE_SENTENCE).captures
 
-              case scale_type
-              when /thought of as ([a-z]+ )?(disjoint|joined) chords spanning/
-                scales[name.to_sym] = [:disjoint, chord_names(scale_paragraph)]
-              when /thought of as two disjoint chords drawn from the fundamental division of the perfect fourth/
-                scales[name.to_sym] = [:fourth_division, chord_names(scale_paragraph)]
-              else
-                raise "Unknown scale type #{scale_type} in #{scale_sentence}"
-              end
+              scales[name.to_sym] = parse_scale(scale_type, scale_paragraph)
             end
+        end
+      end
+
+      # @param scale_type[String]
+      # @param scale_paragraph[SectionedText]
+      def parse_scale(scale_type, scale_paragraph)
+        case scale_type
+        when /thought of as ([a-z]+ )?(disjoint|joined) chords spanning/
+          [:disjoint, chord_names(scale_paragraph)]
+        when /thought of as two disjoint chords drawn from the fundamental division of the perfect fourth/
+          [:fourth_division, chord_names(scale_paragraph)]
+        else
+          raise "Unknown scale type #{scale_type} in #{scale_sentence}"
         end
       end
 

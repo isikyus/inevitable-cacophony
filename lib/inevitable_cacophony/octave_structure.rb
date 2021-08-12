@@ -95,8 +95,8 @@ module InevitableCacophony
     def initialize(scale_text)
       parser = Parser::ScaleDescription.new
       scale_data = parser.parse(scale_text)
-      @octave_divisions = build_octave_structure(scale_data[:octave_divisions])
 
+      @octave_divisions = build_octave_structure(scale_data[:octave_divisions])
       @chords = build_chords(scale_data[:chords], @octave_divisions)
       @scales = build_scales(scale_data[:scales], @chords)
     end
