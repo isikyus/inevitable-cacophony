@@ -13,14 +13,14 @@ module InevitableCacophony
           /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
       EVENLY_SPACED_STRUCTURE =
           /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
-          
+
       CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
-      
-      # @param scale_text [String] 
+
+      # @param scale_text [String]
       def parse(scale_text)
         description = Parser::SectionedText.new(scale_text)
         octave_description = description.find_paragraph(OCTAVE_STRUCTURE_SENTENCE)
-        
+
         {
           octave_divisions: parse_octave_divisions(octave_description),
           chords: parse_chords(description),
@@ -96,7 +96,7 @@ module InevitableCacophony
             name, degrees, _division_text = degrees_sentence.match(
               /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
             ).captures
-            
+
             # We don't actually care whether it's a division of the fourth or the octave at this point, because
             # the (say) 8 degrees of the perfect fourth division are the same as the first half of the
             # two-perfect-fourth scale.
@@ -129,7 +129,7 @@ module InevitableCacophony
           end
         end
       end
-      
+
       SCALE_TOPIC_REGEX = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
       SCALE_TYPE_SENTENCE = /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
 
