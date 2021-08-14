@@ -10,12 +10,13 @@ module InevitableCacophony
     # scale construction, scales, and chords
     class ScaleDescription
       # Regular expressions used in parsing
-      OCTAVE_STRUCTURE = /Scales are (constructed|conceived)/.freeze
+      OCTAVE_STRUCTURE = /Scales are (constructed|conceived)/
       PERFECT_FOURTH_STRUCTURE =
         /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
       EVENLY_SPACED_STRUCTURE =
         /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
-      EXACT_NOTES_STRUCTURE = /Scales are constructed from ([a-z]+) notes dividing the octave/
+      EXACT_NOTES_STRUCTURE =
+        /Scales are constructed from ([a-z]+) notes dividing the octave/
 
       CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
 
@@ -36,10 +37,10 @@ module InevitableCacophony
       def parse_octave_divisions(octave_paragraph)
         case octave_paragraph.find(OCTAVE_STRUCTURE)
         when PERFECT_FOURTH_STRUCTURE
-          [:perfect_fourth_division, WordToNumber.($LAST_PAREN_MATCH)]
+          [:perfect_fourth_division, WordToNumber.call($LAST_PAREN_MATCH)]
 
         when EVENLY_SPACED_STRUCTURE
-          [:evenly_spaced, WordToNumber.($LAST_PAREN_MATCH)]
+          [:evenly_spaced, WordToNumber.call($LAST_PAREN_MATCH)]
 
         when EXACT_NOTES_STRUCTURE
           parse_exact_notes(octave_paragraph)
@@ -49,7 +50,8 @@ module InevitableCacophony
         end
       end
 
-      SPACING_SENTENCE = /In quartertones, their spacing is roughly 1((-|x){23})0/
+      SPACING_SENTENCE =
+        /In quartertones, their spacing is roughly 1((-|x){23})0/
 
       def parse_exact_notes(octave_paragraph)
         exact_spacing_sentence = octave_paragraph.find(SPACING_SENTENCE)
@@ -94,8 +96,8 @@ module InevitableCacophony
         ).captures
 
         chord = degrees
-          .split(/(?:,| and) the/)
-          .map(&method(:parse_chord_ordinal))
+                .split(/(?:,| and) the/)
+                .map(&method(:parse_chord_ordinal))
 
         [name.to_sym, chord]
       end
@@ -103,7 +105,7 @@ module InevitableCacophony
       # Recognise an ordinal like "4th" or "13th, completing the octave".
       # Normal ordinals are just a number, but the one that completes the
       # octave gets special handling as it might not exist in the
-      # octave-structure object — we return it as the symbol :octave instead.
+      # octave-structure object - we return it as the symbol :octave instead.
       #
       # @param ordinal [String]
       # @return [Integer,Symbol]
