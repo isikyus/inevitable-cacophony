@@ -2,6 +2,7 @@
 
 require 'English'
 require 'inevitable_cacophony/parser/sectioned_text'
+require 'inevitable_cacophony/parser/word_to_number'
 
 module InevitableCacophony
   module Parser
@@ -35,10 +36,10 @@ module InevitableCacophony
       def parse_octave_divisions(octave_paragraph)
         case octave_paragraph.find(OCTAVE_STRUCTURE)
         when PERFECT_FOURTH_STRUCTURE
-          [:perfect_fourth_division, parse_number_word($LAST_PAREN_MATCH)]
+          [:perfect_fourth_division, WordToNumber.($LAST_PAREN_MATCH)]
 
         when EVENLY_SPACED_STRUCTURE
-          [:evenly_spaced, parse_number_word($LAST_PAREN_MATCH)]
+          [:evenly_spaced, WordToNumber.($LAST_PAREN_MATCH)]
 
         when EXACT_NOTES_STRUCTURE
           parse_exact_notes(octave_paragraph)
@@ -156,43 +157,6 @@ module InevitableCacophony
                      .captures
                      .first
         chord_list.split(/,|and/).map(&:strip).map(&:to_sym)\
-      end
-
-      WORDS_TO_NUMBERS = {
-        'one' => 1,
-        'two' => 2,
-        'three' => 3,
-        'four' => 4,
-        'five' => 5,
-        'six' => 6,
-        'seven' => 7,
-        'eight' => 8,
-        'nine' => 9,
-        'ten' => 10,
-        'eleven' => 11,
-        'twelve' => 12,
-        'thirteen' => 13,
-        'fourteen' => 14,
-        'fifteen' => 15,
-        'sixteen' => 16,
-        'seventeen' => 17,
-        'eighteen' => 18,
-        'nineteen' => 19
-      }.freeze
-
-      # Convert a number word to text -- rough approximation for now.
-      # TODO: Rails or something may do this.
-      #
-      # @param word [String]
-      # @return [Fixnum]
-      def parse_number_word(word)
-        if WORDS_TO_NUMBERS[word]
-          WORDS_TO_NUMBERS[word]
-        elsif word.start_with?('twenty-')
-          WORDS_TO_NUMBERS[word.delete_prefix('twenty-')] + 20
-        else
-          "Unsupported number name #{word}"
-        end
       end
     end
   end
