@@ -33,9 +33,7 @@ module InevitableCacophony
       private
 
       def parse_octave_divisions(octave_paragraph)
-        octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE)
-
-        case octave_sentence
+        case octave_paragraph.find(OCTAVE_STRUCTURE)
         when PERFECT_FOURTH_STRUCTURE
           [:perfect_fourth_division, parse_number_word($LAST_PAREN_MATCH)]
 
@@ -50,13 +48,11 @@ module InevitableCacophony
         end
       end
 
-      def parse_exact_notes(octave_paragraph)
-        exact_spacing_sentence =
-          octave_paragraph.find(/their spacing is roughly/)
-        spacing_match = exact_spacing_sentence.match(
-          /In quartertones, their spacing is roughly 1((-|x){23})0/
-        )
+      SPACING_SENTENCE = /In quartertones, their spacing is roughly 1((-|x){23})0/
 
+      def parse_exact_notes(octave_paragraph)
+        exact_spacing_sentence = octave_paragraph.find(SPACING_SENTENCE)
+        spacing_match = exact_spacing_sentence.match(SPACING_SENTENCE)
         raise 'Cannot parse octave text' unless spacing_match
 
         # TODO: Law of Demeter?
