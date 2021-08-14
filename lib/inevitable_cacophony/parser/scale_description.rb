@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'inevitable_cacophony/parser/sectioned_text'
 
 module InevitableCacophony
@@ -13,6 +14,7 @@ module InevitableCacophony
         /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
       EVENLY_SPACED_STRUCTURE =
         /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
+      EXACT_NOTES_STRUCTURE = /Scales are constructed from ([a-z]+) notes dividing the octave/
 
       CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
 
@@ -32,33 +34,25 @@ module InevitableCacophony
 
       def parse_octave_divisions(octave_paragraph)
         octave_sentence = octave_paragraph.find(OCTAVE_STRUCTURE)
-        construction_type = octave_sentence.match(OCTAVE_STRUCTURE).captures.first
 
-        if construction_type == 'conceived'
-          parse_perfect_fourth_division(octave_sentence)
-        elsif construction_type == 'constructed'
-          note_count_match = octave_sentence.match(EVENLY_SPACED_STRUCTURE)
-          if note_count_match
-            note_count_word = note_count_match.captures.first
-            [:evenly_spaced, parse_number_word(note_count_word)]
-          else
-            parse_exact_notes(octave_paragraph)
-          end
+        case octave_sentence
+        when PERFECT_FOURTH_STRUCTURE
+          [:perfect_fourth_division, parse_number_word($LAST_PAREN_MATCH)]
+
+        when EVENLY_SPACED_STRUCTURE
+          [:evenly_spaced, parse_number_word($LAST_PAREN_MATCH)]
+
+        when EXACT_NOTES_STRUCTURE
+          parse_exact_notes(octave_paragraph)
+
         else
-          raise "Don't know what it means for a scale to be '#{construction_type}'"
+          raise "Don\'t know how a scale can be '#{octave_sentence}'"
         end
       end
 
-      def parse_perfect_fourth_division(octave_sentence)
-        note_count_match = octave_sentence.match(PERFECT_FOURTH_STRUCTURE)
-        raise 'Unrecognised way to conceive a scale.' unless note_count_match
-
-        note_count_word = note_count_match.captures.first
-        [:perfect_fourth_division, parse_number_word(note_count_word)]
-      end
-
       def parse_exact_notes(octave_paragraph)
-        exact_spacing_sentence = octave_paragraph.find(/their spacing is roughly/)
+        exact_spacing_sentence =
+          octave_paragraph.find(/their spacing is roughly/)
         spacing_match = exact_spacing_sentence.match(
           /In quartertones, their spacing is roughly 1((-|x){23})0/
         )
