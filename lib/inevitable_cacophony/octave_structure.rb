@@ -64,6 +64,8 @@ module InevitableCacophony
         super(note_scalings || chords.map(&:note_scalings).flatten)
       end
 
+      attr_reader :chords
+
       def transpose(ratio)
         Scale.new(
           chords.map { |ch| ch.transpose(ratio) },

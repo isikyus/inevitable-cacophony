@@ -295,4 +295,42 @@ RSpec.describe InevitableCacophony::OctaveStructure do
       end
     end
   end
+
+  describe 'NoteSequence#transpose' do
+    let(:chord0) { InevitableCacophony::OctaveStructure::Chord.new([1, 5/4r, 4/3r]) }
+
+    describe 'Chord#transpose' do
+      specify 'transposes notes' do
+        scalings = chord0.transpose(2).note_scalings
+        expect(scalings[0]).to be_within(0.0001).of(2)
+        expect(scalings[1]).to be_within(0.0001).of(10/4r)
+        expect(scalings[2]).to be_within(0.0001).of(8/3r)
+      end
+    end
+
+    describe 'Scale#transpose' do
+      let(:chord1) { InevitableCacophony::OctaveStructure::Chord.new([3/2r, 2]) }
+      let(:scale) { InevitableCacophony::OctaveStructure::Scale.new([chord0, chord1]) }
+
+      specify 'transposes notes' do
+        scalings = scale.transpose(2).note_scalings
+        expect(scalings[0]).to be_within(0.0001).of(2)
+        expect(scalings[1]).to be_within(0.0001).of(10/4r)
+        expect(scalings[2]).to be_within(0.0001).of(8/3r)
+        expect(scalings[3]).to be_within(0.0001).of(6/2r)
+        expect(scalings[4]).to be_within(0.0001).of(4)
+      end
+
+      specify 'transposes chords' do
+        chords = scale.transpose(2).chords
+
+        chords[0].note_scalings.each_with_index do |scaling, index|
+          expect(scaling).to be_within(0.0001).of(chord0.note_scalings[index] * 2.0)
+        end
+        chords[1].note_scalings.each_with_index do |scaling, index|
+          expect(scaling).to be_within(0.0001).of(chord1.note_scalings[index] * 2.0)
+        end
+      end
+    end
+  end
 end
