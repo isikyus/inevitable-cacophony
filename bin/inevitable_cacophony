@@ -111,7 +111,9 @@ OptionParser.new do |opts|
               end
 
       rising_and_falling = scale.open.note_scalings +
-                           scale.note_scalings.reverse
+                           scale.open.transpose(2).note_scalings +
+                           scale.transpose(2).note_scalings.reverse +
+                           scale.open.note_scalings.reverse
       notes = rising_and_falling.map do |factor|
         InevitableCacophony::Note.new(
           factor,
