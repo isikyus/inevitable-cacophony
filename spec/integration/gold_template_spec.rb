@@ -2,6 +2,80 @@
 
 require 'spec_helper'
 require 'open3'
+require 'wavefile'
+
+MATCHER_SAMPLES_PER_BUFFER = 512
+MATCHER_WAVEFILE_FORMAT_FIELDS = [:channels, :sample_format, :bits_per_sample, :sample_rate, :speaker_mapping]
+RSpec::Matchers.define :equal_audio do |expected|
+
+  match do |actual|
+    actual_stream = WaveFile::Reader.new(StringIO.new(actual))
+    expected_stream = WaveFile::Reader.new(StringIO.new(expected))
+    begin
+
+      # Read both streams to find the first mismatching buffer,
+      # and report that; this avoids stupidly long matchers.
+      expected_buffer = nil
+      actual_buffer = nil
+      while actual_stream.current_sample_frame < actual_stream.total_sample_frames &&
+          expected_stream.current_sample_frame < expected_stream.total_sample_frames
+        expected_buffer = expected_stream.read(MATCHER_SAMPLES_PER_BUFFER)
+        actual_buffer = actual_stream.read(MATCHER_SAMPLES_PER_BUFFER)
+
+        @expected = inspect_buffer_in_context(expected_stream, expected_buffer)
+        @actual = inspect_buffer_in_context(actual_stream, actual_buffer)
+
+        return false unless same_wave_data?(expected_buffer, actual_buffer)
+      end
+    ensure
+      actual_stream.close
+      expected_stream.close
+    end
+
+    true
+  end
+
+  diffable
+  attr_reader :expected, :actual
+
+  private
+
+  def inspect_buffer_in_context(stream, buffer)
+    index = stream.current_sample_frame
+    length = stream.total_sample_frames
+    window_end = [index + MATCHER_SAMPLES_PER_BUFFER, length].min
+    [
+      "Buffer at samples #{index}-#{window_end} of #{length}:",
+      inspect_buffer(buffer)
+    ].join("\n")
+  end
+
+  def inspect_buffer(buffer)
+    [
+      "<WaveFile::Buffer:#{buffer.__id__}",
+      "  @format=#{buffer.instance_eval { @format }.inspect}",
+      "  @samples=[",
+      "    #{buffer.samples.join("\n    ")}",
+      "  ]",
+      ">"
+    ].join("\n")
+  end
+
+  def same_wave_data?(expected, actual)
+    # Hack, but there doesn't seem to be any way to extract this cleanly from the buffer.
+    expected_format = expected.instance_eval { @format }
+    actual_format = actual.instance_eval { @format }
+
+    same_format?(expected_format, actual_format) &&
+      expected.samples == actual.samples
+  end
+
+  def same_format?(expected, actual)
+    MATCHER_WAVEFILE_FORMAT_FIELDS.each do |field|
+      expected.send(field) == actual.send(field)
+    end
+  end
+end
 
 RSpec.describe 'Inevitable Cacophony' do
   def generate_with_args(*args)
@@ -28,7 +102,7 @@ RSpec.describe 'Inevitable Cacophony' do
         let(:fixture_file) { 'spec/fixtures/4-4.wav' }
 
         specify 'works' do
-          expect(generated_data).to eq known_data
+          expect(generated_data).to equal_audio known_data
         end
       end
 
@@ -37,7 +111,7 @@ RSpec.describe 'Inevitable Cacophony' do
         let(:fixture_file) { 'spec/fixtures/1-and-3.wav' }
 
         specify 'works' do
-          expect(generated_data).to eq known_data
+          expect(generated_data).to equal_audio known_data
         end
       end
     end
@@ -49,7 +123,7 @@ RSpec.describe 'Inevitable Cacophony' do
       let(:fixture_file) { 'spec/fixtures/7-11-polyrhythm.wav' }
 
       specify 'works' do
-        expect(generated_data).to eq known_data
+        expect(generated_data).to equal_audio known_data
       end
     end
 
@@ -67,7 +141,7 @@ RSpec.describe 'Inevitable Cacophony' do
         end
 
         specify 'works' do
-          expect(generated_data).to eq known_data
+          expect(generated_data).to equal_audio known_data
         end
 
         context 'when reading from stdin' do
@@ -78,7 +152,7 @@ RSpec.describe 'Inevitable Cacophony' do
           end
 
           specify 'works' do
-            expect(generated_data).to eq known_data
+            expect(generated_data).to equal_audio known_data
           end
         end
       end
@@ -88,7 +162,7 @@ RSpec.describe 'Inevitable Cacophony' do
         let(:fixture_file) { 'spec/fixtures/bride-of-trumpets_ani-scale.wav' }
 
         specify 'works' do
-          expect(generated_data).to eq known_data
+          expect(generated_data).to equal_audio known_data
         end
       end
 
@@ -131,7 +205,7 @@ RSpec.describe 'Inevitable Cacophony' do
       end
 
       specify 'honours both' do
-        expect(generated_data).to eq known_data
+        expect(generated_data).to equal_audio known_data
       end
     end
   end
