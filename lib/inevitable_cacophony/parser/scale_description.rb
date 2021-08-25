@@ -15,10 +15,17 @@ module InevitableCacophony
         /Scales are conceived of as two chords built using a division of the perfect fourth interval into ([a-z ]+) notes/
       EVENLY_SPACED_STRUCTURE =
         /Scales are constructed from ([-a-z ]+) notes spaced evenly throughout the octave/
+
       EXACT_NOTES_STRUCTURE =
         /Scales are constructed from ([a-z]+) notes dividing the octave/
+      SPACING_SENTENCE =
+        /In quartertones, their spacing is roughly 1((-|x){23})0/
 
       CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
+
+      SCALE_TOPIC_REGEX = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
+      SCALE_TYPE =
+        /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
 
       # @param scale_text [String]
       def parse(scale_text)
@@ -49,9 +56,6 @@ module InevitableCacophony
           raise "Don\'t know how a scale can be '#{octave_sentence}'"
         end
       end
-
-      SPACING_SENTENCE =
-        /In quartertones, their spacing is roughly 1((-|x){23})0/
 
       def parse_exact_notes(octave_paragraph)
         exact_spacing_sentence = octave_paragraph.find(SPACING_SENTENCE)
@@ -118,10 +122,6 @@ module InevitableCacophony
           ordinal.strip.to_i - 1
         end
       end
-
-      SCALE_TOPIC_REGEX = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
-      SCALE_TYPE =
-        /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
 
       # @param description [Parser::SectionedText]
       def parse_scales(description)
