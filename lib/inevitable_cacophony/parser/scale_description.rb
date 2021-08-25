@@ -61,7 +61,6 @@ module InevitableCacophony
         spacing_match = octave_paragraph.match(SPACING_SENTENCE)
         raise 'Cannot parse octave text' unless spacing_match
 
-        # TODO: Law of Demeter?
         spacing_symbols = spacing_match.captures.first.each_char
         [
           :specific_quartertones,
