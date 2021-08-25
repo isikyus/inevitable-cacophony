@@ -83,9 +83,9 @@ module InevitableCacophony
       #        The description text from which to extract chord data.
       def parse_chords(description)
         Hash[
-          description.
-            match_all_paragraphs(CHORD_DEGREES).
-            map(&method(:parse_chord))
+          description
+          .match_all_paragraphs(CHORD_DEGREES)
+          .map(&method(:parse_chord))
         ]
       end
 
