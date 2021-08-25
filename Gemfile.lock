@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    inevitable_cacophony (0.0.0)
+    inevitable_cacophony (0.1.0)
       midilib (~> 2.0.5)
       wavefile (~> 1.0.1)
 
