@@ -35,6 +35,13 @@ module InevitableCacophony
         find_all(key).first
       end
 
+      # As above, but returns the MatchData object for the search regexp
+      # @param key [Regex]
+      # @return [MatchData]
+      def match(key)
+        match_all(key).first
+      end
+
       # Find all sections matching a given key
       # @param key [Regex]
       # @param sections [Array<String>] Sections to search
@@ -43,6 +50,15 @@ module InevitableCacophony
       def find_all(key, context = sections)
         context.select { |s| key.match?(s) } ||
           raise("No match for #{key.inspect} in #{context.inspect}")
+      end
+
+      # As above, but return the Regexp MatchData for each matching section.
+      def match_all(key, context = sections)
+        context.map { |s| key.match(s) }.compact
+      end
+
+      def match_all_paragraphs(key)
+        match_all(key, paragraphs)
       end
 
       # Find a paragraph within the description, and break it up into sentences.

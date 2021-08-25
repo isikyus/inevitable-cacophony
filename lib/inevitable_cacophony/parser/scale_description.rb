@@ -21,9 +21,9 @@ module InevitableCacophony
       SPACING_SENTENCE =
         /In quartertones, their spacing is roughly 1((-|x){23})0/
 
-      CHORD_PARAGRAPH_REGEXP = /The ([^ ]+) [a-z]*chord is/
+      CHORD_DEGREES =
+        /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
 
-      SCALE_TOPIC_REGEX = /(As always, )?[Tt]he [^ ]+ [^ ]+ scale is/
       SCALE_TYPE =
         /[Tt]he ([^ ]+) [a-z]+tonic scale is (thought of as .*|constructed by)/
 
@@ -58,8 +58,7 @@ module InevitableCacophony
       end
 
       def parse_exact_notes(octave_paragraph)
-        exact_spacing_sentence = octave_paragraph.find(SPACING_SENTENCE)
-        spacing_match = exact_spacing_sentence.match(SPACING_SENTENCE)
+        spacing_match = octave_paragraph.match(SPACING_SENTENCE)
         raise 'Cannot parse octave text' unless spacing_match
 
         # TODO: Law of Demeter?
@@ -84,25 +83,20 @@ module InevitableCacophony
       # @param description [Parser::SectionedText]
       #        The description text from which to extract chord data.
       def parse_chords(description)
-        chord_paragraphs =
-          description.find_all_paragraphs(CHORD_PARAGRAPH_REGEXP)
-
         Hash[
-          chord_paragraphs.map(&method(:parse_chord))
+          description.
+            match_all_paragraphs(CHORD_DEGREES).
+            map(&method(:parse_chord))
         ]
       end
 
-      # @param paragraph[String] The description of this particular chord
-      def parse_chord(paragraph)
-        degrees_sentence = paragraph.find(CHORD_PARAGRAPH_REGEXP)
-        name, degrees, _division_text = degrees_sentence.match(
-          /The ([^ ]+) [a-z]*chord is the (.*) degrees of the (fundamental perfect fourth division|.* scale)/
-        ).captures
+      # @param chord_match [MatchData The CHORD_DEGREES regex match to parse.
+      def parse_chord(match)
+        name, degrees, _division_text = match.captures
 
         chord = degrees
                 .split(/(?:,| and) the/)
                 .map(&method(:parse_chord_ordinal))
-
         [name.to_sym, chord]
       end
 
@@ -127,12 +121,9 @@ module InevitableCacophony
       def parse_scales(description)
         {}.tap do |scales|
           description
-            .find_all_paragraphs(SCALE_TOPIC_REGEX)
+            .find_all_paragraphs(SCALE_TYPE)
             .each do |scale_paragraph|
-              # TODO: don't need both regexp lookups here
-              scale_sentence = scale_paragraph.find(SCALE_TOPIC_REGEX)
-              name, scale_type = scale_sentence.match(SCALE_TYPE).captures
-
+              name, scale_type = scale_paragraph.match(SCALE_TYPE).captures
               scales[name.to_sym] = parse_scale(scale_type, scale_paragraph)
             end
         end
@@ -152,9 +143,7 @@ module InevitableCacophony
       end
 
       def chord_names(scale_paragraph)
-        # TODO: don't need both regexp lookups here
-        chords_sentence = scale_paragraph.find(/These chords are/)
-        chord_list = chords_sentence
+        chord_list = scale_paragraph
                      .match(/These chords are named ([^.]+)\.?/)
                      .captures
                      .first
