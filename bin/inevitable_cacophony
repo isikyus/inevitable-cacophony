@@ -6,6 +6,7 @@ require 'optparse'
 require 'stringio'
 
 require 'inevitable_cacophony/parser/rhythms'
+require 'inevitable_cacophony/parser/legends'
 require 'inevitable_cacophony/octave_structure'
 require 'inevitable_cacophony/midi_generator'
 require 'inevitable_cacophony/tone_generator'
@@ -148,6 +149,14 @@ OptionParser.new do |opts|
           'Parse FORM rather than reading a form description ' \
           'from stdin') do |form|
     @input = form
+  end
+
+  opts.on('-l', '--legends ID', Integer, 'Parse a legends.xml file, and generate music for musical_form <ID> in that file.') do |id|
+    parser = InevitableCacophony::Parser::Legends.new
+    forms = parser.parse(input)
+    @input = forms[id]
+
+    raise "No such form #{id} in input" unless @input
   end
 
   opts.on('--chromatic',

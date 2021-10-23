@@ -203,19 +203,34 @@ RSpec.describe 'Inevitable Cacophony' do
     end
 
     context 'with a specified rhythm' do
-      let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
-      let(:form_description) { File.open(description_file, &:read) }
       let(:random_seed) { 3_14159 }
       let(:fixture_file) do
         'spec/fixtures/cebela_and_two_three__seed-314159.wav'
       end
 
-      let(:generated_data) do
-        generate_with_args('--seed', random_seed.to_s, '-e', form_description)
+      context 'reading text' do
+        let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
+        let(:form_description) { File.open(description_file, &:read) }
+
+        let(:generated_data) do
+          generate_with_args('--seed', random_seed.to_s, '-e', form_description)
+        end
+
+        specify 'honours both' do
+          expect(generated_data).to equal_audio known_data
+        end
       end
 
-      specify 'honours both' do
-        expect(generated_data).to equal_audio known_data
+      context 'reading from legends XML' do
+        let(:legends_filename) { 'spec/fixtures/legends-sample.xml' }
+        let(:legends_id) { 7 }
+        let(:generated_data) do
+          generate_with_args('--seed', random_seed.to_s, '-l', legends_id.to_s, legends_filename)
+        end
+
+        specify 'honours both' do
+          expect(generated_data).to equal_audio known_data
+        end
       end
     end
   end
