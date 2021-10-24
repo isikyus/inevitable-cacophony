@@ -165,13 +165,14 @@ OptionParser.new do |opts|
     name_parser = InevitableCacophony::Parser::Metadata.new
 
     command = lambda {
-      forms = legends_parser.parse(input)
-      forms.map do |id, form|
-        meta = name_parser.parse(form)
-        "#{id}\t#{meta[:name]}"
-      end
+      legends_parser
+        .parse(input)
+        .transform_values { |form| name_parser.parse(form) }
     }
-    render = method(:puts)
+    render = lambda { |forms|
+      puts "ID\tMUSICAL FORM"
+      puts forms.map { |id, form| "#{id}\t#{form[:name]}" }
+    }
   end
 
   opts.on('--chromatic',

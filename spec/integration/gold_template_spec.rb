@@ -92,6 +92,7 @@ RSpec.describe 'Inevitable Cacophony' do
   describe 'finding form descriptions in legends.xml' do
     let(:forms_and_ids) do
       <<~DATA
+      ID\tMUSICAL FORM
       0\tThe Taupe Drums
       2\tThe Father of Idols
       6\tThe Rhythmic Bewilderment
