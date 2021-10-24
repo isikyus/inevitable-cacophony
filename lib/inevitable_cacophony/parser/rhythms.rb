@@ -1,38 +1,14 @@
 # frozen_string_literal: true
 
+require 'inevitable_cacophony/parser/errors'
 require 'inevitable_cacophony/parser/sectioned_text'
 require 'inevitable_cacophony/parser/rhythm_line'
 require 'inevitable_cacophony/polyrhythm'
 
 module InevitableCacophony
-  # Knows how to parse the rhythm-description paragraphs
-  # of a Dwarf Fortress musical form
   module Parser
-    # Error parsing a musical form
-    # TODO: maybe move errors elsewhere
-    class Error < StandardError
-    end
-
-    # A polyrhythm or polymeter defnition is referencing another rhythm
-    # that doesn't exist.
-    class UnknownBaseRhythm < Error
-      def initialize(base)
-        @base = base
-        super("Could not find base rhythm #{base} for polyrhythm")
-      end
-
-      attr_accessor :base
-    end
-
-    # Unable to parse form description
-    class UnrecognisedFormSyntax < Error
-    end
-
-    # For all the Americans out there, following Webster rather than Johnson :-)
-    # {@see UnrecognisedFormSyntax}
-    UnrecognizedFormSyntax = UnrecognisedFormSyntax
-
-    # Knows how to parse rhythm descriptions
+    # Knows how to parse the rhythm-description paragraphs
+    # of a Dwarf Fortress musical form
     class Rhythms
       # Regular expressions used in parsing
       SIMPLE_RHYTHM_SENTENCE = /The (?<name>[[:alpha:]]+) rhythm is a single line with [-a-z ]+ beats?( divided into [-a-z ]+ bars in a [-0-9]+ pattern)?(\.|$)/.freeze
