@@ -5,8 +5,9 @@
 require 'optparse'
 require 'stringio'
 
-require 'inevitable_cacophony/parser/rhythms'
 require 'inevitable_cacophony/parser/legends'
+require 'inevitable_cacophony/parser/metadata'
+require 'inevitable_cacophony/parser/rhythms'
 require 'inevitable_cacophony/octave_structure'
 require 'inevitable_cacophony/midi_generator'
 require 'inevitable_cacophony/tone_generator'
@@ -157,6 +158,20 @@ OptionParser.new do |opts|
     @input = forms[id]
 
     raise "No such form #{id} in input" unless @input
+  end
+
+  opts.on('-L', '--legends-forms', Integer, 'List all musical forms defined in a Legends.xml file, with IDs usable by -L ') do |id|
+    legends_parser = InevitableCacophony::Parser::Legends.new
+    name_parser = InevitableCacophony::Parser::Metadata.new
+
+    command = lambda {
+      forms = legends_parser.parse(input)
+      forms.map do |id, form|
+        meta = name_parser.parse(form)
+        "#{id}\t#{meta[:name]}"
+      end
+    }
+    render = method(:puts)
   end
 
   opts.on('--chromatic',

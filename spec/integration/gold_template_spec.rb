@@ -89,6 +89,25 @@ RSpec.describe 'Inevitable Cacophony' do
     data
   end
 
+  describe 'finding form descriptions in legends.xml' do
+    let(:forms_and_ids) do
+      <<~DATA
+      0\tThe Taupe Drums
+      2\tThe Father of Idols
+      6\tThe Rhythmic Bewilderment
+      7\tCebela and Two Three
+      DATA
+    end
+
+    let(:generated_data) do
+      generate_with_args('-L', 'spec/fixtures/legends-sample.xml')
+    end
+
+    specify 'lists forms and IDs' do
+      expect(generated_data).to eq forms_and_ids
+    end
+  end
+
   describe 'generating known files' do
     let(:known_data) { File.open(fixture_file, &:read) }
 
