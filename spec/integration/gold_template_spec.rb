@@ -89,6 +89,26 @@ RSpec.describe 'Inevitable Cacophony' do
     data
   end
 
+  describe 'finding form descriptions in legends.xml' do
+    let(:forms_and_ids) do
+      <<~DATA
+      ID\tMUSICAL FORM
+      0\tThe Taupe Drums
+      2\tThe Father of Idols
+      6\tThe Rhythmic Bewilderment
+      7\tCebela and Two Three
+      DATA
+    end
+
+    let(:generated_data) do
+      generate_with_args('-L', 'spec/fixtures/legends-sample.xml')
+    end
+
+    specify 'lists forms and IDs' do
+      expect(generated_data).to eq forms_and_ids
+    end
+  end
+
   describe 'generating known files' do
     let(:known_data) { File.open(fixture_file, &:read) }
 
@@ -155,6 +175,16 @@ RSpec.describe 'Inevitable Cacophony' do
             expect(generated_data).to equal_audio known_data
           end
         end
+
+        context 'when reading a named file' do
+          let(:generated_data) do
+            generate_with_args('-s', '--chromatic', description_file)
+          end
+
+          specify 'works' do
+            expect(generated_data).to equal_audio known_data
+          end
+        end
       end
 
       context 'in a normal scale for the form' do
@@ -193,19 +223,34 @@ RSpec.describe 'Inevitable Cacophony' do
     end
 
     context 'with a specified rhythm' do
-      let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
-      let(:form_description) { File.open(description_file, &:read) }
       let(:random_seed) { 3_14159 }
       let(:fixture_file) do
         'spec/fixtures/cebela_and_two_three__seed-314159.wav'
       end
 
-      let(:generated_data) do
-        generate_with_args('--seed', random_seed.to_s, '-e', form_description)
+      context 'reading text' do
+        let(:description_file) { 'spec/fixtures/cebela_and_two_three.txt' }
+        let(:form_description) { File.open(description_file, &:read) }
+
+        let(:generated_data) do
+          generate_with_args('--seed', random_seed.to_s, '-e', form_description)
+        end
+
+        specify 'honours both' do
+          expect(generated_data).to equal_audio known_data
+        end
       end
 
-      specify 'honours both' do
-        expect(generated_data).to equal_audio known_data
+      context 'reading from legends XML' do
+        let(:legends_filename) { 'spec/fixtures/legends-sample.xml' }
+        let(:legends_id) { 7 }
+        let(:generated_data) do
+          generate_with_args('--seed', random_seed.to_s, '-l', legends_id.to_s, legends_filename)
+        end
+
+        specify 'honours both' do
+          expect(generated_data).to equal_audio known_data
+        end
       end
     end
   end
