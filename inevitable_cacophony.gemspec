@@ -31,6 +31,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'midilib', ['~> 2.0.5']
   s.add_runtime_dependency 'wavefile', ['~> 1.0.1']
 
-  s.add_development_dependency 'pry', ['0.12.2']
+  s.add_development_dependency 'byebug', ['11.1.3']
   s.add_development_dependency 'rspec', ['3.8.0']
 end
