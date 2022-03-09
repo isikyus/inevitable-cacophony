@@ -72,8 +72,7 @@ module InevitableCacophony
       track = MIDI::Track.new(seq)
       track.name = 'Cacophony'
 
-      # TODO: why this particular instrument.
-      track.instrument = MIDI::GM_PATCH_NAMES[0]
+      track.instrument = MIDI::GM_PATCH_NAMES[24]
 
       # TODO: what's this for?
       track.events << MIDI::ProgramChange.new(0, 1, 0)
