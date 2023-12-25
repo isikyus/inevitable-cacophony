@@ -128,7 +128,7 @@ module InevitableCacophony
                                 .scan(THE_RHYTHM)
                                 .map do |rhythm_name, comment|
           component = base_rhythms[rhythm_name.to_sym]
-          raise UnknownBaseRhythm.new, rhythm_name unless component
+          raise UnknownBaseRhythm.new(rhythm_name) unless component
 
           [component, comment]
         end
