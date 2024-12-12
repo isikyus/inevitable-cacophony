@@ -5,6 +5,8 @@
 require 'optparse'
 require 'stringio'
 
+require 'inevitable_cacophony/parser/legends'
+require 'inevitable_cacophony/parser/metadata'
 require 'inevitable_cacophony/parser/rhythms'
 require 'inevitable_cacophony/octave_structure'
 require 'inevitable_cacophony/midi_generator'
@@ -41,7 +43,13 @@ render = lambda { |phrases|
 }
 
 def input
-  @input ||= $stdin.read
+  @input ||= if ARGV.empty?
+                $stdin.read
+             elsif ARGV.length == 1
+               File.read(ARGV[0])
+             else
+               raise "Call with at most one non-option argument. TODO: get usage message"
+             end
 end
 
 def options
@@ -86,7 +94,7 @@ def rhythm
 end
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: ruby -Ilib cacophony.rb [options]'
+  opts.banner = 'Usage: ruby -Ilib cacophony.rb [options] [file]'
 
   opts.on('-b', '--beat', 'Play a beat in the given rhythm') do
     command = lambda {
@@ -142,6 +150,29 @@ OptionParser.new do |opts|
           'Parse FORM rather than reading a form description ' \
           'from stdin') do |form|
     @input = form
+  end
+
+  opts.on('-l', '--legends ID', Integer, 'Parse a legends.xml file, and generate music for musical_form <ID> in that file.') do |id|
+    parser = InevitableCacophony::Parser::Legends.new
+    forms = parser.parse(input)
+    @input = forms[id]
+
+    raise "No such form #{id} in input" unless @input
+  end
+
+  opts.on('-L', '--legends-forms', Integer, 'List all musical forms defined in a Legends.xml file, with IDs usable by -L ') do |id|
+    legends_parser = InevitableCacophony::Parser::Legends.new
+    name_parser = InevitableCacophony::Parser::Metadata.new
+
+    command = lambda {
+      legends_parser
+        .parse(input)
+        .transform_values { |form| name_parser.parse(form) }
+    }
+    render = lambda { |forms|
+      puts "ID\tMUSICAL FORM"
+      puts forms.map { |id, form| "#{id}\t#{form[:name]}" }
+    }
   end
 
   opts.on('--chromatic',
